@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/store/auth-slice";
 import { loginFormControls } from "@/config";
+import Preloader from "@/components/common/preloader";
 
 const initialState = {
   email: "",
@@ -13,6 +14,7 @@ const initialState = {
 
 function AuthLogin() {
   const [formData, setFormData] = useState(initialState);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
 

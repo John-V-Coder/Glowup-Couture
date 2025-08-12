@@ -21,10 +21,15 @@ import NotFound from './pages/not-found';
 import { useSelector, useDispatch  } from 'react-redux';
 import { useEffect } from 'react';
 import CheckAuth from './components/common/check-auth';
-import { Skeleton } from './components/ui/skeleton';
+import Preloader from './components/common/preloader';
 import { checkAuth } from './store/auth-slice';
 import { loadGuestCart } from './store/shop/cart-slice';
 import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
+import AdminGallery from './pages/admin-view/gallery';
+import AdminAbout from './pages/admin-view/about';
+import ShoppingGallery from './pages/shopping-view/gallery';
+import ShoppingAbout from './pages/shopping-view/about';
+import Footer from './components/shopping-view/footer';
 
 function App() {
 
@@ -51,13 +56,12 @@ function App() {
   }
 }, [dispatch]);
 
-  if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
+  if (isLoading) return <Preloader message="Authenticating..." />;
 
   console.log(isLoading, JSON, user);
 
   return (
-    <div className="flex flex-col overflow-hidden bg-white">
-
+        <div className="flex flex-col min-h-screen">
       <Routes>
         <Route
           path="/"
@@ -88,6 +92,8 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="gallery" element={<AdminGallery />} />
+          <Route path="about" element={<AdminAbout />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="features" element={<AdminFeatures />} />
@@ -98,6 +104,8 @@ function App() {
         >
           <Route path="home" element={<ShoppingHome />} />
           <Route path="listing" element={<ShoppingListing />} />
+          <Route path="gallery" element={<ShoppingGallery />} />
+          <Route path="about" element={<ShoppingAbout />} />
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
           <Route path="paypal-return" element={<PaypalReturnPage />} />
@@ -108,6 +116,7 @@ function App() {
         <Route path="/unauth-page" element={<UnauthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+          <Footer />
     </div>
   );
 }

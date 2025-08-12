@@ -7,14 +7,20 @@ import { addProductFormElements } from "@/config";
 import ProductImageUpload from "@/components/admin-view/image-upload";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
-import {addNewProduct,deleteProduct,editProduct,fetchAllProducts,} from "@/store/admin/products-slice";
+import {
+  addNewProduct,
+  deleteProduct,
+  editProduct,
+  fetchAllProducts,
+} from "@/store/admin/products-slice";
 
 const initialFormData = {
   image: null,
   title: "",
   description: "",
   category: "",
-  brand: "",
+  material: "",
+  color: "",
   price: "",
   salePrice: "",
   totalStock: "",
@@ -22,8 +28,7 @@ const initialFormData = {
 };
 
 function AdminProducts() {
-  const [openCreateProductsDialog, setOpenCreateProductsDialog] =
-    useState(false);
+  const [openCreateProductsDialog, setOpenCreateProductsDialog] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
@@ -34,41 +39,49 @@ function AdminProducts() {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  // Sync uploaded image URL into formData.image automatically
+  useEffect(() => {
+    if (uploadedImageUrl) {
+      setFormData((prev) => ({
+        ...prev,
+        image: uploadedImageUrl,
+      }));
+    }
+  }, [uploadedImageUrl]);
+
   function onSubmit(event) {
     event.preventDefault();
 
-    currentEditedId !== null
-      ? dispatch(
-          editProduct({
-            id: currentEditedId,
-            formData,
-          })
-        ).then((data) => {
-          console.log(data, "edit");
-
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setFormData(initialFormData);
-            setOpenCreateProductsDialog(false);
-            setCurrentEditedId(null);
-          }
+    if (currentEditedId !== null) {
+      dispatch(
+        editProduct({
+          id: currentEditedId,
+          formData,
         })
-      : dispatch(
-          addNewProduct({
-            ...formData,
-            image: uploadedImageUrl,
-          })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setOpenCreateProductsDialog(false);
-            setImageFile(null);
-            setFormData(initialFormData);
-            toast({
-              title: "Product add successfully",
-            });
-          }
-        });
+      ).then((data) => {
+        if (data?.payload?.success) {
+          dispatch(fetchAllProducts());
+          setFormData(initialFormData);
+          setOpenCreateProductsDialog(false);
+          setCurrentEditedId(null);
+          setImageFile(null);
+          setUploadedImageUrl("");
+        }
+      });
+    } else {
+      dispatch(addNewProduct(formData)).then((data) => {
+        if (data?.payload?.success) {
+          dispatch(fetchAllProducts());
+          setOpenCreateProductsDialog(false);
+          setImageFile(null);
+          setUploadedImageUrl("");
+          setFormData(initialFormData);
+          toast({
+            title: "Product added successfully",
+          });
+        }
+      });
+    }
   }
 
   function handleDelete(getCurrentProductId) {
@@ -80,29 +93,41 @@ function AdminProducts() {
   }
 
   function isFormValid() {
-    return Object.keys(formData)
-      .filter((currentKey) => currentKey !== "averageReview")
-      .map((key) => formData[key] !== "")
-      .every((item) => item);
+    // Required fields (salePrice is optional)
+    const requiredFields = ["image", "title", "description", "category", "material", "color", "price", "totalStock"];
+    
+    return requiredFields.every((field) => {
+      const value = formData[field];
+      return value !== null && value !== undefined && value !== "";
+    });
   }
 
   useEffect(() => {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
-  console.log(formData, "productList");
+  // When editing, set formData and uploaded image URL accordingly
+  useEffect(() => {
+    if (currentEditedId !== null) {
+      const productToEdit = productList.find((p) => p._id === currentEditedId);
+      if (productToEdit) {
+        setFormData(productToEdit);
+        setUploadedImageUrl(productToEdit.image || "");
+        setImageFile(null);
+      }
+    }
+  }, [currentEditedId, productList]);
 
   return (
     <Fragment>
       <div className="mb-5 w-full flex justify-end">
-        <Button onClick={() => setOpenCreateProductsDialog(true)}>
-          Add New Product
-        </Button>
+        <Button onClick={() => setOpenCreateProductsDialog(true)}>Add New Product</Button>
       </div>
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
         {productList && productList.length > 0
           ? productList.map((productItem) => (
               <AdminProductTile
+                key={productItem._id}
                 setFormData={setFormData}
                 setOpenCreateProductsDialog={setOpenCreateProductsDialog}
                 setCurrentEditedId={setCurrentEditedId}
@@ -118,13 +143,14 @@ function AdminProducts() {
           setOpenCreateProductsDialog(false);
           setCurrentEditedId(null);
           setFormData(initialFormData);
+          setUploadedImageUrl("");
+          setImageFile(null);
+          setImageLoadingState(false);
         }}
       >
         <SheetContent side="right" className="overflow-auto">
           <SheetHeader>
-            <SheetTitle>
-              {currentEditedId !== null ? "Edit Product" : "Add New Product"}
-            </SheetTitle>
+            <SheetTitle>{currentEditedId !== null ? "Edit Product" : "Add New Product"}</SheetTitle>
           </SheetHeader>
           <ProductImageUpload
             imageFile={imageFile}

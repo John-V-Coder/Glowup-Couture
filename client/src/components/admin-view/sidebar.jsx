@@ -22,6 +22,12 @@ const adminSidebarMenuItems = [
     path: "/admin/orders",
     icon: <BadgeCheck />,
   },
+  {
+    id: "gallery",
+    label: "Gallery",
+    path: "/admin/gallery",
+    icon: <LayoutDashboard />,
+  },
 ];
 
 function MenuItems({ setOpen }) {

@@ -122,48 +122,27 @@ export const addProductFormElements = [
 ];
 
 export const shoppingViewHeaderMenuItems = [
-  {
-    id: "home",
-    label: "Home",
-    path: "/shop/home",
+  { id: "home", path: "/shop/home", label: "Home" },
+  { 
+    id: "collections", 
+    path: "/shop/listing", 
+    label: "Collections",
+    dropdown: [
+      { id: "men", path: "/shop/listing?category=men", label: "Men's Collection" },
+      { id: "women", path: "/shop/listing?category=women", label: "Women's Collection" },
+      { id: "kids", path: "/shop/listing?category=kids", label: "Kid's Collection" },
+      { id: "custom", path: "/shop/listing?category=custom", label: "Modern Customs" }
+    ]
   },
-  {
-    id: "products",
-    label: "Products",
-    path: "/shop/listing",
-  },
-  {
-    id: "men",
-    label: "Men",
-    path: "/shop/listing?category=men",
-  },
-  {
-    id: "women",
-    label: "Women",
-    path: "/shop/listing?category=women",
-  },
-  {
-    id: "kids",
-    label: "Kids",
-    path: "/shop/listing?category=kids",
-  },
-  {
-    id: "custom",
-    label: "Modern Customed",
-    path: "/shop/listing?category=custom",
-  },
-  {
-    id: "search",
-    label: "Search",
-    path: "/shop/search",
-  },
+  { id: "about", path: "/shop/about", label: "About Us" },
+  { id: "gallery", path: "/shop/gallery", label: "Gallery" },
+  { id: "search", path: "/shop/search", label: "Search" }
 ];
 
 export const categoryOptionsMap = {
   men: "Men",
   women: "Women",
-  kids: "Kids(Girls)",
-  kids: "Kids(Boys)",
+  kids: "Kids",
   custom: "Modern Customed"
 };
 

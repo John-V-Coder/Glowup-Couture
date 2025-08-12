@@ -16,7 +16,6 @@ import { SliceIcon } from "lucide-react";
 import { Flame } from "lucide-react";
 import { LineChart } from "lucide-react";
 import { VenusIcon } from "lucide-react";
-import { MessageCircle, Instagram, Facebook } from "lucide-react";
 
 const categoriesWithIcon = [
   { id: "women", label: "Women's Collection", icon: ShirtIcon },
@@ -115,17 +114,7 @@ function ShoppingHome() {
                 className={`${index === currentSlide ? "opacity-100" : "opacity-0"} absolute inset-0 transition-opacity duration-1000`}
               >
                 <img src={slide?.image} alt={`Featured look ${index + 1}`} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-center justify-center">
-                  {index === currentSlide && (
-                    <div className="text-center text-white space-y-4 px-4">
-                      <h1 className="text-5xl font-bold">Aurum Luxe</h1>
-                      <p className="text-xl">Where Gold Meets Elegance</p>
-                      <Button onClick={() => navigate("/shop/home")} className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full text-lg shadow-lg">
-                        Discover Luxury
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                
               </div>
             ))
           : (
@@ -219,109 +208,6 @@ function ShoppingHome() {
         </div>
       </section>
 
-      {/* Gallery Section - Updated with refined color algorithm */}
-      <section className="py-20 bg-gradient-to-br from-amber-50 to-amber-25">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Style <span className="text-amber-600">Gallery</span></h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-amber-600 to-amber-300 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Discover our latest designs and customer transformations. See how our luxury pieces bring elegance to life.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {/* Featured collection */}
-            <div className="md:col-span-2 lg:col-span-3 group cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500">
-              <div className="relative h-64 lg:h-96 bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
-                <div className="text-center text-amber-800 p-8">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500">
-                    <Sparkles className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold mb-4">Golden Moments Collection</h3>
-                  <p className="text-lg max-w-2xl mx-auto">Explore our signature pieces that capture the essence of luxury</p>
-                </div>
-                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Button 
-                    className="bg-white/90 text-amber-800 hover:bg-white hover:text-amber-900 px-8 py-4 text-lg"
-                    onClick={() => navigate("/shop/listing")}
-                  >
-                    View Collection
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Gallery items with consistent amber tones */}
-            {[
-              { 
-                title: "Women's Elegance", 
-                icon: ShirtIcon, 
-                description: "Timeless pieces for the modern woman",
-                bg: "from-amber-50 to-amber-100"
-              },
-              { 
-                title: "Men's Collection", 
-                icon: Shirt, 
-                description: "Sophisticated styles for gentlemen",
-                bg: "from-amber-100 to-amber-200"
-              },
-              { 
-                title: "Custom Creations", 
-                icon: Gem, 
-                description: "Bespoke designs just for you",
-                bg: "from-amber-200 to-amber-300"
-              }
-            ].map((item, index) => (
-              <div 
-                key={index} 
-                className={`group cursor-pointer overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br ${item.bg}`}
-              >
-                <div className="p-8 h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 mb-6 bg-amber-600 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                    <item.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h4 className="text-xl font-semibold text-amber-900 mb-3">{item.title}</h4>
-                  <p className="text-amber-800 mb-6">{item.description}</p>
-                  <Button 
-                    variant="outline" 
-                    className="border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white"
-                    onClick={() => handleNavigateToListingPage({id: item.title.toLowerCase().replace("'s", "")}, "category")}
-                  >
-                    Explore
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Gallery CTA */}
-          <div className="text-center">
-            <div className="inline-flex flex-col sm:flex-row gap-4">
-              <Button 
-                onClick={() => navigate("/shop/listing")}
-                className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-8 py-4 rounded-full text-lg shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                Browse Full Gallery
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-amber-600 text-amber-600 hover:bg-amber-50 hover:border-amber-700 px-8 py-4 rounded-full text-lg transition-all duration-300"
-                onClick={() => {
-                  const message = encodeURIComponent("Hi Aurum Luxe! I'd like to see more of your custom designs.");
-                  window.open(`https://wa.me/254714198559?text=${message}`, '_blank');
-                }}
-              >
-                Request Custom Designs
-              </Button>
-            </div>
-            <p className="mt-4 text-amber-700 max-w-2xl mx-auto">
-              Our design team is ready to bring your vision to life. Contact us for personalized consultations.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Featured Pieces */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
@@ -357,22 +243,10 @@ function ShoppingHome() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-center space-x-6 mb-4">
-            <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors"><i className="fab fa-facebook-f"></i></a>
-            <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors"><i className="fab fa-twitter"></i></a>
-            <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors"><i className="fab fa-instagram"></i></a>
-            <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors"><i className="fab fa-linkedin-in"></i></a>
-          </div>
-          <div className="text-center text-gray-500 text-sm">
-            <p>&copy; {new Date().getFullYear()} Aurum Luxe. All rights reserved.</p>
-            <p>Designed by <span className="text-amber-400 font-medium">Golden Thread Designs</span></p>
-          </div>
-        </div>
-      </footer>
+    
 
       <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailsDialog} productDetails={productDetails} />
+      
     </div>
   );
 }
