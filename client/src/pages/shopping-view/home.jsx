@@ -8,7 +8,6 @@ import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { useNavigate } from "react-router-dom";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
-import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf } from "lucide-react";
@@ -40,7 +39,6 @@ function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { productList, productDetails } = useSelector((state) => state.shopProducts);
   const { featureImageList } = useSelector((state) => state.commonFeature);
-  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -58,7 +56,7 @@ function ShoppingHome() {
   }
 
   function handleGetProductDetails(getCurrentProductId) {
-    dispatch(fetchProductDetails(getCurrentProductId));
+    navigate(`/shop/product/${getCurrentProductId}`);
   }
 
   function handleAddtoCart(getCurrentProductId) {
@@ -79,9 +77,6 @@ function ShoppingHome() {
     });
   }
 
-  useEffect(() => {
-    if (productDetails !== null) setOpenDetailsDialog(true);
-  }, [productDetails]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -243,11 +238,7 @@ function ShoppingHome() {
         </div>
       </section>
 
-      {/* Footer */}
-    
 
-      <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailsDialog} productDetails={productDetails} />
-      
     </div>
   );
 }
