@@ -4,7 +4,7 @@ import { mergeGuestCart } from "../shop/cart-slice";
 
 const initialState = {
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
   user: null,
   token: null,
   error: null,
@@ -109,6 +109,10 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.token = null
+    },
+    setLoadingFalse: (state) => {
+      console.log("setLoadingFalse - Setting loading to false");
+      state.isLoading = false;
     }
   },
   extraReducers: (builder) => {
@@ -136,6 +140,8 @@ const authSlice = createSlice({
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
         state.token = action.payload.token;
+        // Use localStorage for longer persistence
+        localStorage.setItem('token', JSON.stringify(action.payload.token));
         sessionStorage.setItem('token', JSON.stringify(action.payload.token));
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -145,26 +151,35 @@ const authSlice = createSlice({
         state.token = null;
       })
       .addCase(checkAuth.pending, (state) => {
+        console.log("checkAuth.pending - Setting loading to true");
         state.isLoading = true;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
+        console.log("checkAuth.fulfilled - Response:", action.payload);
         state.isLoading = false;
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
       .addCase(checkAuth.rejected, (state, action) => {
+        console.log("checkAuth.rejected - Token expired/invalid, clearing auth state");
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
+        state.token = null;
+        // Clear invalid/expired token from both storages
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
       })
       .addCase(logoutUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;
+        // Clear token from sessionStorage on logout
+        sessionStorage.removeItem('token');
       });
   },
 });
 
-export const { setUser, resetTokenAndCredentials } = authSlice.actions;
+export const { setUser, resetTokenAndCredentials, setLoadingFalse } = authSlice.actions;
 export default authSlice.reducer;

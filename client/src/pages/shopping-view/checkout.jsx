@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import img from "../../assets/account.jpg";
 import { createNewOrder } from "@/store/shop/order-slice";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, Smartphone, CreditCard } from "lucide-react";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -15,12 +15,15 @@ function ShoppingCheckout() {
   const { approvalURL } = useSelector((state) => state.shopOrder);
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
   const [isPaymentStart, setIsPaymemntStart] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("paypal");
+  const [mpesaPhone, setMpesaPhone] = useState("");
+  const [isProcessingMpesa, setIsProcessingMpesa] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
   const checkoutSectionRef = useRef(null);
   const navigate = useNavigate();
 
-    // Redirect unauthenticated users to login
+  // Redirect unauthenticated users to login
   useEffect(() => {
     if (!isAuthenticated) {
       toast({
@@ -32,8 +35,6 @@ function ShoppingCheckout() {
       return;
     }
   }, [isAuthenticated, navigate, toast]);
-
-
 
   const totalCartAmount =
     cartItems && cartItems.items && cartItems.items.length > 0
@@ -86,7 +87,7 @@ function ShoppingCheckout() {
         notes: currentSelectedAddress?.notes,
       },
       orderStatus: "pending",
-      paymentMethod: "paypal",
+      paymentMethod: selectedPaymentMethod,
       paymentStatus: "pending",
       totalAmount: totalCartAmount,
       orderDate: new Date(),
@@ -102,6 +103,85 @@ function ShoppingCheckout() {
         setIsPaymemntStart(false);
       }
     });
+  }
+
+  function handleMpesaPayment() {
+    if (!mpesaPhone || mpesaPhone.length < 10) {
+      toast({
+        title: "Please enter a valid M-Pesa phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast({
+        title: "Your cart is empty. Please add items to proceed",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (currentSelectedAddress === null) {
+      toast({
+        title: "Please select one address to proceed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessingMpesa(true);
+    
+    // Simulate M-Pesa payment processing
+    setTimeout(() => {
+      const orderData = {
+        userId: user?.id,
+        cartId: cartItems?._id,
+        cartItems: cartItems.items.map((singleCartItem) => ({
+          productId: singleCartItem?.productId,
+          title: singleCartItem?.title,
+          image: singleCartItem?.image,
+          price:
+            singleCartItem?.salePrice > 0
+              ? singleCartItem?.salePrice
+              : singleCartItem?.price,
+          quantity: singleCartItem?.quantity,
+        })),
+        addressInfo: {
+          addressId: currentSelectedAddress?._id,
+          address: currentSelectedAddress?.address,
+          city: currentSelectedAddress?.city,
+          pincode: currentSelectedAddress?.pincode,
+          phone: currentSelectedAddress?.phone,
+          notes: currentSelectedAddress?.notes,
+        },
+        orderStatus: "confirmed",
+        paymentMethod: "mpesa",
+        paymentStatus: "paid",
+        totalAmount: totalCartAmount,
+        orderDate: new Date(),
+        orderUpdateDate: new Date(),
+        paymentId: `MP${Date.now()}`,
+        payerId: mpesaPhone,
+      };
+
+      dispatch(createNewOrder(orderData)).then((data) => {
+        setIsProcessingMpesa(false);
+        if (data?.payload?.success) {
+          toast({
+            title: "M-Pesa Payment Successful!",
+            description: `Payment of $${totalCartAmount.toFixed(2)} completed via ${mpesaPhone}`,
+          });
+          navigate('/shop/payment-success');
+        } else {
+          toast({
+            title: "Payment Failed",
+            description: "Please try again or contact support",
+            variant: "destructive",
+          });
+        }
+      });
+    }, 3000); // Simulate 3 second processing time
   }
 
   const scrollToCheckout = () => {
@@ -159,16 +239,90 @@ function ShoppingCheckout() {
               <span>Calculated at next step</span>
             </div>
             
-            <div className="mt-4 w-full">
-              <Button 
-                onClick={handleInitiatePaypalPayment} 
-                className="w-full h-12 text-lg"
-                disabled={isPaymentStart}
-              >
-                {isPaymentStart
-                  ? "Processing Paypal Payment..."
-                  : "Proceed to Payment"}
-              </Button>
+            {/* Payment Method Selection */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Select Payment Method</h3>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {/* PayPal Option */}
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedPaymentMethod === "paypal" 
+                      ? "border-blue-500 bg-blue-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedPaymentMethod("paypal")}
+                >
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium">PayPal</p>
+                      <p className="text-sm text-gray-600">Pay securely with PayPal</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* M-Pesa Option */}
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedPaymentMethod === "mpesa" 
+                      ? "border-green-500 bg-green-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedPaymentMethod("mpesa")}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Smartphone className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium">M-Pesa</p>
+                      <p className="text-sm text-gray-600">Pay with M-Pesa mobile money</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* M-Pesa Phone Input */}
+              {selectedPaymentMethod === "mpesa" && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    M-Pesa Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="254712345678"
+                    value={mpesaPhone}
+                    onChange={(e) => setMpesaPhone(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Enter your M-Pesa registered phone number (format: 254XXXXXXXXX)
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 w-full">
+              {selectedPaymentMethod === "paypal" ? (
+                <Button 
+                  onClick={handleInitiatePaypalPayment} 
+                  className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700"
+                  disabled={isPaymentStart}
+                >
+                  {isPaymentStart
+                    ? "Processing PayPal Payment..."
+                    : "Pay with PayPal"}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleMpesaPayment} 
+                  className="w-full h-12 text-lg bg-green-600 hover:bg-green-700"
+                  disabled={isProcessingMpesa}
+                >
+                  {isProcessingMpesa
+                    ? "Processing M-Pesa Payment..."
+                    : `Pay $${totalCartAmount.toFixed(2)} with M-Pesa`}
+                </Button>
+              )}
             </div>
 
             {cartItems?.items?.length > 3 && (

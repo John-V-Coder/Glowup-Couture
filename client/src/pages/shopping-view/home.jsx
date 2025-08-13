@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
+import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf } from "lucide-react";
 import { ShieldEllipsisIcon } from "lucide-react";
@@ -45,6 +46,7 @@ function ShoppingHome() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { showCartNotification } = useCartNotification();
 
   function handleNavigateToListingPage(getCurrentItem, section) {
     sessionStorage.removeItem("filters");
@@ -71,9 +73,8 @@ function ShoppingHome() {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+        // Show user-friendly cart notification with View Cart option
+        showCartNotification(productDetails?.title || "Product");
       }
     });
   }

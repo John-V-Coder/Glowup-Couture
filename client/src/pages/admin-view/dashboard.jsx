@@ -4,15 +4,12 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeatureImage, getFeatureImages } from "@/store/common-slice";
 
-
 function AdminDashboard() {
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const dispatch = useDispatch();
   const { featureImageList } = useSelector((state) => state.commonFeature) || {};
-
-  console.log(uploadedImageUrl, "uploadedImageUrl");
 
   function handleUploadFeatureImage() {
     dispatch(addFeatureImage(uploadedImageUrl)).then((data) => {
@@ -28,8 +25,6 @@ function AdminDashboard() {
     dispatch(getFeatureImages());
   }, [dispatch]);
 
-  console.log(featureImageList, "featureImageList");
-
   return (
     <div>
       <ProductImageUpload
@@ -40,23 +35,35 @@ function AdminDashboard() {
         setImageLoadingState={setImageLoadingState}
         imageLoadingState={imageLoadingState}
         isCustomStyling={true}
-        // isEditMode={currentEditedId !== null}
       />
       <Button onClick={handleUploadFeatureImage} className="mt-5 w-full">
         Upload
       </Button>
-      <div className="flex flex-col gap-4 mt-5">
-        {featureImageList && featureImageList.length > 0
-          ? featureImageList.map((featureImgItem) => (
-              <div className="relative">
-                <img
-                  src={featureImgItem.image}
-                  className="w-full h-[300px] object-cover rounded-t-lg"
-                />
-              </div>
-            ))
-          : null}
-      </div>
+      <div className="flex flex-col gap-6 mt-5">
+  {featureImageList && featureImageList.length > 0
+    ? featureImageList.map((featureImgItem) => (
+        <div
+          key={featureImgItem._id || featureImgItem.image}
+          className="relative w-full mx-auto bg-gray-50 rounded-lg shadow-md p-4"
+        >
+          <img
+            src={featureImgItem.image}
+            alt="Featured"
+            style={{
+              width: "100%",
+              height: "auto",
+              objectFit: "contain",
+              display: "block",
+              maxHeight: "none",
+            }}
+            className="rounded-lg"
+          />
+        </div>
+      ))
+    : null}
+</div>
+
+
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useSearchParams } from "react-router-dom";
 import { sortOptions } from "@/config";
 import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
 import { fetchAllFilteredProducts, fetchProductDetails } from "@/store/shop/products-slice";
+import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -40,6 +41,7 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { toast } = useToast();
+  const { showCartNotification } = useCartNotification();
 
   const categorySearchParam = searchParams.get("category");
 
@@ -108,9 +110,8 @@ function ShoppingListing() {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+        // Show user-friendly cart notification with View Cart option
+        showCartNotification(productDetails?.title || "Product");
       }
     });
   }

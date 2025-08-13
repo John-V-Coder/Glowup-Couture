@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Fragment, useState, useEffect } from "react";
 import { addProductFormElements } from "@/config";
 import ProductImageUpload from "@/components/admin-view/image-upload";
+import AdditionalImagesUpload from "@/components/admin-view/additional-images-upload";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -16,6 +17,7 @@ import {
 
 const initialFormData = {
   image: null,
+  images: [], // Additional images for product gallery
   title: "",
   description: "",
   category: "",
@@ -34,6 +36,11 @@ function AdminProducts() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  
+  // Additional images state
+  const [additionalImages, setAdditionalImages] = useState([]);
+  const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
+  const [additionalImagesLoading, setAdditionalImagesLoading] = useState(false);
 
   const { productList } = useSelector((state) => state.adminProducts);
   const dispatch = useDispatch();
@@ -48,6 +55,14 @@ function AdminProducts() {
       }));
     }
   }, [uploadedImageUrl]);
+
+  // Sync additional images into formData.images automatically
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      images: additionalImages,
+    }));
+  }, [additionalImages]);
 
   function onSubmit(event) {
     event.preventDefault();
@@ -66,6 +81,8 @@ function AdminProducts() {
           setCurrentEditedId(null);
           setImageFile(null);
           setUploadedImageUrl("");
+          setAdditionalImages([]);
+          setAdditionalImageFiles([]);
         }
       });
     } else {
@@ -76,6 +93,8 @@ function AdminProducts() {
           setImageFile(null);
           setUploadedImageUrl("");
           setFormData(initialFormData);
+          setAdditionalImages([]);
+          setAdditionalImageFiles([]);
           toast({
             title: "Product added successfully",
           });
@@ -114,6 +133,8 @@ function AdminProducts() {
         setFormData(productToEdit);
         setUploadedImageUrl(productToEdit.image || "");
         setImageFile(null);
+        // Load existing additional images for editing
+        setAdditionalImages(productToEdit.images || []);
       }
     }
   }, [currentEditedId, productList]);
@@ -146,6 +167,8 @@ function AdminProducts() {
           setUploadedImageUrl("");
           setImageFile(null);
           setImageLoadingState(false);
+          setAdditionalImages([]);
+          setAdditionalImageFiles([]);
         }}
       >
         <SheetContent side="right" className="overflow-auto">
@@ -160,6 +183,12 @@ function AdminProducts() {
             setImageLoadingState={setImageLoadingState}
             imageLoadingState={imageLoadingState}
             isEditMode={currentEditedId !== null}
+          />
+          <AdditionalImagesUpload
+            additionalImages={additionalImages}
+            setAdditionalImages={setAdditionalImages}
+            additionalImagesLoading={additionalImagesLoading}
+            setAdditionalImagesLoading={setAdditionalImagesLoading}
           />
           <div className="py-6">
             <CommonForm

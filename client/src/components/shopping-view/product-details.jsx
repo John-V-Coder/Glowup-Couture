@@ -11,6 +11,8 @@ import { useToast } from "../ui/use-toast";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { setProductDetails } from "@/store/shop/products-slice";
+import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
+import ProductImageGallery from "./product-image-gallery";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
@@ -21,6 +23,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { reviews } = useSelector((state) => state.shopReview||{});
 
   const { toast } = useToast();
+  const { showCartNotification } = useCartNotification();
 
   function handleRatingChange(getRating) {
     console.log(getRating, "getRating");
@@ -66,9 +69,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+        // Show user-friendly cart notification with View Cart option
+        showCartNotification(productDetails?.title || "Product");
       }
     });
   }
@@ -116,15 +118,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="grid grid-cols-2 gap-8 sm:p-12 max-w-[90vw] sm:max-w-[80vw] lg:max-w-[70vw]">
-        <div className="relative overflow-hidden rounded-lg">
-          <img
-            src={productDetails?.image}
-            alt={productDetails?.title}
-            width={600}
-            height={600}
-            className="aspect-square w-full object-cover"
-          />
-        </div>
+        <ProductImageGallery
+          mainImage={productDetails?.image}
+          additionalImages={productDetails?.images}
+          productTitle={productDetails?.title}
+        />
         <div className="">
           <div>
             <h1 className="text-3xl font-extrabold">{productDetails?.title}</h1>

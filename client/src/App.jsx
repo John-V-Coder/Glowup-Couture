@@ -22,7 +22,7 @@ import { useSelector, useDispatch  } from 'react-redux';
 import { useEffect } from 'react';
 import CheckAuth from './components/common/check-auth';
 import Preloader from './components/common/preloader';
-import { checkAuth } from './store/auth-slice';
+import { checkAuth, setLoadingFalse } from './store/auth-slice';
 import { loadGuestCart } from './store/shop/cart-slice';
 import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
 import AdminGallery from './pages/admin-view/gallery';
@@ -39,22 +39,35 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-     let token = null;
-  try {
-    const storedToken = sessionStorage.getItem("token");
-    if (storedToken) {
-      token = JSON.parse(storedToken);
-    }
-  } catch (error) {
-    console.error("Invalid token in sessionStorage", error);
-  }
+    const initializeAuth = async () => {
+      console.log("App useEffect - Starting auth check");
+      let token = null;
+      
+      try {
+        const storedToken = sessionStorage.getItem("token");
+        console.log("Stored token:", storedToken);
+        
+        if (storedToken && storedToken !== "null" && storedToken !== "undefined") {
+          token = JSON.parse(storedToken);
+          console.log("Parsed token:", token);
+        }
+      } catch (error) {
+        console.error("Invalid token in sessionStorage", error);
+        sessionStorage.removeItem("token");
+      }
 
-  dispatch(checkAuth(token));
+      if (token) {
+        console.log("Token found, checking auth...");
+        dispatch(checkAuth(token));
+      } else {
+        console.log("No token found, setting loading false and loading guest cart");
+        dispatch(setLoadingFalse());
+        dispatch(loadGuestCart());
+      }
+    };
 
-  if (!token) {
-    dispatch(loadGuestCart());
-  }
-}, [dispatch]);
+    initializeAuth();
+  }, [dispatch]);
 
   if (isLoading) return <Preloader message="Authenticating..." />;
 
