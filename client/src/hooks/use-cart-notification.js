@@ -7,16 +7,14 @@ export function useCartNotification() {
 
   const showCartNotification = (productName) => {
     toast({
-      duration: 5000, // Show for 5 seconds
+      duration: 5000,
       className: "border-green-200 bg-green-50",
-      description: (
-        <CartNotification 
-          productName={productName}
-          onClose={() => {
-            // Toast will auto-close after duration
-          }}
-        />
-      ),
+      description: React.createElement(CartNotification, {
+        productName: productName,
+        onClose: () => {
+          // Toast will auto-close after duration
+        }
+      }),
     });
   };
 
