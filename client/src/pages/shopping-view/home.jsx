@@ -103,59 +103,65 @@ function ShoppingHome() {
 
 
       {/* Hero Section */}
-      <div className="relative w-full h-[70vh] overflow-hidden bg-gradient-to-br from-amber-50 to-white">
-        {featureImageList && featureImageList.length > 0
-          ? featureImageList.map((slide, index) => (
-              <div
-                key={index}
-                className={`${index === currentSlide ? "opacity-100" : "opacity-0"} absolute inset-0 transition-opacity duration-1000`}
-              >
-                <img src={slide?.image} alt={`Featured look ${index + 1}`} className="w-full h-full object-cover" />
-                
-              </div>
-            ))
-          : (
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-800 to-gray-900 flex items-center justify-center">
-              <div className="text-center text-white space-y-4">
-                <h1 className="text-5xl font-bold">Glowup Couture</h1>
-                <p className="text-xl">Ready To Wear</p>
-              </div>
-            </div>
-          )}
-
-        <Button variant="outline" size="icon"
-          onClick={() => setCurrentSlide((prevSlide) => (prevSlide - 1 + featureImageList.length) % featureImageList.length)}
-          className="absolute top-1/2 left-6 transform -translate-y-1/2 bg-white/90 hover:bg-white border-0 shadow-lg w-12 h-12"
+<div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-amber-50 to-white">
+  {featureImageList && featureImageList.length > 0
+    ? featureImageList.map((slide, index) => (
+        <div
+          key={index}
+          className={`${index === currentSlide ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"} absolute inset-0 transition-opacity duration-1000`}
         >
-          <ChevronLeftIcon className="w-6 h-6 text-amber-800" />
-        </Button>
-        <Button variant="outline" size="icon"
-          onClick={() => setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length)}
-          className="absolute top-1/2 right-6 transform -translate-y-1/2 bg-white/90 hover:bg-white border-0 shadow-lg w-12 h-12"
-        >
-          <ChevronRightIcon className="w-6 h-6 text-amber-800" />
-        </Button>
+          <img
+            src={slide?.image}
+            alt={`Featured look ${index + 1}`}
+            className="w-full h-full object-cover object-center"
+          />
 
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {featureImageList?.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-amber-500' : 'bg-white/50'}`}
-            />
-          ))}
+          {/* Text + Button Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white space-y-4 bg-black/20">
+            <h1 className="text-5xl font-bold drop-shadow-lg">Glowup Couture</h1>
+            <p className="text-xl drop-shadow-lg">Ready To Wear</p>
+            <a
+              href="/shop/listing"
+              className="px-6 py-3 bg-amber-600 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-amber-700 transition-all"
+            >
+              Shop Now
+            </a>
+          </div>
+        </div>
+      ))
+    : (
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center text-white space-y-4">
+          <h1 className="text-5xl font-bold">Glowup Couture</h1>
+          <p className="text-xl">Ready To Wear</p>
+          <a
+            href="/shop/listing"
+            className="px-6 py-3 bg-white text-amber-800 text-lg font-semibold rounded-full shadow-lg hover:bg-amber-200 transition-all"
+          >
+            Shop Now
+          </a>
         </div>
       </div>
+    )}
+
+  {/* Dots */}
+  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+    {featureImageList?.map((_, index) => (
+      <button
+        key={index}
+        onClick={() => setCurrentSlide(index)}
+        className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-amber-500' : 'bg-white/50'}`}
+      />
+    ))}
+  </div>
+</div>
+
 
       {/* Shop by Collection */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by <span className="text-amber-600">Collection</span></h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-amber-600 to-gray-300 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Explore our golden collections, where luxury meets contemporary design for the discerning individual.
-            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             {categoriesWithIcon.map((categoryItem) => (
@@ -181,10 +187,6 @@ function ShoppingHome() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by <span className="text-amber-800">Brand</span></h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-amber-800 to-amber-400 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Discover our exclusive golden lines, each delivering unparalleled luxury and craftsmanship.
-            </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {brandsWithIcon.map((brandItem) => (
@@ -210,10 +212,6 @@ function ShoppingHome() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured <span className="text-amber-600">Pieces</span></h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-amber-600 to-gray-300 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Our most exquisite pieces — crafted with premium materials and golden accents for the ultimate luxury experience.
-            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {productList && productList.length > 0
@@ -229,8 +227,6 @@ function ShoppingHome() {
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }

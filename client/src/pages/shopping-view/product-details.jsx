@@ -232,7 +232,7 @@ function ProductDetailsPage() {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-        <Button onClick={() => navigate("/shop")}>Back to Shop</Button>
+        <Button onClick={() => navigate("/shop/listing/")}>Back to Shop</Button>
       </div>
     );
   }
@@ -287,64 +287,60 @@ function ProductDetailsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="reviews" className="mb-8">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="specifications">Specifications</TabsTrigger>
-          <TabsTrigger value="qa">Q&A</TabsTrigger>
-        </TabsList>
+  <Tabs defaultValue="reviews" className="mb-8">
+  <TabsList className="grid w-full grid-cols-2">
+    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+    <TabsTrigger value="qa">Q&A</TabsTrigger>
+  </TabsList>
 
-       <TabsContent value="reviews" className="space-y-6">
-  <ProductReviews
-    productId={productDetails._id}
-    currentUser={user}
-  />
-</TabsContent>
+  <TabsContent value="reviews" className="space-y-6">
+    <ProductReviews
+      productId={productDetails._id}
+      currentUser={user}
+    />
+  </TabsContent>
 
-        <TabsContent value="specifications">
-          <ProductSpecifications specifications={productDetails.specifications} />
-        </TabsContent>
+  <TabsContent value="qa" className="space-y-6">
+    <ProductQA questions={productDetails.questions || []} />
+  </TabsContent>
+</Tabs>
 
-        <TabsContent value="qa">
-          <ProductQA questions={productDetails.questions || []} />
-        </TabsContent>
-      </Tabs>
+{getRelatedProducts(productDetails, productList).length > 0 && (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-bold">Related Products</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {getRelatedProducts(productDetails, productList).map((product) => (
+        <ProductCard
+          key={product._id}
+          product={product}
+          onClick={() => navigate(`/shop/product/${product._id}`)}
+          handleAddToCart={() => handleRelatedAddToCart(product._id)}
+        />
+      ))}
+    </div>
+  </div>
+)}
 
-      {getRelatedProducts(productDetails, productList).length > 0 && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Related Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {getRelatedProducts(productDetails, productList).map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                onClick={() => navigate(`/shop/product/${product._id}`)}
-                handleAddToCart={() => handleRelatedAddToCart(product._id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      <AIProductRecommendations currentProduct={productDetails} />
+<AIProductRecommendations currentProduct={productDetails} />
 
-      {recentlyViewed.length > 0 && (
-        <div className="space-y-6 mt-8">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Eye className="w-6 h-6" />
-            Recently Viewed
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recentlyViewed.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                onClick={() => navigate(`/shop/product/${product._id}`)}
-                handleAddToCart={() => handleRelatedAddToCart(product._id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+{recentlyViewed.length > 0 && (
+  <div className="space-y-6 mt-8">
+    <h2 className="text-2xl font-bold flex items-center gap-2">
+      <Eye className="w-6 h-6" />
+      Recently Viewed
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {recentlyViewed.map((product) => (
+        <ProductCard
+          key={product._id}
+          product={product}
+          onClick={() => navigate(`/shop/product/${product._id}`)}
+          handleAddToCart={() => handleRelatedAddToCart(product._id)}
+        />
+      ))}
+    </div>
+  </div>
+)}
     </div>
   );
 }
