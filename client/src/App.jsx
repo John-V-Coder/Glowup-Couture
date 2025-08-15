@@ -45,16 +45,26 @@ function App() {
       let token = null;
       
       try {
-        const storedToken = sessionStorage.getItem("token");
+        // Try sessionStorage first, then localStorage as fallback
+        const sessionToken = sessionStorage.getItem("token");
+        const localToken = localStorage.getItem("token");
+        const storedToken = sessionToken || localToken;
+        
         console.log("Stored token:", storedToken);
         
         if (storedToken && storedToken !== "null" && storedToken !== "undefined") {
           token = JSON.parse(storedToken);
           console.log("Parsed token:", token);
+          
+          // If token was in localStorage but not sessionStorage, sync it
+          if (localToken && !sessionToken) {
+            sessionStorage.setItem("token", localToken);
+          }
         }
       } catch (error) {
-        console.error("Invalid token in sessionStorage", error);
+        console.error("Invalid token in storage", error);
         sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
       }
 
       if (token) {

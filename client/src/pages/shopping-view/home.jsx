@@ -216,10 +216,16 @@ function ShoppingHome() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-           
-            <ProductFeatures
-                    
-                    />
+            {productList && productList.length > 0
+              ? productList.slice(0, 8).map((productItem) => (
+                  <ShoppingProductTile
+                    key={productItem._id}
+                    handleGetProductDetails={handleGetProductDetails}
+                    product={productItem}
+                    handleAddtoCart={handleAddtoCart}
+                  />
+                ))
+              : null}
           </div>
         </div>
       </section>

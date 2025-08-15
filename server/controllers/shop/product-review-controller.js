@@ -4,40 +4,43 @@ const ProductReview = require("../../models/Review");
 
 const addProductReview = async (req, res) => {
   try {
-    const { productId, userId, userName, reviewMessage, reviewValue } =
+    const { productId, userId, userName, reviewMessage, reviewValue, isVerified } =
       req.body;
 
-    const order = await Order.findOne({
-      userId,
-      "cartItems.productId": productId,
-      // orderStatus: "confirmed" || "delivered",
-    });
-
-    if (!order) {
-      return res.status(403).json({
-        success: false,
-        message: "You need to purchase product to review it.",
+    // Allow guest reviews - skip purchase verification for non-authenticated users
+    if (userId && userId !== "guest") {
+      const order = await Order.findOne({
+        userId,
+        "cartItems.productId": productId,
       });
-    }
 
-    const checkExistinfReview = await ProductReview.findOne({
-      productId,
-      userId,
-    });
+      if (!order) {
+        return res.status(403).json({
+          success: false,
+          message: "You need to purchase product to review it.",
+        });
+      }
 
-    if (checkExistinfReview) {
-      return res.status(400).json({
-        success: false,
-        message: "You already reviewed this product!",
+      const checkExistingReview = await ProductReview.findOne({
+        productId,
+        userId,
       });
+
+      if (checkExistingReview) {
+        return res.status(400).json({
+          success: false,
+          message: "You already reviewed this product!",
+        });
+      }
     }
 
     const newReview = new ProductReview({
       productId,
-      userId,
-      userName,
+      userId: userId || "guest",
+      userName: userName || "Guest User",
       reviewMessage,
       reviewValue,
+      isVerified: isVerified || false,
     });
 
     await newReview.save();

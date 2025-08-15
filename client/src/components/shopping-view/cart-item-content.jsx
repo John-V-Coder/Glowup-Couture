@@ -1,3 +1,4 @@
+
 import { Plus, Trash, Minus } from "lucide-react";
 import { Button } from "../ui/button";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
@@ -10,8 +11,6 @@ function UserCartItemsContent({ cartItem }) {
   const { productList } = useSelector((state) => state.shopProducts || {});
   const dispatch = useDispatch();
   const { toast } = useToast();
-
-
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
     if (typeOfAction === "plus") {
@@ -71,55 +70,57 @@ function UserCartItemsContent({ cartItem }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 border rounded-lg">
+    <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-6 bg-white hover:bg-gray-50 transition-all duration-300 rounded-2xl shadow-sm">
       {/* Image */}
       <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
-        <img
-          src={cartItem?.image}
-          alt={cartItem?.title}
-          className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border"
-        />
+        <div className="relative overflow-hidden rounded-2xl">
+          <img
+            src={cartItem?.image}
+            alt={cartItem?.title}
+            className="w-20 h-20 md:w-24 md:h-24 object-cover transition-transform duration-300 hover:scale-105"
+          />
+        </div>
       </div>
 
       {/* Details */}
       <div className="flex-1 flex flex-col gap-4 w-full">
         <div>
-          <h3 className="font-bold text-base md:text-lg">{cartItem?.title}</h3>
-          <p className="text-gray-600 text-sm mt-1">
+          <h3 className="font-semibold text-base md:text-lg text-gray-900 line-clamp-1">{cartItem?.title}</h3>
+          <p className="text-gray-500 text-sm mt-1 font-medium">
             {cartItem?.category || "General Product"}
           </p>
         </div>
 
         {/* Quantity & Actions */}
         <div className="flex flex-col md:flex-row md:items-center md:gap-4 w-full">
-          <div className="flex items-center gap-2 mb-4 md:mb-0">
+          <div className="flex items-center gap-3 mb-4 md:mb-0">
             <Button
-              variant="outline"
-              className="h-8 w-8 rounded-full"
+              variant="ghost"
+              className="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
               size="icon"
               disabled={cartItem?.quantity === 1}
               onClick={() => handleUpdateQuantity(cartItem, "minus")}
             >
-              <Minus className="w-4 h-4" />
+              <Minus className="w-4 h-4 text-gray-600" />
               <span className="sr-only">Decrease</span>
             </Button>
-            <span className="font-semibold w-8 text-center">
+            <span className="font-semibold w-8 text-center text-gray-900">
               {cartItem?.quantity}
             </span>
             <Button
-              variant="outline"
-              className="h-8 w-8 rounded-full"
+              variant="ghost"
+              className="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
               size="icon"
               onClick={() => handleUpdateQuantity(cartItem, "plus")}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-gray-600" />
               <span className="sr-only">Increase</span>
             </Button>
           </div>
 
           {/* Price & Delete */}
           <div className="flex justify-between md:ml-auto items-center w-full md:w-auto">
-            <p className="font-bold text-base md:text-lg">
+            <p className="font-bold text-lg text-gray-900">
               $
               {(
                 (cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price) *
@@ -130,7 +131,7 @@ function UserCartItemsContent({ cartItem }) {
               variant="ghost"
               size="icon"
               onClick={() => handleCartItemDelete(cartItem)}
-              className="text-red-500 hover:text-red-700 ml-4"
+              className="text-gray-400 hover:text-red-500 hover:bg-red-50 ml-4 rounded-full transition-all duration-200"
             >
               <Trash className="w-5 h-5" />
               <span className="sr-only">Remove item</span>

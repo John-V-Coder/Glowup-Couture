@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
-import { fetchProductDetails, setProductDetails } from "@/store/shop/products-slice";
+import { fetchProductDetails, setProductDetails, fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { useCartNotification } from "@/hooks/use-cart-notification";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye } from "lucide-react";
@@ -23,30 +24,17 @@ import ProductImageGallery from "@/components/shopping-view/product-image-galler
 import AIProductRecommendations from "@/components/shopping-view/AIProductRecommendations";
  import ProductReviews from "@/pages/shopping-view/product-reviews-page";
 
-const mockRelatedProducts = [
-  {
-    _id: "2",
-    title: "Wireless Earbuds Pro",
-    price: 149,
-    salePrice: 99,
-    image: "/wireless-earbuds.png",
-    rating: 4.5,
-    brand: "apple",
-    category: "electronics",
-    totalStock: 15,
-  },
-  {
-    _id: "3",
-    title: "Bluetooth Speaker",
-    price: 79,
-    salePrice: 59,
-    image: "/bluetooth-speaker.png",
-    rating: 4.2,
-    brand: "sony",
-    category: "electronics",
-    totalStock: 8,
-  }
-];
+// Get related products from the same category
+const getRelatedProducts = (productDetails, productList) => {
+  if (!productDetails || !productList || productList.length === 0) return [];
+
+  return productList
+    .filter(product =>
+      product._id !== productDetails._id &&
+      product.category === productDetails.category
+    )
+    .slice(0, 3); // Show max 3 related products
+};
 
 function ProductDetailsPage() {
   const [reviewMsg, setReviewMsg] = useState("");
@@ -61,7 +49,7 @@ function ProductDetailsPage() {
   const { user } = useSelector((state) => state.auth || {});
   const { cartItems } = useSelector((state) => state.shopCart || {});
   const { reviews = [], isLoading: reviewsLoadingState } = useSelector((state) => state.shopReview || {});
-  const { productDetails, isLoading } = useSelector((state) => state.shopProducts || {});
+  const { productDetails, isLoading, productList } = useSelector((state) => state.shopProducts || {});
 
   const { toast } = useToast();
   const { showCartNotification } = useCartNotification();
@@ -72,14 +60,6 @@ function ProductDetailsPage() {
       : 0;
 
   const handleAddToCart = async (productId, totalStock) => {
-    if (!user?.id) {
-      toast({
-        title: "Please login to add items to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const cartItem = cartItems.items?.find(item => item.productId === productId);
     if (cartItem && (cartItem.quantity + quantity) > totalStock) {
       toast({
@@ -91,7 +71,7 @@ function ProductDetailsPage() {
 
     try {
       const action = await dispatch(addToCart({
-        userId: user.id,
+        userId: user?.id,
         productId,
         quantity,
         productDetails: {
@@ -104,9 +84,12 @@ function ProductDetailsPage() {
       }));
 
       if (action.payload?.success) {
-        await dispatch(fetchCartItems(user.id));
+        await dispatch(fetchCartItems(user?.id));
         showCartNotification(productDetails.title);
-        toast({ title: `Added ${quantity} item(s) to cart!` });
+        toast({
+          title: `Added ${quantity} item(s) to cart!`,
+          description: !user?.id ? "Sign in to sync your cart across devices" : ""
+        });
       }
     } catch (error) {
       toast({
@@ -118,7 +101,7 @@ function ProductDetailsPage() {
   };
 
   const handleRelatedAddToCart = async (productId) => {
-    const product = mockRelatedProducts.find(p => p._id === productId);
+    const product = productList.find(p => p._id === productId);
     if (!product) return;
 
     try {
@@ -138,7 +121,10 @@ function ProductDetailsPage() {
       if (action.payload?.success) {
         await dispatch(fetchCartItems(user?.id));
         showCartNotification(product.title);
-        toast({ title: "Added to cart!" });
+        toast({
+          title: "Added to cart!",
+          description: !user?.id ? "Sign in to sync your cart across devices" : ""
+        });
       }
     } catch (error) {
       toast({
@@ -168,23 +154,23 @@ function ProductDetailsPage() {
 
   try {
     setReviewsLoading(true);
-    
+
     await dispatch(addReview({
       productId: productDetails._id,
-      userId: user?.id || "guest", // Allow guest reviews
-      userName: user?.userName || "Guest User", // Default name for guests
+      userId: user?.id || "guest",
+      userName: user?.userName || "Guest User",
       reviewMessage: reviewMsg,
       reviewValue: rating,
-      isVerified: !!user?.id, // Mark if review is from verified user
+      isVerified: !!user?.id,
     }));
 
     await dispatch(getReviews(productDetails._id));
 
     setRating(0);
     setReviewMsg("");
-    toast({ 
+    toast({
       title: "Review submitted!",
-      description: user?.id ? "" : "Your review will be visible after moderation"
+      description: user?.id ? "" : "Thank you for your feedback!"
     });
   } catch (error) {
     toast({
@@ -196,11 +182,14 @@ function ProductDetailsPage() {
     setReviewsLoading(false);
   }
 };
-  // Fetch product details
+  // Fetch product details and product list
   useEffect(() => {
     if (id) {
       dispatch(fetchProductDetails(id));
     }
+    // Fetch product list for related products
+    dispatch(fetchAllFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
+    
     return () => {
       dispatch(setProductDetails());
     };
@@ -250,9 +239,9 @@ function ProductDetailsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate(-1)} 
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
         className="mb-6 flex items-center gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -260,18 +249,19 @@ function ProductDetailsPage() {
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <ProductImageGallery 
-          images={productDetails.images} 
+        <ProductImageGallery
+          additionalImages={productDetails.images}
           mainImage={productDetails.image}
+          productTitle={productDetails.title}
         />
-        
+
         <div className="space-y-6">
-          <ProductInfo 
+          <ProductInfo
             product={productDetails}
             averageReview={averageReview}
             reviewCount={reviews?.length || 0}
           />
-          
+
           <div className="flex flex-col gap-4">
             <QuantitySelector
               quantity={quantity}
@@ -305,7 +295,7 @@ function ProductDetailsPage() {
         </TabsList>
 
        <TabsContent value="reviews" className="space-y-6">
-  <ProductReviews 
+  <ProductReviews
     productId={productDetails._id}
     currentUser={user}
   />
@@ -320,19 +310,21 @@ function ProductDetailsPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Related Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {mockRelatedProducts.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              onClick={() => navigate(`/products/${product._id}`)}
-              handleAddToCart={() => handleRelatedAddToCart(product._id)}
-            />
-          ))}
+      {getRelatedProducts(productDetails, productList).length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Related Products</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {getRelatedProducts(productDetails, productList).map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onClick={() => navigate(`/shop/product/${product._id}`)}
+                handleAddToCart={() => handleRelatedAddToCart(product._id)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <AIProductRecommendations currentProduct={productDetails} />
 
       {recentlyViewed.length > 0 && (
@@ -341,12 +333,12 @@ function ProductDetailsPage() {
             <Eye className="w-6 h-6" />
             Recently Viewed
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {recentlyViewed.map((product) => (
               <ProductCard
                 key={product._id}
                 product={product}
-                onClick={() => navigate(`/products/${product._id}`)}
+                onClick={() => navigate(`/shop/product/${product._id}`)}
                 handleAddToCart={() => handleRelatedAddToCart(product._id)}
               />
             ))}

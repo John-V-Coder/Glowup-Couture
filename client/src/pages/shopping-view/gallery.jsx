@@ -1,14 +1,10 @@
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getFeatureImages } from "@/store/common-slice";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, Heart, Share2, Download, Sparkles, X } from "lucide-react";
+import { Heart, Share2, Download, X, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroBackground from "@/assets/images/tweeter-bg.jpg";
-import { Phone } from "lucide-react";
-import { MessageSquare } from "lucide-react";
 
 function Gallery() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -21,7 +17,7 @@ function Gallery() {
   const { featureImageList } = useSelector((state) => state.commonFeature) || {};
 
   const fadeInUp = {
-    initial: { opacity: 0, y: 60 },
+    initial: { opacity: 0, y: 30 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.6 }
   };
@@ -58,14 +54,12 @@ function Gallery() {
     setSelectedImage(null);
   };
 
-  // Handle like functionality with countdown
+  // Handle like functionality
   const handleLike = (imageId, e) => {
     e.stopPropagation();
     
-    // Prevent multiple likes during cooldown
     if (likeTimers[imageId]) return;
     
-    // Update likes count
     setLikes(prev => {
       const newLikes = {
         ...prev,
@@ -75,7 +69,6 @@ function Gallery() {
       return newLikes;
     });
     
-    // Set cooldown timer (5 seconds)
     setLikeTimers(prev => ({
       ...prev,
       [imageId]: setTimeout(() => {
@@ -84,7 +77,7 @@ function Gallery() {
           delete newTimers[imageId];
           return newTimers;
         });
-      }, 5000)
+      }, 3000)
     }));
   };
 
@@ -106,16 +99,13 @@ function Gallery() {
     
     if (navigator.share) {
       navigator.share({
-        title: 'Check out this beautiful image from GlowUp Couture',
-        text: 'I found this stunning fashion image you might like',
+        title: 'GlowUp Couture Collection',
+        text: 'Check out this stunning piece from GlowUp Couture',
         url: imageUrl,
-      }).catch(err => {
-        console.log('Error sharing:', err);
-        // Fallback for when share is cancelled
+      }).catch(() => {
         copyToClipboard(imageUrl);
       });
     } else {
-      // Fallback for browsers that don't support Web Share API
       copyToClipboard(imageUrl);
     }
   };
@@ -124,9 +114,7 @@ function Gallery() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
       alert('Image link copied to clipboard!');
-    }).catch(err => {
-      console.error('Failed to copy:', err);
-      // Fallback for older browsers
+    }).catch(() => {
       const textarea = document.createElement('textarea');
       textarea.value = text;
       document.body.appendChild(textarea);
@@ -144,29 +132,47 @@ function Gallery() {
     };
   }, [likeTimers]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black">
+        {/* Instagram-style loading */}
+        <div className="container mx-auto px-1 py-4">
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-1">
+            {[...Array(15)].map((_, index) => (
+              <div
+                key={index}
+                className={`w-full mb-1 bg-gray-800 animate-pulse ${
+                  Math.random() > 0.5 ? 'h-64' : Math.random() > 0.5 ? 'h-96' : 'h-80'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-cream-50">
+    <div className="min-h-screen bg-black">
+      {/* Instagram-style Header */}
+      <div className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-gray-800">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-light text-white text-center tracking-wide">
+            GlowUp Couture Gallery
+          </h1>
+        </div>
+      </div>
+
       <motion.section 
-        className="py-16 px-4"
+        className="py-1"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
       >
-        <div className="max-w-7xl mx-auto">
-          {isLoading ? (
-            // Loading skeleton - adjusted for 3 columns
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, index) => (
-                <Card key={index} className="overflow-hidden border border-amber-100">
-                  <CardContent className="p-0">
-                    <Skeleton className="w-full h-96 bg-amber-100" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : featureImageList && featureImageList.length > 0 ? (
-            // Adjusted grid for 3 columns with larger images
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="container mx-auto px-1">
+          {featureImageList && featureImageList.length > 0 ? (
+            /* Instagram-style Masonry Grid */
+            <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-1">
               {featureImageList.map((image, index) => {
                 const imageId = image._id || index;
                 const imageUrl = image.image || image;
@@ -177,125 +183,126 @@ function Gallery() {
                   <motion.div
                     key={imageId}
                     variants={fadeInUp}
-                    className="group cursor-pointer"
+                    className="group cursor-pointer mb-1 relative overflow-hidden break-inside-avoid"
                     onClick={() => openImageModal(image)}
                   >
-                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] border border-amber-100 h-full">
-                      <CardContent className="p-0 relative h-full">
-                        <img
-                          src={imageUrl}
-                          alt={`Gallery image ${index + 1}`}
-                          className="w-full h-96 object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-amber-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
-                            <span className="text-cream-50 font-semibold">
-                              Style #{index + 1}
-                            </span>
-                            <div className="flex gap-3">
-                              <button
-                                onClick={(e) => handleShare(imageUrl, e)}
-                                className="p-2 bg-amber-100/20 backdrop-blur-sm rounded-full hover:bg-amber-100/30 transition-colors"
-                                aria-label="Share image"
-                              >
-                                <Share2 className="w-4 h-4 text-cream-50" />
-                              </button>
-                              <button
-                                onClick={(e) => handleDownload(imageUrl, index, e)}
-                                className="p-2 bg-amber-100/20 backdrop-blur-sm rounded-full hover:bg-amber-100/30 transition-colors"
-                                aria-label="Download image"
-                              >
-                                <Download className="w-4 h-4 text-cream-50" />
-                              </button>
-                              <button
-                                onClick={(e) => handleLike(imageId, e)}
-                                disabled={isCooldown}
-                                className={`p-2 ${isCooldown ? 'bg-amber-100/10' : 'bg-amber-100/20'} backdrop-blur-sm rounded-full hover:bg-amber-100/30 transition-colors relative`}
-                                aria-label="Like image"
-                              >
-                                <Heart className={`w-4 h-4 ${likeCount > 0 ? 'text-rose-500 fill-rose-500' : 'text-cream-50'}`} />
-                                {likeCount > 0 && (
-                                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                    {likeCount}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                          </div>
+                    <div className="relative bg-black">
+                      <img
+                        src={imageUrl || '/placeholder-image.jpg'}
+                        alt={`Gallery ${index + 1}`}
+                        className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.src = '/placeholder-image.jpg';
+                        }}
+                      />
+                      
+                      {/* Instagram-style Overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                        <div className="flex items-center gap-6 text-white">
+                          <button
+                            onClick={(e) => handleLike(imageId, e)}
+                            disabled={isCooldown}
+                            className="flex items-center gap-2 hover:scale-110 transition-transform"
+                          >
+                            <Heart 
+                              className={`w-6 h-6 ${likeCount > 0 ? 'text-red-500 fill-red-500' : 'text-white'}`} 
+                            />
+                            <span className="font-medium">{likeCount || 0}</span>
+                          </button>
+                          
+                          <button
+                            onClick={(e) => handleShare(imageUrl, e)}
+                            className="hover:scale-110 transition-transform"
+                          >
+                            <Share2 className="w-6 h-6 text-white" />
+                          </button>
+                          
+                          <button
+                            onClick={(e) => handleDownload(imageUrl, index, e)}
+                            className="hover:scale-110 transition-transform"
+                          >
+                            <Download className="w-6 h-6 text-white" />
+                          </button>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}
             </div>
           ) : (
-            // Empty state
+            /* Empty State */
             <motion.div 
-              className="text-center py-20"
+              className="flex flex-col items-center justify-center min-h-[60vh] text-center"
               variants={fadeInUp}
             >
-              <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Camera className="w-12 h-12 text-amber-600" />
+              <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                <Camera className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-2xl font-bold text-amber-800 mb-4">Curating Excellence</h3>
-              <p className="text-amber-700 mb-8">
-                Our golden collection is being prepared with meticulous attention
+              <h3 className="text-2xl font-light text-white mb-4">No Images Yet</h3>
+              <p className="text-gray-400 mb-8 max-w-md">
+                Our curated collection is being prepared. Check back soon for stunning fashion imagery.
               </p>
               <Button
-                className="bg-gradient-to-r from-amber-600 to-amber-700 text-cream-50 px-8 py-4 rounded-full hover:shadow-lg transition-all duration-300"
+                className="bg-white text-black hover:bg-gray-100 px-8 py-3 rounded-full font-medium transition-all duration-300"
               >
-                Discover Collections
+                Explore Collections
               </Button>
             </motion.div>
           )}
         </div>
       </motion.section>
 
-      {/* Image Modal */}
+      {/* Instagram-style Image Modal */}
       {selectedImage && (
         <motion.div
-          className="fixed inset-0 bg-amber-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closeImageModal}
         >
           <motion.div
-            className="relative max-w-4xl max-h-[90vh] bg-cream-50 rounded-2xl overflow-hidden border-2 border-amber-100 shadow-2xl"
+            className="relative max-w-5xl max-h-[90vh] bg-black rounded-lg overflow-hidden"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Close Button */}
             <button
               onClick={closeImageModal}
-              className="absolute top-4 right-4 z-10 p-2 bg-amber-600/20 backdrop-blur-sm rounded-full text-amber-800 hover:bg-amber-600/30 transition-colors"
-              aria-label="Close modal"
+              className="absolute top-4 right-4 z-10 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
+            
+            {/* Image */}
             <img
-              src={selectedImage.image || selectedImage}
+              src={selectedImage.image || selectedImage || '/placeholder-image.jpg'}
               alt="Gallery image"
               className="w-full h-full object-contain max-h-[80vh]"
+              onError={(e) => {
+                e.target.src = '/placeholder-image.jpg';
+              }}
             />
-            <div className="p-6 bg-cream-50 border-t border-amber-100">
+            
+            {/* Bottom Actions */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-amber-900">Golden Collection</h3>
-                <div className="flex gap-3">
+                <h3 className="text-xl font-light text-white">GlowUp Couture</h3>
+                <div className="flex gap-4">
                   <Button
                     onClick={(e) => handleDownload(selectedImage.image || selectedImage, 0, e)}
-                    className="bg-gradient-to-r from-amber-600 to-amber-700 text-cream-50 hover:from-amber-700 hover:to-amber-800"
+                    className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </Button>
                   <Button 
-                    variant="outline" 
-                    className="border-amber-600 text-amber-600 hover:bg-amber-50"
                     onClick={(e) => handleShare(selectedImage.image || selectedImage, e)}
+                    className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30"
                   >
                     <Share2 className="w-4 h-4 mr-2" />
                     Share

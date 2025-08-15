@@ -129,7 +129,7 @@ const logoutUser = (req, res) => {
 //};
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split("")[1];
+  const token = authHeader && authHeader.split(" ")[1];
   if (!token)
     return res.status(401).json({
       success: false,
@@ -147,4 +147,26 @@ const authMiddleware = async (req, res, next) => {
     });
   }
 };
-module.exports = { registerUser, loginUser, logoutUser, authMiddleware };
+//check auth
+const checkAuth = async (req, res) => {
+  try {
+    const user = req.user;
+    res.status(200).json({
+      success: true,
+      message: "Authenticated user!",
+      user: {
+        id: user.id,
+        userName: user.userName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "Unauthorised user!",
+    });
+  }
+};
+
+module.exports = { registerUser, loginUser, logoutUser, authMiddleware, checkAuth };

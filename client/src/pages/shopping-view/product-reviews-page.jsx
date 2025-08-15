@@ -11,17 +11,18 @@ import StarRatingComponent from "@/components/common/star-rating.jsx";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// AI Recommendations Component
-const AIRecommendations = ({ currentProduct }) => {
+// Smart AI Recommendations Component
+const AIRecommendations = ({ currentProduct, reviews = [] }) => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [smartMode, setSmartMode] = useState(true);
 
   useEffect(() => {
     if (currentProduct) {
       getAIRecommendations();
     }
-  }, [currentProduct]);
+  }, [currentProduct, smartMode]);
 
   const getAIRecommendations = async () => {
     if (!currentProduct) return;
@@ -30,12 +31,22 @@ const AIRecommendations = ({ currentProduct }) => {
     setError(null);
     
     try {
+      // Enhanced AI call with review context
       const response = await fetch('/api/ai-recommendations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ product: currentProduct })
+        body: JSON.stringify({ 
+          product: currentProduct,
+          action: "recommend",
+          reviews: smartMode ? reviews.slice(0, 5) : [], // Include recent reviews for context
+          context: {
+            avgRating: reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.reviewValue, 0) / reviews.length : 0,
+            reviewCount: reviews.length,
+            smartMode
+          }
+        })
       });
 
       if (!response.ok) {
@@ -47,6 +58,19 @@ const AIRecommendations = ({ currentProduct }) => {
     } catch (err) {
       setError(err.message);
       console.error('AI Recommendations error:', err);
+      
+      // Fallback recommendations
+      setRecommendations([
+        {
+          _id: "fallback1",
+          title: `Similar ${currentProduct.category} Item`,
+          category: currentProduct.category,
+          price: "$99",
+          imageUrl: "/placeholder-image.jpg",
+          description: "High-quality alternative",
+          reason: "Based on product category"
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -153,23 +177,38 @@ const ReviewAnalysis = ({ reviews }) => {
       const reviewTexts = reviews.map(r => ({
         rating: r.reviewValue,
         text: r.reviewMessage,
-        date: r.createdAt
+        date: r.createdAt,
+        isVerified: r.isVerified
       }));
 
-      const response = await fetch('/api/analyze-reviews', {
+      const response = await fetch('/api/ai-recommendations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reviews: reviewTexts })
+        body: JSON.stringify({ 
+          reviews: reviewTexts,
+          action: "analyzeReviews"
+        })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAnalysis(data.analysis);
+        setAnalysis({
+          ...data.analysis,
+          confidence: reviewTexts.length >= 10 ? "High" : reviewTexts.length >= 5 ? "Medium" : "Low",
+          verifiedCount: reviewTexts.filter(r => r.isVerified).length,
+          lastAnalyzed: new Date().toISOString()
+        });
       }
     } catch (error) {
       console.error('Review analysis error:', error);
+      setAnalysis({
+        overallSentiment: "Unable to analyze at this time",
+        commonPraises: [],
+        commonConcerns: [],
+        confidence: "Low"
+      });
     } finally {
       setLoading(false);
     }
@@ -233,6 +272,9 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
   const [reviewMsg, setReviewMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAIHelp, setShowAIHelp] = useState(false);
+  const [sortBy, setSortBy] = useState("newest");
+  const [filterBy, setFilterBy] = useState("all");
+  const [reviewQuality, setReviewQuality] = useState(null);
 
   // Fetch reviews when productId changes
   useEffect(() => {
@@ -247,14 +289,6 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
     : 0;
 
   const handleSubmit = async () => {
-    if (!currentUser?.id) {
-      toast({
-        title: "Please login to add a review",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!reviewMsg.trim() || rating === 0) return;
 
     try {
@@ -262,10 +296,11 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
       await dispatch(
         addReview({
           productId,
-          userId: currentUser.id,
-          userName: currentUser.userName,
+          userId: currentUser?.id || "guest",
+          userName: currentUser?.userName || "Guest User",
           reviewMessage: reviewMsg,
           reviewValue: rating,
+          isVerified: !!currentUser?.id,
         })
       ).unwrap();
 
@@ -276,6 +311,7 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
       setReviewMsg("");
       toast({
         title: "Review submitted!",
+        description: currentUser?.id ? "" : "Thank you for your feedback!"
       });
     } catch (error) {
       toast({
@@ -294,28 +330,47 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
     setShowAIHelp(true);
     
     try {
-      const response = await fetch('/api/review-suggestions', {
+      const response = await fetch('/api/ai-recommendations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
           product: currentProduct,
-          userRating: rating 
+          userRating: rating,
+          action: "reviewSuggestions",
+          existingReviews: reviews.slice(0, 3) // Context from other reviews
         })
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.suggestions && data.suggestions.length > 0) {
+          const suggestion = data.suggestions[Math.floor(Math.random() * data.suggestions.length)];
           toast({
-            title: "💡 AI Review Tips",
-            description: data.suggestions[0],
+            title: "💡 AI Writing Helper",
+            description: suggestion,
+            duration: 6000,
           });
+          
+          // Auto-fill helpful starter text
+          if (!reviewMsg.trim() && rating > 0) {
+            const starterText = rating >= 4 
+              ? "I'm really happy with this purchase because " 
+              : rating >= 3 
+              ? "This product is decent, though " 
+              : "I had some issues with this product - ";
+            setReviewMsg(starterText);
+          }
         }
       }
     } catch (error) {
       console.error('AI suggestions error:', error);
+      toast({
+        title: "💡 Quick Tip",
+        description: "Try mentioning the product quality, value for money, and your overall experience!",
+        duration: 4000,
+      });
     }
   };
 
@@ -422,7 +477,14 @@ export default function ProductReviews({ productId, currentUser, currentProduct 
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium">{review.userName || "Anonymous"}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{review.userName || "Anonymous"}</p>
+                          {review.isVerified && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                              Verified
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2">
                           <StarRatingComponent 
                             rating={review.reviewValue} 
