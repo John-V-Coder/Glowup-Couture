@@ -30,6 +30,7 @@ import AdminAbout from './pages/admin-view/about';
 import ShoppingGallery from './pages/shopping-view/gallery';
 import ShoppingAbout from './pages/shopping-view/about';
 import Footer from './components/shopping-view/footer';
+import ProductDetailsPage from './pages/shopping-view/product-details';
 
 function App() {
 
@@ -119,6 +120,7 @@ function App() {
           <Route path="listing" element={<ShoppingListing />} />
           <Route path="gallery" element={<ShoppingGallery />} />
           <Route path="about" element={<ShoppingAbout />} />
+          <Route path="product/:id" element={<ProductDetailsPage />} />
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
           <Route path="paypal-return" element={<PaypalReturnPage />} />

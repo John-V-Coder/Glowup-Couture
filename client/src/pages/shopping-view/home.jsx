@@ -8,7 +8,6 @@ import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { useNavigate } from "react-router-dom";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
-import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf } from "lucide-react";
@@ -17,6 +16,7 @@ import { SliceIcon } from "lucide-react";
 import { Flame } from "lucide-react";
 import { LineChart } from "lucide-react";
 import { VenusIcon } from "lucide-react";
+import { ProductFeatures } from "@/components/shopping-view/productfeatures";
 
 const categoriesWithIcon = [
   { id: "women", label: "Women's Collection", icon: ShirtIcon },
@@ -40,7 +40,6 @@ function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { productList, productDetails } = useSelector((state) => state.shopProducts);
   const { featureImageList } = useSelector((state) => state.commonFeature);
-  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -58,7 +57,7 @@ function ShoppingHome() {
   }
 
   function handleGetProductDetails(getCurrentProductId) {
-    dispatch(fetchProductDetails(getCurrentProductId));
+    navigate(`/shop/product/${getCurrentProductId}`);
   }
 
   function handleAddtoCart(getCurrentProductId) {
@@ -79,9 +78,6 @@ function ShoppingHome() {
     });
   }
 
-  useEffect(() => {
-    if (productDetails !== null) setOpenDetailsDialog(true);
-  }, [productDetails]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -220,34 +216,15 @@ function ShoppingHome() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {productList && productList.length > 0
-              ? productList.map((productItem) => (
-                  <div key={productItem.id} className="group">
-                    <ShoppingProductTile
-                      handleGetProductDetails={handleGetProductDetails}
-                      product={productItem}
-                      handleAddtoCart={handleAddtoCart}
+           
+            <ProductFeatures
+                    
                     />
-                  </div>
-                ))
-              : Array.from({ length: 8 }).map((_, index) => (
-                  <Card key={index} className="animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-                      <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                      <div className="bg-gray-200 h-4 rounded w-2/3"></div>
-                    </CardContent>
-                  </Card>
-                ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-    
 
-      <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailsDialog} productDetails={productDetails} />
-      
     </div>
   );
 }
