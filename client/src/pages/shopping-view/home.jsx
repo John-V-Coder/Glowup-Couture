@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf, ShieldEllipsisIcon, SliceIcon, Flame, LineChart, VenusIcon } from "lucide-react";
+import { BrandLogo } from "@/components/shopping-view/header";
 
 const categoriesWithIcon = [
   { id: "women", label: "Women's Collection", icon: ShirtIcon },
@@ -106,14 +107,16 @@ function ShoppingHome() {
 
         {/* Overlay */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-20">
-          <h1 className="text-5xl font-bold drop-shadow-lg">Glowup Couture</h1>
-          <p className="text-xl drop-shadow-lg">Ready To Wear</p>
+          <div className="scale-100 md:scale-125 lg:scale-150">
+  <BrandLogo />
+
           <a
             href="/shop/listing"
             className="px-6 py-3 bg-amber-600 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-amber-700 transition-all"
           >
             Shop Now
           </a>
+          </div>
         </div>
       </div>
     ))

@@ -1,86 +1,127 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { StarRatingComponent } from "../common/star-rating"
 import { brandOptionsMap, categoryOptionsMap } from "@/config"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 export function ProductCard({ product, onClick, handleAddToCart }) {
+  const handleProductClick = (productId) => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+    if (onClick) onClick(productId)
+  }
+
   return (
-    <Card className="w-full max-w-sm mx-auto">
-      <div onClick={onClick} className="cursor-pointer">
-        <div className="relative">
-          <img
-            src={product.image || "/placeholder.svg"}
-            alt={product.title}
-            className="w-full h-[300px] object-cover rounded-t-lg"
-          />
-          {product.totalStock === 0 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              Out Of Stock
-            </Badge>
-          ) : product.totalStock < 10 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              {`Only ${product.totalStock} items left`}
-            </Badge>
-          ) : product.salePrice > 0 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              Sale
-            </Badge>
-          ) : null}
-        </div>
-        <CardContent className="p-4">
-          <h2 className="text-xl font-bold mb-2 line-clamp-2">{product.title}</h2>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[16px] text-muted-foreground">
-              {categoryOptionsMap[product?.category] || product?.category}
-            </span>
-            {product.brand && (
-              <span className="text-[16px] text-muted-foreground">
-                {brandOptionsMap[product?.brand] || product?.brand}
-              </span>
+    <div className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] w-full max-w-xs mx-auto">
+      {/* Image container */}
+      <div
+        className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+        onClick={() => handleProductClick(product?._id)}
+      >
+        <img
+          src={product?.image || "/placeholder.svg"}
+          alt={product?.title}
+          className="w-full h-[360px] object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+
+        {/* Stock/Sale Badges */}
+        {product?.totalStock === 0 ? (
+          <Badge className="absolute top-3 left-3 bg-red-500/90 text-white text-xs px-2 py-1">
+            Out Of Stock
+          </Badge>
+        ) : product?.totalStock < 10 ? (
+          <Badge className="absolute top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
+            {`Only ${product?.totalStock} left`}
+          </Badge>
+        ) : product?.salePrice > 0 ? (
+          <Badge className="absolute top-3 left-3 bg-green-500/90 text-white text-xs px-2 py-1">
+            Sale
+          </Badge>
+        ) : null}
+
+        {/* Floating Add to Cart (desktop only) */}
+        {handleAddToCart && (
+          <div className="absolute bottom-3 right-3 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            {product?.totalStock === 0 ? (
+              <Button
+                size="sm"
+                className="bg-gray-400 hover:bg-gray-400 cursor-not-allowed text-xs px-3 py-1 h-8 rounded-lg"
+                disabled
+              >
+                Out Of Stock
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddToCart(product?._id, product?.totalStock)
+                }}
+                className="bg-white hover:bg-gray-50 text-black border border-gray-200 text-xs font-semibold px-4 py-1 h-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                Add to Cart
+              </Button>
             )}
           </div>
-          {product.rating && (
-            <div className="flex items-center gap-2 mb-2">
-              <StarRatingComponent rating={product.rating} size="w-3 h-3" />
-              <span className="text-sm text-muted-foreground">({product.rating})</span>
-            </div>
-          )}
-          <div className="flex justify-between items-center mb-2">
-            <span
-              className={`${
-                product.salePrice > 0 ? "line-through" : ""
-              } text-lg font-semibold text-primary`}
-            >
-              ${product.price}
-            </span>
-            {product.salePrice > 0 && (
-              <span className="text-lg font-semibold text-primary">
-                ${product.salePrice}
-              </span>
-            )}
-          </div>
-        </CardContent>
+        )}
       </div>
+
+      {/* Product details */}
+      <div className="pt-3 px-1" onClick={() => handleProductClick(product?._id)}>
+        <h2 className="text-lg font-bold mb-2 text-gray-900 leading-tight line-clamp-2">
+          {product?.title}
+        </h2>
+
+        <div className="flex gap-2 mb-3 flex-wrap">
+          <span className="text-xs text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded-md">
+            {categoryOptionsMap[product?.category] || product?.category}
+          </span>
+          {product?.brand && (
+            <span className="text-xs text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded-md">
+              {brandOptionsMap[product?.brand] || product?.brand}
+            </span>
+          )}
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center gap-2">
+          {product?.salePrice > 0 ? (
+            <>
+              <span className="text-lg font-bold text-gray-900">
+                ${product?.salePrice}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                ${product?.price}
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-gray-900">
+              ${product?.price}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Always visible Add to Cart for mobile */}
       {handleAddToCart && (
-        <CardFooter>
-          {product.totalStock === 0 ? (
-            <Button className="w-full opacity-60 cursor-not-allowed" disabled>
+        <div className="mt-3 md:hidden">
+          {product?.totalStock === 0 ? (
+            <Button className="w-full bg-gray-400 cursor-not-allowed" disabled>
               Out Of Stock
             </Button>
           ) : (
             <Button
               onClick={(e) => {
-                e.stopPropagation();
-                handleAddToCart(product._id, product.totalStock);
+                e.stopPropagation()
+                handleAddToCart(product?._id, product?.totalStock)
               }}
-              className="w-full"
+              className="w-full bg-black text-white hover:bg-gray-800"
             >
-              Add to cart
+              Add to Cart
             </Button>
           )}
-        </CardFooter>
+        </div>
       )}
-    </Card>
+    </div>
   )
 }

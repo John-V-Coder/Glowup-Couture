@@ -141,7 +141,7 @@ function App() {
           <Route path="return-refund-exchange" element={<ReturnRefundExchangePolicy/>} />
           <Route path="/shop/paypal-cancel" element={<PaypalCancelPage />} />
           <Route path="delivery-mechanism" element={<DeliveryPolicy/>} />
-            <Route path="terms-and-conditions" element={<TermsAndConditions/>} />
+          <Route path="terms-and-conditions" element={<TermsAndConditions/>} />
           <Route path="search" element={<SearchProducts />} />
         </Route>
         <Route path="/unauth-page" element={<UnauthPage />} />

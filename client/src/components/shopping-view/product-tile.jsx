@@ -7,22 +7,15 @@ function ShoppingProductTile({
   handleGetProductDetails,
   handleAddtoCart,
 }) {
-  // Function to handle product click with scroll to top
   const handleProductClick = (productId) => {
-    // Scroll to top of the page
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth' // Smooth scroll animation
-    });
-    
-    // Call the original product details handler
+    window.scrollTo({ top: 0, behavior: "smooth" });
     handleGetProductDetails(productId);
   };
 
   return (
     <div className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] w-full max-w-xs mx-auto">
-      {/* Instagram-style image container - smaller frame */}
-      <div 
+      {/* Image container */}
+      <div
         className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
         onClick={() => handleProductClick(product?._id)}
       >
@@ -31,31 +24,31 @@ function ShoppingProductTile({
           alt={product?.title}
           className="w-full h-[360px] object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        
-        {/* Gradient overlay */}
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
-        
+
         {/* Status badges */}
         {product?.totalStock === 0 ? (
-          <Badge className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-sm hover:bg-red-600 border-0 text-white font-medium text-xs px-2 py-1">
+          <Badge className="absolute top-3 left-3 bg-red-500/90 text-white text-xs px-2 py-1">
             Out Of Stock
           </Badge>
         ) : product?.totalStock < 10 ? (
-          <Badge className="absolute top-3 left-3 bg-orange-500/90 backdrop-blur-sm hover:bg-orange-600 border-0 text-white font-medium text-xs px-2 py-1">
+          <Badge className="absolute top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
             {`Only ${product?.totalStock} left`}
           </Badge>
         ) : product?.salePrice > 0 ? (
-          <Badge className="absolute top-3 left-3 bg-green-500/90 backdrop-blur-sm hover:bg-green-600 border-0 text-white font-medium text-xs px-2 py-1">
+          <Badge className="absolute top-3 left-3 bg-green-500/90 text-white text-xs px-2 py-1">
             Sale
           </Badge>
         ) : null}
 
-        {/* Strategic Add to Cart button - responsive behavior */}
-        <div className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 transform md:translate-y-2 md:group-hover:translate-y-0">
+        {/* Add to Cart Button - Desktop Only */}
+        <div className="absolute bottom-3 right-3 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
           {product?.totalStock === 0 ? (
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="bg-gray-400 hover:bg-gray-400 cursor-not-allowed text-xs px-3 py-1 h-8 rounded-lg"
+              disabled
             >
               Out Of Stock
             </Button>
@@ -73,19 +66,14 @@ function ShoppingProductTile({
           )}
         </div>
       </div>
-      
-      {/* Content below the photo */}
+
+      {/* Product details */}
       <div className="pt-3 px-1">
-        <div 
-          className="cursor-pointer"
-          onClick={() => handleProductClick(product?._id)}
-        >
-          {/* Product title */}
+        <div onClick={() => handleProductClick(product?._id)}>
           <h2 className="text-lg font-bold mb-2 text-gray-900 leading-tight line-clamp-2">
             {product?.title}
           </h2>
-          
-          {/* Category and Brand tags */}
+
           <div className="flex gap-2 mb-3 flex-wrap">
             <span className="text-xs text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded-md">
               {categoryOptionsMap[product?.category]}
@@ -95,7 +83,6 @@ function ShoppingProductTile({
             </span>
           </div>
 
-          {/* Price section */}
           <div className="flex items-center gap-2">
             {product?.salePrice > 0 ? (
               <>
@@ -112,6 +99,25 @@ function ShoppingProductTile({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Mobile Add to Cart Button */}
+        <div className="mt-3 md:hidden">
+          {product?.totalStock === 0 ? (
+            <Button className="w-full bg-gray-400 cursor-not-allowed" disabled>
+              Out Of Stock
+            </Button>
+          ) : (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddtoCart(product?._id, product?.totalStock);
+              }}
+              className="w-full bg-black text-white hover:bg-gray-800"
+            >
+              Add to Cart
+            </Button>
+          )}
         </div>
       </div>
     </div>

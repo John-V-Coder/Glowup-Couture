@@ -80,25 +80,6 @@ export const addProductFormElements = [
     ],
   },
   {
-    label: "Color",
-    name: "color",
-    componentType: "select",
-    options: [
-      { id: "snow-white", label: "Snow White", color: "#FFFFFF" },
-      { id: "midnight-black", label: "Midnight Black", color: "#191919" },
-      { id: "royal-navy", label: "Royal Navy", color: "#003366" },
-      { id: "crimson-red", label: "Crimson Red", color: "#DC143C" },
-      { id: "emerald-green", label: "Emerald Green", color: "#50C878" },
-      { id: "golden-yellow", label: "Golden Yellow", color: "#FFD700" },
-      { id: "deep-purple", label: "Deep Purple", color: "#800080" },
-      { id: "coral-pink", label: "Coral Pink", color: "#F88379" },
-      { id: "taupe", label: "Taupe", color: "#483C32" },
-      { id: "ivory", label: "Ivory", color: "#FFFFF0" },
-      { id: "charcoal-grey", label: "Charcoal Grey", color: "#36454F" },
-      { id: "burgundy", label: "Burgundy", color: "#800020" }
-    ],
-  },
-  {
     label: "Price",
     name: "price",
     componentType: "input",
@@ -157,21 +138,6 @@ export const brandOptionsMap = {
   viscose: "Viscose"
 };
 
-export const colorOptionsMap = {
-  "snow-white": { label: "Snow White", color: "#FFFFFF" },
-  "midnight-black": { label: "Midnight Black", color: "#191919" },
-  "royal-navy": { label: "Royal Navy", color: "#003366" },
-  "crimson-red": { label: "Crimson Red", color: "#DC143C" },
-  "emerald-green": { label: "Emerald Green", color: "#50C878" },
-  "golden-yellow": { label: "Golden Yellow", color: "#FFD700" },
-  "deep-purple": { label: "Deep Purple", color: "#800080" },
-  "coral-pink": { label: "Coral Pink", color: "#F88379" },
-  "taupe": { label: "Taupe", color: "#483C32" },
-  "ivory": { label: "Ivory", color: "#FFFFF0" },
-  "charcoal-grey": { label: "Charcoal Grey", color: "#36454F" },
-  "burgundy": { label: "Burgundy", color: "#800020" }
-};
-
 export const filterOptions = {
   category: [
     { id: "men", label: "Men" },
@@ -189,20 +155,6 @@ export const filterOptions = {
     { id: "linen", label: "Linen" },
     { id: "viscose", label: "Viscose" }
   ],
-  color: [
-    { id: "snow-white", label: "Snow White", color: "#FFFFFF" },
-    { id: "midnight-black", label: "Midnight Black", color: "#191919" },
-    { id: "royal-navy", label: "Royal Navy", color: "#003366" },
-    { id: "crimson-red", label: "Crimson Red", color: "#DC143C" },
-    { id: "emerald-green", label: "Emerald Green", color: "#50C878" },
-    { id: "golden-yellow", label: "Golden Yellow", color: "#FFD700" },
-    { id: "deep-purple", label: "Deep Purple", color: "#800080" },
-    { id: "coral-pink", label: "Coral Pink", color: "#F88379" },
-    { id: "taupe", label: "Taupe", color: "#483C32" },
-    { id: "ivory", label: "Ivory", color: "#FFFFF0" },
-    { id: "charcoal-grey", label: "Charcoal Grey", color: "#36454F" },
-    { id: "burgundy", label: "Burgundy", color: "#800020" }
-  ]
 };
 
 export const sortOptions = [
@@ -210,10 +162,6 @@ export const sortOptions = [
   { id: "price-hightolow", label: "Price: High to Low" },
   { id: "title-atoz", label: "Title: A to Z" },
   { id: "title-ztoa", label: "Title: Z to A" },
-  { id: "size-small", label: "Size: Small" },
-  { id: "size-medium", label: "Size: Medium" },
-  { id: "size-large", label: "Size: Large" },
-  { id: "size-xlarge", label: "Size: X-Large" },
 ];
 
 export const addressFormControls = [

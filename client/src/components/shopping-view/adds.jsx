@@ -6,11 +6,11 @@ import React from 'react';
 export const ScrollingPromoBar = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const promoMessages = [
-    "🎉 Book Your Free Measurement Consultation Today!",
-    "✨ Free Shipping on Orders KSH 5000+",
-    "📏 Custom Tailoring Available - Perfect Fit Guaranteed",
-    "🚚 Same Day Delivery in Nairobi",
-    "💎 Premium Quality Fabrics & Materials"
+    "Book Your Free Measurement Consultation Today!",
+    "Free Shipping on Orders KSH 5000+",
+    "Custom Tailoring Available - Perfect Fit Guaranteed",
+    "Same Day Delivery in Nairobi",
+    "Premium Quality Fabrics & Materials"
   ];
 
   useEffect(() => {

@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +11,6 @@ import { fetchProductDetails, setProductDetails, fetchAllFilteredProducts } from
 import { useCartNotification } from "@/hooks/use-cart-notification";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye } from "lucide-react";
-
 // Import components
 import { ProductInfo } from "@/pages/shopping-view/ProductInfo";
 import { QuantitySelector } from "@/components/common/quality-selector";
@@ -22,7 +20,7 @@ import { ProductSpecifications } from "@/components/shopping-view/product-specif
 import { ProductQA } from "@/components/shopping-view/productQA";
 import ProductImageGallery from "@/components/shopping-view/product-image-gallery";
 import AIProductRecommendations from "@/components/shopping-view/AIProductRecommendations";
- import ProductReviews from "@/pages/shopping-view/product-reviews-page";
+import ProductReviews from "@/pages/shopping-view/product-reviews-page";
 
 // Get related products from the same category
 const getRelatedProducts = (productDetails, productList) => {
@@ -321,7 +319,7 @@ function ProductDetailsPage() {
   </div>
 )}
 
-<AIProductRecommendations currentProduct={productDetails} />
+
 
 {recentlyViewed.length > 0 && (
   <div className="space-y-6 mt-8">
