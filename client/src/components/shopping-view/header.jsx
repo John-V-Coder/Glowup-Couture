@@ -47,7 +47,6 @@ const shoppingViewHeaderMenuItems = [
     label: "Search",
   },
 ];
-
 export const BrandLogo = ({ isScrolled }) => {
   return (
     <>
