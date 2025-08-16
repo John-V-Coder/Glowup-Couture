@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
-  HousePlug, LogOut, Menu, ShoppingCart, UserCog, Search, ChevronDown, Heart, Bell, MapPin, Sparkles, Star, Zap
+  HousePlug, LogOut, Menu, ShoppingCart, UserCog, Search, ChevronDown, Bell, MapPin, Sparkles, Star, Zap
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,87 @@ const shoppingViewHeaderMenuItems = [
     description: "Find your perfect style",
   },
 ];
+
+// Enhanced Brand Logo with animations - Exported as named export
+export const BrandLogo = () => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <>
+      {/* Google Fonts Import */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      
+      <Link
+        to="/shop/home"
+        className="flex items-center gap-4 hover:scale-105 transition-all duration-500 group"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Enhanced Icon container with floating animation */}
+        <div className={`relative p-3 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 shadow-xl transition-all duration-500 ${
+          isHovered ? 'shadow-2xl shadow-amber-500/60 rotate-12 scale-110' : 'shadow-amber-400/40'
+        }`}>
+          <HousePlug className={`h-8 w-8 text-white drop-shadow-lg transition-all duration-500 ${
+            isHovered ? 'rotate-12 scale-110' : ''
+          }`} />
+          {isHovered && (
+            <>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 opacity-30 animate-pulse"></div>
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 opacity-20 blur-sm animate-ping"></div>
+            </>
+          )}
+          {/* Floating sparkles effect */}
+          {isHovered && (
+            <>
+              <div className="absolute -top-2 -right-2 w-2 h-2 bg-amber-300 rounded-full opacity-80 animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-amber-200 rounded-full opacity-60 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="absolute -top-1 -left-2 w-1 h-1 bg-amber-400 rounded-full opacity-70 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </>
+          )}
+        </div>
+
+        {/* Enhanced Text container with luxury typography */}
+        <div className="flex flex-col leading-none relative">
+          {/* Main brand text with elegant styling */}
+          <div className="relative">
+            <span className={`text-2xl font-bold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
+              isHovered ? 'tracking-widest' : 'tracking-wide'
+            }`}
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: '800' }}>
+              GL<span className="text-amber-400">✦</span>WUP
+            </span>
+            
+          </div>
+          
+          <span className={`text-xl font-semibold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
+            isHovered ? 'tracking-widest' : 'tracking-wide'
+          } -mt-1`}
+          style={{ fontFamily: "'Dancing Script', cursive", fontWeight: '600' }}>
+            COUTURE
+          </span>
+          
+          {/* Enhanced tagline with fade effect */}
+          {isHovered && (
+            <div className="text-xs text-amber-700 font-medium animate-in fade-in-0 slide-in-from-bottom-2 duration-300 mt-1 italic"
+            style={{ fontFamily: "'Playfair Display', serif" }}>
+              Premium Fashion 
+            </div>
+          )}
+          
+          {/* Decorative elements */}
+          {isHovered && (
+            <>
+              <div className="absolute -top-2 -right-3 text-amber-400 text-sm animate-pulse">✦</div>
+              <div className="absolute -bottom-1 -left-2 text-amber-500 text-xs animate-bounce" style={{ animationDelay: '0.3s' }}>◆</div>
+            </>
+          )}
+        </div>
+      </Link>
+    </>
+  );
+};
 
 // Enhanced Collection Dropdown with animations and visual improvements
 const CollectionDropdown = ({ menuItem, handleNavigate }) => {
@@ -210,125 +291,11 @@ const MenuItems = ({ onItemClick }) => {
   );
 };
 
-// Enhanced Search Component
-const SmartSearch = ({ isVisible, onClose }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const searchInputRef = useRef(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isVisible && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isVisible]);
-
-  useEffect(() => {
-    const delayedSearch = setTimeout(() => {
-      if (searchQuery.length > 2) {
-        performSearch(searchQuery);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayedSearch);
-  }, [searchQuery]);
-
-  const performSearch = async (query) => {
-    setIsSearching(true);
-    // Simulate API call - replace with actual search logic
-    setTimeout(() => {
-      const mockResults = [
-        { id: 1, title: "Premium Cotton Dress", category: "Women", price: 89 },
-        { id: 2, title: "Classic Denim Jacket", category: "Men", price: 129 },
-        { id: 3, title: "Kids Summer Collection", category: "Kids", price: 45 },
-      ].filter(item =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(mockResults);
-      setIsSearching(false);
-    }, 500);
-  };
-
-  if (!isVisible) return null;
-
-  return (
-    <div className="absolute top-full left-0 right-0 bg-amber-50/95 backdrop-blur-xl border-t border-amber-200 shadow-2xl z-50 animate-in slide-in-from-top-2 duration-300">
-      <div className="container mx-auto px-4 py-6">
-        <div className="relative max-w-2xl mx-auto">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-400 w-5 h-5" />
-          <Input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search for products, categories, or brands..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-12 py-4 text-lg border-2 border-amber-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300"
-          />
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-400 hover:text-amber-600"
-          >
-            ✕
-          </Button>
-        </div>
-
-        {/* Search Results */}
-        {searchQuery.length > 2 && (
-          <div className="mt-6 max-w-2xl mx-auto">
-            {isSearching ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
-                <span className="ml-3 text-amber-700">Searching...</span>
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-amber-800 mb-3">Search Results</h3>
-                {searchResults.map((result) => (
-                  <div
-                    key={result.id}
-                    onClick={() => {
-                      navigate(`/shop/product/${result.id}`);
-                      onClose();
-                    }}
-                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-amber-50 cursor-pointer transition-all duration-200 group"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-amber-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-amber-950 group-hover:text-amber-600 transition-colors">
-                        {result.title}
-                      </div>
-                      <div className="text-sm text-amber-700">{result.category}</div>
-                    </div>
-                    <div className="text-lg font-bold text-amber-950">${result.price}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-amber-700">
-                No results found for "{searchQuery}"
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Header Right Content with animations
+// Enhanced Header Right Content with animations (SEARCH BUTTON REMOVED)
 const HeaderRightContent = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [openCartSheet, setOpenCartSheet] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [cartAnimation, setCartAnimation] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -355,28 +322,6 @@ const HeaderRightContent = () => {
 
   return (
     <div className="flex lg:items-center lg:flex-row flex-col gap-4">
-      {/* Search Button */}
-      <Button
-        onClick={() => setShowSearch(!showSearch)}
-        variant="outline"
-        size="icon"
-        className="relative border-amber-300 hover:bg-amber-50 hover:border-amber-400 transition-all duration-300 hover:scale-105"
-      >
-        <Search className="w-5 h-5 text-amber-600" />
-      </Button>
-
-      {/* Wishlist Button (placeholder) */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="relative border-amber-300 hover:bg-amber-50 hover:border-amber-400 transition-all duration-300 hover:scale-105"
-      >
-        <Heart className="w-5 h-5 text-amber-600" />
-        <Badge className="absolute -top-2 -right-2 bg-amber-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-          0
-        </Badge>
-      </Button>
-
       {/* Enhanced Cart Button */}
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <Button
@@ -402,9 +347,6 @@ const HeaderRightContent = () => {
           cartItems={cartItems?.items || []}
         />
       </Sheet>
-
-      {/* Search Overlay */}
-      <SmartSearch isVisible={showSearch} onClose={() => setShowSearch(false)} />
 
       {isAuthenticated ? (
         <UserDropdown user={user} onLogout={handleLogout} />
@@ -498,51 +440,6 @@ const AuthButtons = () => {
   );
 };
 
-// Enhanced Brand Logo with animations
-const BrandLogo = () => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <Link
-      to="/shop/home"
-      className="flex items-center gap-3 hover:scale-105 transition-all duration-500 group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Enhanced Icon container */}
-      <div className={`p-3 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 shadow-xl transition-all duration-500 ${
-        isHovered ? 'shadow-2xl shadow-amber-500/50 rotate-12 scale-110' : 'shadow-amber-400/30'
-      }`}>
-        <HousePlug className={`h-7 w-7 text-white drop-shadow-lg transition-all duration-500 ${
-          isHovered ? 'rotate-12' : ''
-        }`} />
-        {isHovered && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 opacity-20 animate-pulse"></div>
-        )}
-      </div>
-
-      {/* Enhanced Text container */}
-      <div className="flex flex-col leading-tight">
-        <span className={`text-xl font-bold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
-          isHovered ? 'tracking-wider' : ''
-        }`}>
-          Glowup
-        </span>
-        <span className={`text-xl font-bold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
-          isHovered ? 'tracking-wider' : ''
-        }`}>
-          Couture
-        </span>
-        {isHovered && (
-          <div className="text-xs text-amber-700 font-medium animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            Premium Fashion
-          </div>
-        )}
-      </div>
-    </Link>
-  );
-};
-
 // Enhanced Mobile Menu
 const MobileMenu = ({ isSheetOpen, setIsSheetOpen }) => (
   <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -569,8 +466,8 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen }) => (
   </Sheet>
 );
 
-// Main Enhanced Shopping Header
-export const ShoppingHeader = () => {
+// Main Enhanced Shopping Header - Default export
+const ShoppingHeader = () => {
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -655,4 +552,3 @@ export const ShoppingHeader = () => {
 };
 
 export default ShoppingHeader;
-export { BrandLogo };

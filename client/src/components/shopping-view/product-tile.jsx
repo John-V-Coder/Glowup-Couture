@@ -7,12 +7,24 @@ function ShoppingProductTile({
   handleGetProductDetails,
   handleAddtoCart,
 }) {
+  // Function to handle product click with scroll to top
+  const handleProductClick = (productId) => {
+    // Scroll to top of the page
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Smooth scroll animation
+    });
+    
+    // Call the original product details handler
+    handleGetProductDetails(productId);
+  };
+
   return (
     <div className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] w-full max-w-xs mx-auto">
       {/* Instagram-style image container - smaller frame */}
       <div 
         className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-        onClick={() => handleGetProductDetails(product?._id)}
+        onClick={() => handleProductClick(product?._id)}
       >
         <img
           src={product?.image}
@@ -38,8 +50,8 @@ function ShoppingProductTile({
           </Badge>
         ) : null}
 
-        {/* Strategic Add to Cart button - floating on image */}
-        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+        {/* Strategic Add to Cart button - responsive behavior */}
+        <div className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 transform md:translate-y-2 md:group-hover:translate-y-0">
           {product?.totalStock === 0 ? (
             <Button 
               size="sm" 
@@ -66,7 +78,7 @@ function ShoppingProductTile({
       <div className="pt-3 px-1">
         <div 
           className="cursor-pointer"
-          onClick={() => handleGetProductDetails(product?._id)}
+          onClick={() => handleProductClick(product?._id)}
         >
           {/* Product title */}
           <h2 className="text-lg font-bold mb-2 text-gray-900 leading-tight line-clamp-2">
@@ -100,22 +112,6 @@ function ShoppingProductTile({
               </span>
             )}
           </div>
-        </div>
-
-        {/* Alternative Add to Cart - visible on mobile/always visible option */}
-        <div className="mt-4 md:hidden">
-          {product?.totalStock === 0 ? (
-            <Button className="w-full h-10 bg-gray-400 hover:bg-gray-400 cursor-not-allowed rounded-lg font-semibold text-sm">
-              Out Of Stock
-            </Button>
-          ) : (
-            <Button
-              onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
-              className="w-full h-10 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Add to Cart
-            </Button>
-          )}
         </div>
       </div>
     </div>

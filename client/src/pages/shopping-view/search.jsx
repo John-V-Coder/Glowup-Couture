@@ -54,10 +54,8 @@ function SearchProducts() {
         }
       }
     }
-
     // Find product details from the search results
     const productDetails = searchResults.find(product => product._id === getCurrentProductId);
-
     dispatch(
       addToCart({
         userId: user?.id,
@@ -74,14 +72,10 @@ function SearchProducts() {
       }
     });
   }
-
   function handleGetProductDetails(getCurrentProductId) {
     navigate(`/shop/product/${getCurrentProductId}`);
   }
-
-
   console.log(searchResults, "searchResults");
-
   return (
     <div className="container mx-auto md:px-6 px-4 py-8">
       <div className="flex justify-center mb-8">
