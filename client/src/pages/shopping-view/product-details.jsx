@@ -319,8 +319,6 @@ function ProductDetailsPage() {
   </div>
 )}
 
-
-
 {recentlyViewed.length > 0 && (
   <div className="space-y-6 mt-8">
     <h2 className="text-2xl font-bold flex items-center gap-2">

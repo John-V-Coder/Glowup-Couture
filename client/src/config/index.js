@@ -58,6 +58,7 @@ export const addProductFormElements = [
     name: "category",
     componentType: "select",
     options: [
+      { id: "Products", label: "All Products" },
       { id: "men", label: "Men" },
       { id: "women", label: "Women" },
       { id: "kids", label: "Kids" },
@@ -109,6 +110,7 @@ export const shoppingViewHeaderMenuItems = [
     path: "/shop/listing", 
     label: "Collections",
     dropdown: [
+      { id: "products", path: "/shop/listing?category=products", label: "All Products" },
       { id: "men", path: "/shop/listing?category=men", label: "Men's Collection" },
       { id: "women", path: "/shop/listing?category=women", label: "Women's Collection" },
       { id: "kids", path: "/shop/listing?category=kids", label: "Kid's Collection" },
@@ -121,6 +123,7 @@ export const shoppingViewHeaderMenuItems = [
 ];
 
 export const categoryOptionsMap = {
+  products:"All Products",
   men: "Men",
   women: "Women",
   kids: "Kids",

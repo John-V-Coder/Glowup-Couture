@@ -1,75 +1,56 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import {
-  HousePlug, LogOut, Menu, ShoppingCart, UserCog, Search, ChevronDown, Bell, MapPin, Sparkles, Star, Zap
-} from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useDispatch, useSelector } from "react-redux";
 import { resetTokenAndCredentials } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
-import { Label } from "@/components/ui/label";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
-// Enhanced menu items with icons and descriptions
 const shoppingViewHeaderMenuItems = [
   {
     id: "home",
     path: "/shop/home",
     label: "Home",
-    icon: Star,
-    description: "Curated fashion lines",
   },
-    {
+  {
     id: "collections",
     label: "Collections",
-    icon: ChevronDown,
-    description: "Curated fashion lines",
     dropdown: [
-      { id: "women", label: "Women's Collection", path: "/shop/listing?category=women", icon: "👗", color: "from-pink-500 to-rose-500" },
-      { id: "men", label: "Men's Collection", path: "/shop/listing?category=men", icon: "👔", color: "from-blue-500 to-indigo-500" },
-      { id: "kids", label: "Kids Wear", path: "/shop/listing?category=kids", icon: "🧸", color: "from-green-500 to-emerald-500" },
-      { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom", icon: "✨", color: "from-purple-500 to-violet-500" },
+      { id: "products", path: "/shop/listing?category=products", label: "All Products" },
+      { id: "women", label: "Women's Collection", path: "/shop/listing?category=women" },
+      { id: "men", label: "Men's Collection", path: "/shop/listing?category=men" },
+      { id: "kids", label: "Kids Wear", path: "/shop/listing?category=kids" },
+      { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom" },
     ],
   },
-   {
+  {
     id: "gallery",
     path: "/shop/gallery",
     label: "Gallery",
-    icon: Zap,
-    description: "See our latest styles",
   },
   {
     id: "about",
     path: "/shop/about",
     label: "About Us",
-    icon: Sparkles,
-    description: "Our story & mission",
   },
   {
     id: "search",
     path: "/shop/search",
     label: "Search",
-    icon: Search,
-    description: "Find your perfect style",
   },
 ];
 
-// Enhanced Brand Logo with animations - Exported as named export
 export const BrandLogo = ({ isScrolled }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <>
-      {/* Google Fonts Import */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         rel="preconnect"
@@ -77,24 +58,17 @@ export const BrandLogo = ({ isScrolled }) => {
         crossOrigin="anonymous"
       />
       <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Dancing+Script:wght@600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap"
         rel="stylesheet"
       />
 
       <Link
         to="/shop/home"
-        className={`flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 ${
-          isScrolled ? 'hover:scale-102' : 'hover:scale-105'
-        }`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="flex flex-col items-center justify-center text-center cursor-pointer"
       >
-        {/* Brand Text */}
         <div className="relative leading-tight">
           <span
-            className={`font-extrabold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
-              isHovered ? "tracking-wider" : "tracking-wide"
-            } ${
+            className={`font-extrabold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent ${
               isScrolled ? 'text-base' : 'text-lg'
             }`}
             style={{
@@ -106,9 +80,7 @@ export const BrandLogo = ({ isScrolled }) => {
           </span>
           <br />
           <span
-            className={`font-semibold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent transition-all duration-500 ${
-              isHovered ? "tracking-wider" : "tracking-wide"
-            } ${
+            className={`font-semibold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent ${
               isScrolled ? 'text-sm' : 'text-base'
             }`}
             style={{
@@ -120,8 +92,7 @@ export const BrandLogo = ({ isScrolled }) => {
           </span>
         </div>
 
-        {/* Decorative Curved Lines */}
-        <div className={`relative mt-1 transition-all duration-500 ${isScrolled ? 'w-12' : 'w-16'}`}>
+        <div className={`relative mt-1 ${isScrolled ? 'w-12' : 'w-16'}`}>
           <svg
             viewBox="0 0 200 20"
             fill="none"
@@ -149,85 +120,54 @@ export const BrandLogo = ({ isScrolled }) => {
             </defs>
           </svg>
         </div>
-
-        {/* Optional Hover Tagline */}
-        {isHovered && !isScrolled && (
-          <div
-            className="text-[10px] text-amber-700 font-medium italic mt-1 animate-fade-in"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
-            Premium Fashion
-          </div>
-        )}
       </Link>
     </>
   );
 };
 
-// Enhanced Collection Dropdown with animations and visual improvements
 const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="relative group cursor-pointer">
-          <Label className={`font-medium cursor-pointer flex items-center gap-2 text-amber-800 hover:text-amber-950 transition-all duration-300 group-hover:scale-105 ${
+        <div className="relative cursor-pointer">
+          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${
             isScrolled ? 'text-xs' : 'text-sm'
           }`}>
-            <menuItem.icon className={`text-amber-600 ${isScrolled ? 'w-3 h-3' : 'w-4 h-4'}`} />
             {menuItem.label}
-            <ChevronDown className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : 'group-hover:rotate-12'} ${isScrolled ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </Label>
-          <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 group-hover:w-full transition-all duration-300"></div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-72 border-0 shadow-2xl rounded-2xl bg-amber-50/95 backdrop-blur-xl p-2"
+        className="w-72 border border-amber-200 rounded-lg bg-white p-2"
         align="start"
         sideOffset={8}
       >
         <div className="grid gap-1">
-          {menuItem.dropdown.map((subItem, index) => (
+          {menuItem.dropdown.map((subItem) => (
             <DropdownMenuItem
               key={subItem.id}
               onClick={() => handleNavigate(subItem)}
-              className="p-4 rounded-xl hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] group"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
             >
-              <div className="flex items-center gap-4 w-full">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${subItem.color} flex items-center justify-center text-white text-lg shadow-lg group-hover:shadow-xl transition-all duration-300`}>
-                  {subItem.icon}
-                </div>
+              <div className="flex items-center gap-3 w-full">
                 <div className="flex-1">
-                  <div className="font-semibold text-amber-950 group-hover:text-amber-800 transition-colors">
+                  <div className="font-medium text-amber-950">
                     {subItem.label}
                   </div>
-                  <div className="text-xs text-amber-700 mt-1">
-                    Explore our curated selection
-                  </div>
                 </div>
-                <ChevronDown className="w-4 h-4 text-amber-400 rotate-[-90deg] group-hover:translate-x-1 transition-transform duration-300" />
               </div>
             </DropdownMenuItem>
           ))}
-        </div>
-        <div className="mt-2 p-2 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl">
-          <div className="text-xs text-center text-amber-700 font-medium">
-             New arrivals added weekly
-          </div>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-// Enhanced Menu Items with hover effects and animations
 const MenuItems = ({ onItemClick, isScrolled }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [hoveredItem, setHoveredItem] = useState(null);
 
   function handleNavigate(getCurrentMenuItem) {
     if (getCurrentMenuItem.id === "search") {
@@ -262,14 +202,8 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
 
   return (
     <nav className={`flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row ${isScrolled ? 'gap-4' : 'gap-6'}`}>
-      {shoppingViewHeaderMenuItems.map((menuItem, index) => (
-        <div
-          key={menuItem.id}
-          className="relative group"
-          onMouseEnter={() => setHoveredItem(menuItem.id)}
-          onMouseLeave={() => setHoveredItem(null)}
-          style={{ animationDelay: `${index * 100}ms` }}
-        >
+      {shoppingViewHeaderMenuItems.map((menuItem) => (
+        <div key={menuItem.id} className="relative">
           <ErrorBoundary>
             {menuItem.dropdown ? (
               <CollectionDropdown
@@ -281,7 +215,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
               <div className="relative">
                 <Label
                   onClick={() => handleNavigate(menuItem)}
-                  className={`font-medium cursor-pointer flex items-center gap-2 transition-all duration-300 transform hover:scale-105 ${
+                  className={`font-medium cursor-pointer ${
                     location.pathname === menuItem.path ||
                     (menuItem.id === "search" && location.pathname.includes("search")) ||
                     (menuItem.id === "products" && location.pathname.includes("listing"))
@@ -291,22 +225,8 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
                     isScrolled ? 'text-xs' : 'text-sm'
                   }`}
                 >
-                  <menuItem.icon className={`text-amber-600 ${isScrolled ? 'w-3 h-3' : 'w-4 h-4'}`} />
                   {menuItem.label}
                 </Label>
-
-                {/* Animated underline */}
-                <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-300 ${
-                  hoveredItem === menuItem.id ? 'w-full' : 'w-0'
-                }`}></div>
-
-                {/* Tooltip */}
-                {hoveredItem === menuItem.id && !isScrolled && (
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-amber-950 text-amber-50 text-xs rounded-lg whitespace-nowrap opacity-0 animate-in fade-in-0 slide-in-from-top-2 duration-200 z-50">
-                    {menuItem.description}
-                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-amber-950 rotate-45"></div>
-                  </div>
-                )}
               </div>
             )}
           </ErrorBoundary>
@@ -316,12 +236,10 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
   );
 };
 
-// Enhanced Header Right Content with animations (SEARCH BUTTON REMOVED)
 const HeaderRightContent = ({ isScrolled }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [openCartSheet, setOpenCartSheet] = useState(false);
-  const [cartAnimation, setCartAnimation] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -331,14 +249,6 @@ const HeaderRightContent = ({ isScrolled }) => {
     }
   }, [dispatch, user?.id]);
 
-  // Animate cart when items are added
-  useEffect(() => {
-    if (cartItems?.items?.length > 0) {
-      setCartAnimation(true);
-      setTimeout(() => setCartAnimation(false), 600);
-    }
-  }, [cartItems?.items?.length]);
-
   const handleLogout = () => {
     dispatch(resetTokenAndCredentials());
     sessionStorage.clear();
@@ -347,28 +257,20 @@ const HeaderRightContent = ({ isScrolled }) => {
 
   return (
     <div className="flex lg:items-center lg:flex-row flex-col gap-4">
-      {/* Enhanced Cart Button */}
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <Button
           onClick={() => setOpenCartSheet(true)}
           variant="outline"
-          size={isScrolled ? "sm" : "icon"}
-          className={`relative border-amber-300 hover:bg-amber-50 hover:border-amber-400 transition-all duration-300 hover:scale-105 ${
-            cartAnimation ? 'animate-bounce' : ''
-          }`}
+          size={isScrolled ? "sm" : "default"}
+          className="border-amber-300 hover:bg-amber-50 hover:border-amber-400"
         >
-          <ShoppingCart className={`text-amber-600 ${isScrolled ? 'w-4 h-4' : 'w-6 h-6'}`} />
-          <Badge className={`absolute -top-2 -right-2 bg-amber-800 text-amber-50 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
-            cartAnimation ? 'animate-pulse scale-125' : ''
-          } ${
-            isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-          }`}>
-            {cartItems?.items?.length || 0}
-          </Badge>
+          Cart
           {cartItems?.items?.length > 0 && (
-            <div className={`absolute -top-1 -right-1 bg-green-500 rounded-full animate-ping ${
-              isScrolled ? 'w-2 h-2' : 'w-3 h-3'
-            }`}></div>
+            <Badge className={`ml-2 bg-amber-800 text-amber-50 rounded-full ${
+              isScrolled ? 'w-5 h-5' : 'w-6 h-6'
+            }`}>
+              {cartItems?.items?.length || 0}
+            </Badge>
           )}
         </Button>
         <UserCartWrapper
@@ -386,66 +288,49 @@ const HeaderRightContent = ({ isScrolled }) => {
   );
 };
 
-// Enhanced User Dropdown
 const UserDropdown = ({ user, onLogout, isScrolled }) => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="relative group cursor-pointer">
-          <Avatar className={`bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 transition-all duration-300 cursor-pointer ring-2 ring-amber-200 hover:ring-amber-300 hover:scale-105 shadow-lg hover:shadow-xl ${
+        <div className="cursor-pointer">
+          <Avatar className={`bg-amber-100 border border-amber-200 ${
             isScrolled ? 'w-8 h-8' : 'w-10 h-10'
           }`}>
-            <AvatarFallback className={`bg-transparent text-white font-extrabold ${
-              isScrolled ? 'text-sm' : 'text-lg'
-            }`}>
+            <AvatarFallback className="bg-transparent text-amber-800">
               {user?.userName?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          {isOpen && (
-            <div className={`absolute -top-1 -right-1 bg-green-500 rounded-full animate-ping ${
-              isScrolled ? 'w-2 h-2' : 'w-3 h-3'
-            }`}></div>
-          )}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
-        className="w-64 border-0 shadow-2xl rounded-2xl bg-amber-50/95 backdrop-blur-xl p-2"
+        className="w-64 border border-amber-200 rounded-lg bg-white p-2"
         sideOffset={8}
       >
-        <div className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl mb-2">
+        <div className="p-4 bg-amber-50 rounded-lg mb-2">
           <DropdownMenuLabel className="text-amber-800 font-semibold text-base">
             Welcome back!
           </DropdownMenuLabel>
           <div className="text-sm text-amber-700 mt-1">
             {user?.userName}
           </div>
-          <div className="text-xs text-amber-600 mt-1">
-            {user?.email}
-          </div>
         </div>
 
         <DropdownMenuItem
           onClick={() => navigate("/shop/account")}
-          className="p-3 rounded-xl hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100 cursor-pointer transition-all duration-300 group"
+          className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
         >
-          <UserCog className="mr-3 h-5 w-5 text-amber-700 group-hover:text-amber-600 transition-colors" />
-          <div>
-            <div className="font-medium text-amber-950">My Account</div>
-            <div className="text-xs text-amber-700">Orders, addresses & more</div>
-          </div>
+          <div className="font-medium text-amber-950">My Account</div>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="my-2" />
 
         <DropdownMenuItem
           onClick={onLogout}
-          className="p-3 rounded-xl hover:bg-red-50 text-red-600 cursor-pointer transition-all duration-300 group"
+          className="p-3 rounded-md hover:bg-red-50 text-red-600 cursor-pointer"
         >
-          <LogOut className="mr-3 h-5 w-5 group-hover:scale-110 transition-transform" />
           <div className="font-medium">Sign Out</div>
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -453,7 +338,6 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
   );
 };
 
-// Enhanced Auth Buttons
 const AuthButtons = ({ isScrolled }) => {
   const navigate = useNavigate();
   return (
@@ -462,18 +346,14 @@ const AuthButtons = ({ isScrolled }) => {
         variant="outline"
         onClick={() => navigate("/auth/login")}
         size={isScrolled ? "sm" : "default"}
-        className={`border-amber-300 hover:bg-amber-50 hover:border-amber-400 text-amber-800 hover:text-amber-950 transition-all duration-300 hover:scale-105 px-6 ${
-          isScrolled ? 'text-xs' : 'text-sm'
-        }`}
+        className="border-amber-300 hover:bg-amber-50 hover:border-amber-400 text-amber-800 hover:text-amber-950 px-6"
       >
         Sign In
       </Button>
       <Button
         onClick={() => navigate("/auth/register")}
         size={isScrolled ? "sm" : "default"}
-        className={`bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl px-6 ${
-          isScrolled ? 'text-xs' : 'text-sm'
-        }`}
+        className="bg-amber-600 hover:bg-amber-700 text-white px-6"
       >
         Join Now
       </Button>
@@ -481,19 +361,18 @@ const AuthButtons = ({ isScrolled }) => {
   );
 };
 
-// Enhanced Mobile Menu
 const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
   <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
     <SheetTrigger asChild>
       <Button
         variant="outline"
-        size={isScrolled ? "sm" : "icon"}
-        className="lg:hidden border-amber-300 hover:bg-amber-50 hover:border-amber-400 transition-all duration-300 hover:scale-105"
+        size={isScrolled ? "sm" : "default"}
+        className="lg:hidden border-amber-300 hover:bg-amber-50 hover:border-amber-400"
       >
-        <Menu className={`text-amber-600 ${isScrolled ? 'h-4 w-4' : 'h-6 w-6'}`} />
+        Menu
       </Button>
     </SheetTrigger>
-    <SheetContent side="left" className="w-full max-w-xs bg-amber-50/95 backdrop-blur-xl border-r-0 shadow-2xl">
+    <SheetContent side="left" className="w-full max-w-xs bg-white border-r border-amber-200">
       <div className="pt-6">
         <div className="mb-8">
           <BrandLogo isScrolled={false} />
@@ -507,49 +386,19 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
   </Sheet>
 );
 
-// Main Enhanced Shopping Header - Default export
 const ShoppingHeader = () => {
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const headerRef = useRef(null);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [headerVisible, setHeaderVisible] = useState(true);
-
-  const { featureImageList } = useSelector((state) => state.commonFeature) || {};
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const scrolled = currentScrollY > 50;
-      
-      // Calculate scroll progress
-      const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = Math.min((currentScrollY / documentHeight) * 100, 100);
-      
-      // Determine header visibility (hide on scroll down, show on scroll up)
-      const isScrollingDown = currentScrollY > lastScrollY;
-      const shouldHideHeader = isScrollingDown && currentScrollY > 100;
-      
+      const scrolled = window.scrollY > 50;
       setHeaderScrolled(scrolled);
-      setScrollProgress(progress);
-      setHeaderVisible(!shouldHideHeader || currentScrollY < 100);
-      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  // Show notification for new arrivals (example)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 5000);
-    }, 3000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -557,32 +406,15 @@ const ShoppingHeader = () => {
       <ScrollingPromoBar />
       <ContactBar />
 
-      {/* Notification Banner */}
-      {showNotification && (
-        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 px-4 text-center text-sm font-medium animate-in slide-in-from-top-2 duration-500">
-          New arrivals just dropped!
-          <Button
-            onClick={() => setShowNotification(false)}
-            variant="ghost"
-            size="sm"
-            className="ml-4 text-white hover:text-green-100 p-1 h-auto"
-          >
-            ✕
-          </Button>
-        </div>
-      )}
-
       <header
         ref={headerRef}
-        className={`sticky top-0 z-50 w-full transition-all duration-500 transform ${
-          headerVisible ? 'translate-y-0' : '-translate-y-full'
-        } ${
+        className={`sticky top-0 z-50 w-full ${
           headerScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-2xl border-b border-amber-300'
-            : 'bg-amber-50/90 backdrop-blur-md border-b border-amber-200 shadow-sm'
+            ? 'bg-white border-b border-amber-300 shadow-sm'
+            : 'bg-amber-50 border-b border-amber-200'
         }`}
       >
-        <div className={`flex items-center justify-between px-4 md:px-6 transition-all duration-500 ${
+        <div className={`flex items-center justify-between px-4 md:px-6 ${
           headerScrolled ? 'h-16' : 'h-20'
         }`}>
           <div className="flex items-center gap-4">
@@ -603,19 +435,6 @@ const ShoppingHeader = () => {
             <HeaderRightContent isScrolled={headerScrolled} />
           </div>
         </div>
-
-        {/* Enhanced Progress bar for scroll */}
-        <div 
-          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 transition-all duration-300 shadow-sm"
-          style={{ width: `${scrollProgress}%` }}
-        >
-          <div className="absolute right-0 top-0 w-4 h-full bg-gradient-to-l from-amber-300 to-transparent animate-pulse"></div>
-        </div>
-
-        {/* Sticky indicator dot */}
-        {headerScrolled && (
-          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-amber-500 rounded-full animate-bounce"></div>
-        )}
       </header>
     </div>
   );
