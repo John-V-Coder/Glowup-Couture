@@ -1,6 +1,6 @@
 import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/store/auth-slice";
@@ -12,11 +12,12 @@ const initialState = {
   password: "",
 };
 
-function AuthLogin() {
+function AuthLogin({ embedded = false, redirectTo = "/shop/checkout" }) {
   const [formData, setFormData] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   function onSubmit(event) {
     event.preventDefault();
@@ -26,6 +27,7 @@ function AuthLogin() {
         toast({
           title: data?.payload?.message,
         });
+        navigate(redirectTo || "/shop/checkout");
       } else {
         toast({
           title: data?.payload?.message,
@@ -41,15 +43,17 @@ function AuthLogin() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Sign in to your account
         </h1>
-        <p className="mt-2">
-          Don't have an account
-          <Link
-            className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
-            to="/auth/register"
-          >
-            Register
-          </Link>
-        </p>
+        {!embedded && (
+          <p className="mt-2">
+            Don't have an account
+            <Link
+              className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
+              to="/auth/register"
+            >
+              Register
+            </Link>
+          </p>
+        )}
       </div>
       <CommonForm
         formControls={loginFormControls}

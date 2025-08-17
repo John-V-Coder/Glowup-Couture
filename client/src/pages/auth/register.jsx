@@ -12,7 +12,7 @@ const initialState = {
   password: "",
 };
 
-function AuthRegister() {
+function AuthRegister({ embedded = false, redirectTo = "/shop/checkout" }) {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -25,7 +25,8 @@ function AuthRegister() {
         toast({
           title: data?.payload?.message,
         });
-        navigate("/auth/login");
+        // After registration, send user to checkout to continue
+        navigate(redirectTo || "/shop/checkout");
       } else {
         toast({
           title: data?.payload?.message,
@@ -35,23 +36,23 @@ function AuthRegister() {
     });
   }
 
-  console.log(formData);
-
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Create new account
         </h1>
-        <p className="mt-2">
-          Already have an account
-          <Link
-            className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
-            to="/auth/login"
-          >
-            Login
-          </Link>
-        </p>
+        {!embedded && (
+          <p className="mt-2">
+            Already have an account
+            <Link
+              className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
+              to="/auth/login"
+            >
+              Login
+            </Link>
+          </p>
+        )}
       </div>
       <CommonForm
         formControls={registerFormControls}

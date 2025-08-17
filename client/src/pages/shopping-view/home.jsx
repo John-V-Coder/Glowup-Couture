@@ -8,7 +8,7 @@ import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { useNavigate } from "react-router-dom";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
-import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
+import { useCartNotification } from "@/hooks/use-cart-notification";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf, ShieldEllipsisIcon, SliceIcon, Flame, LineChart, VenusIcon } from "lucide-react";
 import { BrandLogo } from "@/components/shopping-view/header";
@@ -40,6 +40,7 @@ function ShoppingHome() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { showCartNotification } = useCartNotification();
+  const { toast } = useToast();
 
   function handleNavigateToListingPage(getCurrentItem, section) {
     sessionStorage.removeItem("filters");
@@ -66,6 +67,10 @@ function ShoppingHome() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         showCartNotification(productDetails?.title || "Product");
+        toast({
+          title: "Added to cart!",
+          description: !user?.id ? "Sign in to sync your cart across devices" : ""
+        });
       }
     });
   }

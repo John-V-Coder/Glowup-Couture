@@ -10,7 +10,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { sortOptions } from "@/config";
 import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
 import { fetchAllFilteredProducts, fetchProductDetails } from "@/store/shop/products-slice";
-import { useCartNotification } from "@/hooks/use-cart-notification.jsx";
+import { useCartNotification } from "@/hooks/use-cart-notification";
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -117,6 +117,10 @@ function ShoppingListing() {
         dispatch(fetchCartItems(user?.id));
         // Show user-friendly cart notification with View Cart option
         showCartNotification(productDetails?.title || "Product");
+        toast({
+          title: "Added to cart!",
+          description: !user?.id ? "Sign in to sync your cart across devices" : ""
+        });
       }
     });
   }

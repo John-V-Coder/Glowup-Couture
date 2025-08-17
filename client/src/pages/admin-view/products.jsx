@@ -21,7 +21,7 @@ const initialFormData = {
   description: "",
   category: "",
   material: "",
-  color: "",
+  size: "",
   price: "",
   salePrice: "",
   totalStock: "",
@@ -93,7 +93,7 @@ function AdminProducts() {
 
   function isFormValid() {
     // Required fields (salePrice is optional)
-    const requiredFields = ["image", "title", "description", "category", "material", "color", "price", "totalStock"];
+    const requiredFields = ["image", "title", "description", "category", "material", "size", "price", "totalStock"];
     
     return requiredFields.every((field) => {
       const value = formData[field];

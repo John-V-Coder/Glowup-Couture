@@ -1,13 +1,16 @@
+// src/components/shopping-view/ShoppingCheckout.jsx
+
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import Address from "@/components/shopping-view/address";
 import UserCartItemsContent from "@/components/shopping-view/cart-item-content";
 import { useState, useRef, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux"; // Corrected import
 import { useNavigate } from "react-router-dom";
-import img from "../../assets/account.jpg";
 import { createNewOrder } from "@/store/shop/order-slice";
-import { ArrowUp, ArrowDown, Smartphone, CreditCard, MapPin, User, Phone, Mail } from "lucide-react";
+import { ArrowDown, Smartphone, CreditCard, MapPin, User } from "lucide-react";
+import AuthLogin from "@/pages/auth/login";
+import AuthRegister from "@/pages/auth/register";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -18,44 +21,36 @@ function ShoppingCheckout() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("paypal");
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
   const [billingInfo, setBillingInfo] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
+    firstName: user?.userName || "",
     email: user?.email || "",
-    phone: user?.phone || "",
   });
+
   const dispatch = useDispatch();
   const { toast } = useToast();
   const checkoutSectionRef = useRef(null);
   const navigate = useNavigate();
 
-  // Redirect unauthenticated users to login
-  useEffect(() => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Please login or register to continue with checkout",
-        description: "You need to be logged in to complete your purchase",
-        variant: "destructive",
-      });
-      navigate('/auth/login');
-      return;
-    }
-  }, [isAuthenticated, navigate, toast]);
-
   // Initialize billing info when user data is available
   useEffect(() => {
     if (user) {
       setBillingInfo({
-        firstName: user?.firstName || "",
-        lastName: user?.lastName || "",
+        firstName: user?.userName || "",
         email: user?.email || "",
-        phone: user?.phone || "",
       });
     }
   }, [user]);
 
+  // Handle redirection for PayPal approval URL
+  useEffect(() => {
+    if (approvalURL) {
+      window.location.href = approvalURL;
+    }
+  }, [approvalURL]);
+
   const totalCartAmount =
-    cartItems && cartItems.items && cartItems.items.length > 0
+    cartItems?.items && cartItems.items.length > 0
       ? cartItems.items.reduce(
           (sum, currentItem) =>
             sum +
@@ -72,6 +67,14 @@ function ShoppingCheckout() {
   const finalTotal = totalCartAmount + shippingCost + tax;
 
   function validateCheckoutData() {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register to proceed with checkout",
+        variant: "destructive",
+      });
+      return false;
+    }
     if (!cartItems?.items || cartItems.items.length === 0) {
       toast({
         title: "Your cart is empty",
@@ -80,7 +83,6 @@ function ShoppingCheckout() {
       });
       return false;
     }
-
     if (!currentSelectedAddress) {
       toast({
         title: "Address Required",
@@ -89,8 +91,10 @@ function ShoppingCheckout() {
       });
       return false;
     }
-
-    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.email) {
+    if (
+      !billingInfo.firstName ||
+      !billingInfo.email
+    ) {
       toast({
         title: "Billing Information Required",
         description: "Please fill in all required billing details",
@@ -98,7 +102,6 @@ function ShoppingCheckout() {
       });
       return false;
     }
-
     if (selectedPaymentMethod === "mpesa" && (!mpesaPhone || mpesaPhone.length < 10)) {
       toast({
         title: "Invalid M-Pesa Number",
@@ -107,13 +110,11 @@ function ShoppingCheckout() {
       });
       return false;
     }
-
     return true;
   }
 
   function handleInitiatePaypalPayment() {
     if (!validateCheckoutData()) return;
-
     const orderData = {
       userId: user?.id,
       cartId: cartItems?._id,
@@ -165,9 +166,8 @@ function ShoppingCheckout() {
 
   function handleMpesaPayment() {
     if (!validateCheckoutData()) return;
-
     setIsProcessingMpesa(true);
-    
+
     // Simulate M-Pesa payment processing
     setTimeout(() => {
       const orderData = {
@@ -229,90 +229,70 @@ function ShoppingCheckout() {
   };
 
   const handleBillingInfoChange = (field, value) => {
-    setBillingInfo(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setBillingInfo(prev => ({ ...prev, [field]: value }));
   };
-
-  if (approvalURL) {
-    window.location.href = approvalURL;
-  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="relative h-[200px] w-full overflow-hidden">
-        <img src="your-image-url.jpg" alt="A descriptive alt text" />
+        <img
+          src="https://via.placeholder.com/1500x200"
+          alt="Secure checkout banner"
+          className="w-full h-full object-cover"
+        />
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <h1 className="text-3xl font-bold text-white">Secure Checkout</h1>
         </div>
       </div>
-      
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Billing & Shipping */}
           <div className="lg:col-span-2 space-y-6">
-            
-            {/* Billing Information */}
+            {/* Billing or Auth Section */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <User className="h-5 w-5 text-blue-600" />
-                <h2 className="text-xl font-semibold">Billing Information</h2>
+                <h2 className="text-xl font-semibold">{isAuthenticated ? 'Billing Information' : 'Account Authentication'}</h2>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {!isAuthenticated ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={billingInfo.firstName}
-                    onChange={(e) => handleBillingInfoChange("firstName", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter first name"
-                  />
+                  <div className="flex gap-2 mb-4">
+                    <Button variant={authMode === 'login' ? 'default' : 'outline'} onClick={() => setAuthMode('login')}>Login</Button>
+                    <Button variant={authMode === 'register' ? 'default' : 'outline'} onClick={() => setAuthMode('register')}>Register</Button>
+                  </div>
+                  <div className="max-w-md">
+                    {authMode === 'login' ? <AuthLogin embedded redirectTo="/shop/checkout" /> : <AuthRegister embedded redirectTo="/shop/checkout" />}
+                  </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={billingInfo.lastName}
-                    onChange={(e) => handleBillingInfoChange("lastName", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter last name"
-                  />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={billingInfo.firstName}
+                      onChange={(e) => handleBillingInfoChange("firstName", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      value={billingInfo.email}
+                      onChange={(e) => handleBillingInfoChange("email", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter email address"
+                    />
+                  </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    value={billingInfo.email}
-                    onChange={(e) => handleBillingInfoChange("email", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter email address"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={billingInfo.phone}
-                    onChange={(e) => handleBillingInfoChange("phone", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter phone number"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Shipping Address */}
@@ -321,10 +301,7 @@ function ShoppingCheckout() {
                 <MapPin className="h-5 w-5 text-green-600" />
                 <h2 className="text-xl font-semibold">Shipping Address</h2>
               </div>
-              <Address
-                selectedId={currentSelectedAddress}
-                setCurrentSelectedAddress={setCurrentSelectedAddress}
-              />
+              <Address selectedId={currentSelectedAddress} setCurrentSelectedAddress={setCurrentSelectedAddress} />
             </div>
 
             {/* Payment Method */}
@@ -333,23 +310,24 @@ function ShoppingCheckout() {
                 <CreditCard className="h-5 w-5 text-purple-600" />
                 <h2 className="text-xl font-semibold">Payment Method</h2>
               </div>
-              
               <div className="grid grid-cols-1 gap-4">
                 {/* PayPal Option */}
-                <div 
+                <div
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedPaymentMethod === "paypal" 
-                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" 
+                    selectedPaymentMethod === "paypal"
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                   onClick={() => setSelectedPaymentMethod("paypal")}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedPaymentMethod === "paypal" 
-                        ? "border-blue-500 bg-blue-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        selectedPaymentMethod === "paypal"
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {selectedPaymentMethod === "paypal" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
                       )}
@@ -363,20 +341,22 @@ function ShoppingCheckout() {
                 </div>
 
                 {/* M-Pesa Option */}
-                <div 
+                <div
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedPaymentMethod === "mpesa" 
-                      ? "border-green-500 bg-green-50 ring-2 ring-green-200" 
+                    selectedPaymentMethod === "mpesa"
+                      ? "border-green-500 bg-green-50 ring-2 ring-green-200"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                   onClick={() => setSelectedPaymentMethod("mpesa")}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedPaymentMethod === "mpesa" 
-                        ? "border-green-500 bg-green-500" 
-                        : "border-gray-300"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        selectedPaymentMethod === "mpesa"
+                          ? "border-green-500 bg-green-500"
+                          : "border-gray-300"
+                      }`}
+                    >
                       {selectedPaymentMethod === "mpesa" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
                       )}
@@ -415,29 +395,25 @@ function ShoppingCheckout() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-4">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-              
               {/* Cart Items */}
               <div className="max-h-60 overflow-y-auto mb-4 space-y-3">
-                {cartItems && cartItems.items && cartItems.items.length > 0
-                  ? cartItems.items.map((item) => (
-                      <div key={item.productId} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                        <img 
-                          src={item.image} 
-                          alt={item.title} 
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                        </div>
-                        <p className="text-sm font-semibold">
-                          ${((item.salePrice > 0 ? item.salePrice : item.price) * item.quantity).toFixed(2)}
-                        </p>
+                {cartItems?.items && cartItems.items.length > 0 ? (
+                  cartItems.items.map((item) => (
+                    <div key={item.productId} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                      <img src={item.image} alt={item.title} className="w-12 h-12 object-cover rounded" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                       </div>
-                    ))
-                  : <p className="text-center text-gray-500 py-4">Your cart is empty</p>}
+                      <p className="text-sm font-semibold">
+                        ${((item.salePrice > 0 ? item.salePrice : item.price) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">Your cart is empty</p>
+                )}
               </div>
-
               {/* Order Totals */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
@@ -457,32 +433,30 @@ function ShoppingCheckout() {
                   <span>${finalTotal.toFixed(2)}</span>
                 </div>
               </div>
-
               {/* Checkout Button */}
               <div className="mt-6">
                 {selectedPaymentMethod === "paypal" ? (
-                  <Button 
-                    onClick={handleInitiatePaypalPayment} 
+                  <Button
+                    onClick={handleInitiatePaypalPayment}
                     className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700 transition-colors"
-                    disabled={isPaymentStart}
+                    disabled={!isAuthenticated || isPaymentStart}
                   >
-                    {isPaymentStart
-                      ? "Processing PayPal Payment..."
-                      : "Pay with PayPal"}
+                    {!isAuthenticated ? "Sign in to continue" : (isPaymentStart ? "Processing PayPal Payment..." : "Pay with PayPal")}
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={handleMpesaPayment} 
+                  <Button
+                    onClick={handleMpesaPayment}
                     className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 transition-colors"
-                    disabled={isProcessingMpesa}
+                    disabled={!isAuthenticated || isProcessingMpesa}
                   >
-                    {isProcessingMpesa
-                      ? "Processing M-Pesa Payment..."
-                      : `Pay $${finalTotal.toFixed(2)} with M-Pesa`}
+                    {!isAuthenticated
+                      ? "Sign in to continue"
+                      : (isProcessingMpesa
+                        ? "Processing M-Pesa Payment..."
+                        : `Pay $${finalTotal.toFixed(2)} with M-Pesa`)}
                   </Button>
                 )}
               </div>
-
               {/* Security Badge */}
               <div className="mt-4 text-center">
                 <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
@@ -493,7 +467,6 @@ function ShoppingCheckout() {
           </div>
         </div>
       </div>
-
       {/* Floating navigation for mobile */}
       {cartItems?.items?.length > 3 && (
         <div className="fixed bottom-20 right-5 z-10 md:hidden">
@@ -507,7 +480,6 @@ function ShoppingCheckout() {
           </Button>
         </div>
       )}
-
       <div ref={checkoutSectionRef}></div>
     </div>
   );

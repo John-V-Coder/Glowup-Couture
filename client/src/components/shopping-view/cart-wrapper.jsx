@@ -86,53 +86,53 @@ function UserCartWrapper({ cartItems = [], setOpenCartSheet }) {
         )}
       </div>
 
-      {/* Scroll buttons (only show when needed) */}
-      {showScrollButtons && (
-        <div className="flex justify-center gap-2 py-3">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => handleScroll('up')}
-            disabled={!isScrolled}
-            className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-3 py-1"
-          >
-            <ArrowUp className="h-3 w-3 mr-1" />
-            Up
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => handleScroll('down')}
-            className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-3 py-1"
-          >
-            <ArrowDown className="h-3 w-3 mr-1" />
-            Down
-          </Button>
-        </div>
-      )}
-
       {/* Sticky footer with total and checkout */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm pt-6 space-y-4">
-        <div className="flex justify-between items-center px-2">
-          <span className="text-lg font-semibold text-gray-700">Subtotal</span>
-          <span className="text-2xl font-bold text-gray-900">${totalCartAmount.toFixed(2)}</span>
+      <div className="mt-auto p-4 space-y-3 bg-white border-t border-gray-200">
+        <div className="flex justify-between items-baseline">
+          <span className="text-base font-medium text-gray-600">Subtotal</span>
+          <span className="text-xl font-bold text-gray-900">${totalCartAmount.toFixed(2)}</span>
         </div>
         
         <Button
           onClick={handleCheckout}
-          className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-4 rounded-2xl transition-all duration-300 transform hover:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 rounded-xl text-base transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           disabled={cartItems.length === 0}
           size="lg"
         >
           {cartItems.length > 0 ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5" />
-              Proceed to Checkout
+              <span>Proceed to Checkout</span>
             </div>
           ) : (
             "Cart is Empty"
           )}
         </Button>
+
+        {/* Scroll buttons (only show when needed) */}
+        {showScrollButtons && (
+          <div className="flex justify-center gap-2 pt-1">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleScroll('up')}
+              disabled={!isScrolled}
+              className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-3 py-1"
+            >
+              <ArrowUp className="h-3 w-3 mr-1" />
+              Up
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleScroll('down')}
+              className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-3 py-1"
+            >
+              <ArrowDown className="h-3 w-3 mr-1" />
+              Down
+            </Button>
+          </div>
+        )}
       </div>
     </SheetContent>
   );
