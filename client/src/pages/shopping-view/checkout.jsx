@@ -62,9 +62,7 @@ function ShoppingCheckout() {
         )
       : 0;
 
-  const shippingCost = totalCartAmount > 100 ? 0 : 15.99;
-  const tax = totalCartAmount * 0.08; // 8% tax
-  const finalTotal = totalCartAmount + shippingCost + tax;
+  const finalTotal = totalCartAmount;
 
   function validateCheckoutData() {
     if (!isAuthenticated) {
@@ -141,10 +139,7 @@ function ShoppingCheckout() {
       orderStatus: "pending",
       paymentMethod: selectedPaymentMethod,
       paymentStatus: "pending",
-      totalAmount: finalTotal,
-      subtotal: totalCartAmount,
-      shipping: shippingCost,
-      tax,
+      totalAmount: totalCartAmount,
       orderDate: new Date(),
       orderUpdateDate: new Date(),
       paymentId: "",
@@ -200,10 +195,7 @@ function ShoppingCheckout() {
         orderStatus: "confirmed",
         paymentMethod: "mpesa",
         paymentStatus: "paid",
-        totalAmount: finalTotal,
-        subtotal: totalCartAmount,
-        shipping: shippingCost,
-        tax,
+        totalAmount: totalCartAmount,
         orderDate: new Date(),
         orderUpdateDate: new Date(),
         paymentId: `MP${Date.now()}`,
@@ -216,7 +208,7 @@ function ShoppingCheckout() {
         if (ok) {
           toast({
             title: "M-Pesa Payment Successful!",
-            description: `Payment of ${finalTotal.toFixed(2)} completed via ${mpesaPhone}`,
+            description: `Payment of ${totalCartAmount.toFixed(2)} completed via ${mpesaPhone}`,
           });
           navigate('/shop/payment-success');
         } else {
@@ -428,15 +420,11 @@ function ShoppingCheckout() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
-                  <span>{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
+                  <span>Calculated at next step</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between text-lg font-semibold">
+                                <div className="border-t pt-2 flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>${finalTotal.toFixed(2)}</span>
+                  <span>${totalCartAmount.toFixed(2)}</span>
                 </div>
               </div>
               {/* Checkout Button */}
@@ -459,7 +447,7 @@ function ShoppingCheckout() {
                       ? "Sign in to continue"
                       : (isProcessingMpesa
                         ? "Processing M-Pesa Payment..."
-                        : `Pay $${finalTotal.toFixed(2)} with M-Pesa`)}
+                        : `Pay ${totalCartAmount.toFixed(2)} with M-Pesa`)}
                   </Button>
                 )}
               </div>

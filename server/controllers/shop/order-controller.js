@@ -35,15 +35,14 @@ const createOrder = async (req, res) => {
             items: cartItems.map((item) => ({
               name: item.title,
               sku: item.productId,
-              price: item.price.toFixed(2),
+              price: Number(item.price).toFixed(2),
               currency: "USD",
               quantity: item.quantity,
-              image: item.image,
-            })),
+                          })),
           },
           amount: {
             currency: "USD",
-            total: totalAmount.toFixed(2),
+            total: Number(totalAmount).toFixed(2),
           },
           description: "description",
         },
