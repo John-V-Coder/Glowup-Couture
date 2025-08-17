@@ -55,10 +55,27 @@ function ShoppingOrderDetailsView({ orderDetails }) {
             <ul className="grid gap-3">
               {orderDetails?.cartItems && orderDetails?.cartItems.length > 0
                 ? orderDetails?.cartItems.map((item) => (
-                    <li className="flex items-center justify-between">
-                      <span>Title: {item.title}</span>
-                      <span>Quantity: {item.quantity}</span>
-                      <span>Price: ${item.price}</span>
+                    <li className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={item.image || '/placeholder-image.jpg'}
+                          alt={item.title}
+                          className="w-12 h-12 object-cover rounded-md"
+                          onError={(e) => {
+                            e.target.src = '/placeholder-image.jpg';
+                          }}
+                        />
+                        {item.images && item.images.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1 text-center">
+                            +{item.images.length} more
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium">{item.title}</div>
+                        <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
+                        <div className="text-sm font-semibold">${item.price}</div>
+                      </div>
                     </li>
                   ))
                 : null}

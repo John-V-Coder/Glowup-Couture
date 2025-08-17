@@ -38,6 +38,7 @@ const createOrder = async (req, res) => {
               price: item.price.toFixed(2),
               currency: "USD",
               quantity: item.quantity,
+              image: item.image,
             })),
           },
           amount: {

@@ -62,6 +62,7 @@ function SearchProducts() {
         productId: getCurrentProductId,
         quantity: 1,
         productDetails: productDetails,
+        images: productDetails?.images || [],
       })
     ).then((data) => {
       if (data?.payload?.success) {

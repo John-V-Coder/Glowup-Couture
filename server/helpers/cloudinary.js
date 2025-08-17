@@ -10,14 +10,42 @@ cloudinary.config({
 
 const storage = new multer.memoryStorage();
 
-async function imageUploadUtil(file) {
-  const result = await cloudinary.uploader.upload(file, {
-    resource_type: "auto",
-  });
+// Accept only image types and enforce size in multer to avoid long uploads/timeouts
+const fileFilter = (req, file, cb) => {
+  try {
+    const ok = /image\/(png|jpe?g|webp)/i.test(file.mimetype);
+    if (ok) return cb(null, true);
+    return cb(new Error("Invalid file type. Only PNG, JPG, JPEG, WEBP are allowed."));
+  } catch (e) {
+    return cb(new Error("Invalid file upload."));
+  }
+};
 
+async function imageUploadUtil(fileOrBuffer) {
+  if (Buffer.isBuffer(fileOrBuffer)) {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: "image" },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      stream.end(fileOrBuffer);
+    });
+  }
+
+  // Fallback for data URLs or remote URLs
+  const result = await cloudinary.uploader.upload(fileOrBuffer, {
+    resource_type: "image",
+  });
   return result;
 }
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter,
+});
 
 module.exports = { upload, imageUploadUtil };

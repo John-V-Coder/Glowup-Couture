@@ -1,112 +1,209 @@
 import { Fragment, useState, useEffect } from "react";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { Separator } from "../ui/separator";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "../ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { ScrollArea } from "../ui/scroll-area";
 import { 
   Filter, 
   X, 
   ChevronDown, 
   ChevronUp, 
   Sliders, 
-  Sparkles,
-  RotateCcw,
   Check,
-  Search,
   ArrowUpDown,
-  Trash2
+  Trash2,
+  ChevronRight
 } from "lucide-react";
-import { filterOptions, sortOptions } from "@/config";
 
-// Mobile Filter Trigger Button Component
-const MobileFilterTrigger = ({ activeFiltersCount, children }) => {
+// Updated filter options based on your config
+const filterOptions = {
+  category: [
+    { id: "men", label: "Men" },
+    { id: "women", label: "Women" },
+    { id: "kids", label: "Kids" },
+    { id: "custom", label: "Modern Custom" }
+  ],
+  material: [
+    { id: "cotton", label: "Cotton" },
+    { id: "wool", label: "Wool" },
+    { id: "denim", label: "Denim" },
+    { id: "polyester", label: "Polyester" },
+    { id: "silk", label: "Silk" },
+    { id: "fleece", label: "Fleece" },
+    { id: "linen", label: "Linen" },
+    { id: "viscose", label: "Viscose" }
+  ],
+  size: [
+    { id: "xs", label: "XS" },
+    { id: "s", label: "S" },
+    { id: "m", label: "M" },
+    { id: "l", label: "L" },
+    { id: "xl", label: "XL" },
+    { id: "xxl", label: "XXL" }
+  ]
+};
+
+const sortOptions = [
+  { id: "price-lowtohigh", label: "Price: Low to High" },
+  { id: "price-hightolow", label: "Price: High to Low" },
+  { id: "title-atoz", label: "Title: A to Z" },
+  { id: "title-ztoa", label: "Title: Z to A" }
+];
+
+// UI Components (simplified versions)
+const Button = ({ children, className = "", variant = "default", size = "default", onClick, disabled, ...props }) => {
+  const baseClasses = "inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+  
+  const variants = {
+    default: "bg-black text-white hover:bg-gray-800 focus:ring-gray-500",
+    outline: "border-2 border-gray-200 bg-white hover:bg-gray-50 focus:ring-gray-500",
+    ghost: "hover:bg-gray-100 focus:ring-gray-500",
+    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500"
+  };
+  
+  const sizes = {
+    default: "h-11 px-6 py-2 text-sm",
+    sm: "h-9 px-4 py-2 text-sm",
+    lg: "h-12 px-8 py-3 text-base",
+    xl: "h-14 px-10 py-4 text-lg"
+  };
+  
   return (
-    <div className="md:hidden sticky top-0 z-40 bg-white/98 backdrop-blur-lg shadow-lg border-b border-gray-200">
-      <div className="flex items-center justify-between p-4">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Products</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Discover amazing products</p>
-        </div>
-        <div className="relative">
+    <button 
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Badge = ({ children, className = "", onClick }) => (
+  <span 
+    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ${onClick ? 'cursor-pointer hover:bg-red-100 hover:text-red-800' : ''} ${className}`}
+    onClick={onClick}
+  >
+    {children}
+  </span>
+);
+
+// Mobile Sheet Implementation
+const MobileSheet = ({ isOpen, onClose, children }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300"
+        onClick={onClose}
+      />
+      
+      {/* Sheet */}
+      <div className="fixed inset-x-0 bottom-0 z-50 animate-slide-up">
+        <div className="bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col">
+          {/* Drag handle */}
+          <div className="flex justify-center py-3">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          </div>
           {children}
-          {activeFiltersCount > 0 && (
-            <Badge 
-              className="absolute -top-2 -right-2 bg-black hover:bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md"
-            >
-              {activeFiltersCount}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// Filter Section for Mobile
+const MobileFilterSection = ({ title, options, selectedValues = [], onToggle, isExpanded, onToggleExpand }) => {
+  const selectedCount = selectedValues.length;
+  
+  return (
+    <div className="border-b border-gray-100 last:border-b-0">
+      <button
+        onClick={onToggleExpand}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-semibold capitalize text-gray-900">{title}</h3>
+          {selectedCount > 0 && (
+            <Badge className="bg-black text-white">
+              {selectedCount}
             </Badge>
           )}
         </div>
-      </div>
+        <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+      </button>
+      
+      {isExpanded && (
+        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+          {options.map((option) => {
+            const isSelected = selectedValues.includes(option.id);
+            return (
+              <button
+                key={option.id}
+                onClick={() => onToggle(option.id)}
+                className={`p-3 rounded-xl border-2 text-left transition-all duration-200 ${
+                  isSelected 
+                    ? 'border-black bg-black text-white' 
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <span className="font-medium">{option.label}</span>
+                {isSelected && <Check className="w-4 h-4 ml-2 inline" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
-// Individual Filter Section Component
-const FilterSection = ({ title, options, filters, handleFilter, keyItem }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const activeCount = filters?.[keyItem]?.length || 0;
-
+// Sort Section for Mobile
+const MobileSortSection = ({ currentSort, onSortChange, isExpanded, onToggleExpand }) => {
+  const currentSortLabel = sortOptions.find(opt => opt.id === currentSort)?.label || "Price: Low to High";
+  
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-      <div 
-        className="flex items-center justify-between cursor-pointer p-4 hover:bg-gray-50 rounded-t-xl transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
+    <div className="border-b border-gray-100">
+      <button
+        onClick={onToggleExpand}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-black"></div>
-          <h3 className="text-base font-semibold capitalize text-gray-900">
-            {title}
-          </h3>
-          {activeCount > 0 && (
-            <Badge className="bg-black text-white border-black text-xs px-2 py-1 rounded-full font-medium">
-              {activeCount} selected
-            </Badge>
-          )}
+          <ArrowUpDown className="w-5 h-5 text-black" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Sort By</h3>
+            <p className="text-sm text-gray-500">{currentSortLabel}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-400 hover:text-black transition-colors" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400 hover:text-black transition-colors" />
-          )}
-        </div>
-      </div>
-
+        <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+      </button>
+      
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
-          <Separator className="mb-3 bg-gray-200" />
-          {options.map((option, index) => (
-            <Label
+          {sortOptions.map((option) => (
+            <button
               key={option.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer text-sm transition-all duration-200 group border border-transparent hover:border-gray-200"
+              onClick={() => onSortChange(option.id)}
+              className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center justify-between ${
+                currentSort === option.id 
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-50 hover:bg-gray-100'
+              }`}
             >
-              <Checkbox
-                checked={
-                  filters &&
-                  Object.keys(filters).length > 0 &&
-                  filters[keyItem] &&
-                  filters[keyItem].indexOf(option.id) > -1
-                }
-                onCheckedChange={() => handleFilter(keyItem, option.id)}
-                className="data-[state=checked]:bg-black data-[state=checked]:border-black h-5 w-5 rounded-md shadow-sm"
-              />
-              {keyItem === "color" ? (
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div
-                    className="w-6 h-6 rounded-full border-2 border-gray-200 flex-shrink-0 shadow-sm"
-                    style={{ backgroundColor: option.color }}
-                  />
-                  <span className="text-gray-800 group-hover:text-black font-medium truncate">{option.label}</span>
-                </div>
-              ) : (
-                <span className="text-gray-800 group-hover:text-black font-medium flex-1 truncate">{option.label}</span>
-              )}
-            </Label>
+              <span className="font-medium">{option.label}</span>
+              {currentSort === option.id && <Check className="w-4 h-4" />}
+            </button>
           ))}
         </div>
       )}
@@ -114,310 +211,348 @@ const FilterSection = ({ title, options, filters, handleFilter, keyItem }) => {
   );
 };
 
-// Sort Options Component
-const SortSection = ({ sort, handleSort }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const currentSortLabel = sortOptions.find(option => option.id === sort)?.label || "Price: Low to High";
+// Desktop Filter Sidebar
+const DesktopFilterSection = ({ title, options, selectedValues = [], onToggle }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const selectedCount = selectedValues.length;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-      <div 
-        className="flex items-center justify-between cursor-pointer p-4 hover:bg-gray-50 rounded-t-xl transition-colors"
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-t-xl transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-black rounded-lg shadow-sm">
-            <ArrowUpDown className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-gray-900">Sort By</h3>
-            {!isExpanded && (
-              <p className="text-sm text-gray-600 mt-0.5">{currentSortLabel}</p>
-            )}
-          </div>
+          <h3 className="text-base font-semibold capitalize text-gray-900">{title}</h3>
+          {selectedCount > 0 && (
+            <Badge className="bg-black text-white">
+              {selectedCount}
+            </Badge>
+          )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-gray-400 hover:text-black transition-colors" />
+          <ChevronUp className="w-5 h-5 text-gray-400" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400 hover:text-black transition-colors" />
+          <ChevronDown className="w-5 h-5 text-gray-400" />
         )}
-      </div>
+      </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-2">
-          <Separator className="mb-3 bg-gray-200" />
-          {sortOptions.map((option) => (
-            <Label
-              key={option.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer text-sm transition-all duration-200 group border border-transparent hover:border-gray-200"
-            >
-              <div className="relative">
+        <div className="p-4 border-t border-gray-100 space-y-2">
+          {options.map((option) => {
+            const isSelected = selectedValues.includes(option.id);
+            return (
+              <label
+                key={option.id}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              >
                 <input
-                  type="radio"
-                  name="sort"
-                  value={option.id}
-                  checked={sort === option.id}
-                  onChange={() => handleSort(option.id)}
-                  className="w-5 h-5 text-black focus:ring-black focus:ring-2 rounded-full"
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggle(option.id)}
+                  className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
                 />
-              </div>
-              <span className="text-gray-800 group-hover:text-black font-medium flex-1">{option.label}</span>
-              {sort === option.id && (
-                <Check className="w-4 h-4 text-black" />
-              )}
-            </Label>
-          ))}
+                <span className="font-medium text-gray-800">{option.label}</span>
+              </label>
+            );
+          })}
         </div>
       )}
-    </div>
-  );
-};
-
-// Active Filters Display Component
-const ActiveFiltersDisplay = ({ filters, handleFilter, clearAllFilters }) => {
-  const activeFilters = [];
-  
-  Object.keys(filters || {}).forEach(key => {
-    if (filters[key]?.length > 0) {
-      filters[key].forEach(filterId => {
-        const option = filterOptions[key]?.find(opt => opt.id === filterId);
-        if (option) {
-          activeFilters.push({ key, id: filterId, label: option.label });
-        }
-      });
-    }
-  });
-
-  if (activeFilters.length === 0) return null;
-
-  const removeFilter = (key, id) => {
-    if (handleFilter) {
-      handleFilter(key, id);
-    }
-  };
-
-  return (
-    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <div className="p-1.5 bg-black rounded-lg">
-            <Check className="w-3 h-3 text-white" />
-          </div>
-          Active Filters ({activeFilters.length})
-        </h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearAllFilters}
-          className="text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
-        >
-          <Trash2 className="w-3 h-3 mr-1" />
-          Clear All
-        </Button>
-      </div>
-      
-      <div className="flex flex-wrap gap-2">
-        {activeFilters.map((filter, index) => (
-          <Badge
-            key={`${filter.key}-${filter.id}`}
-            variant="secondary"
-            className="bg-white text-black hover:bg-red-50 hover:text-red-800 cursor-pointer group flex items-center gap-1.5 text-xs py-1.5 px-3 h-auto transition-all duration-200 border border-gray-200 hover:border-red-200 shadow-sm"
-            onClick={() => removeFilter(filter.key, filter.id)}
-          >
-            <span className="truncate max-w-20 font-medium">{filter.label}</span>
-            <X className="w-3 h-3 flex-shrink-0 group-hover:text-red-600 transition-colors" />
-          </Badge>
-        ))}
-      </div>
     </div>
   );
 };
 
 // Main Product Filter Component
-function ProductFilter({ filters, handleFilter, clearAllFilters, sort, handleSort }) {
+function ProductFilter({ 
+  filters = {}, 
+  handleFilter = () => {}, 
+  clearAllFilters = () => {}, 
+  sort = "price-lowtohigh", 
+  handleSort = () => {} 
+}) {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    sort: false,
+    category: true,
+    material: false,
+    size: false
+  });
   
   // Count active filters
   const activeFiltersCount = Object.values(filters || {}).reduce((count, filterArray) => {
     return count + (filterArray?.length || 0);
   }, 0);
 
-  // Reset all filters and sort
-  const handleResetAll = () => {
-    if (clearAllFilters) {
-      clearAllFilters();
-    }
-    // Reset sort to default
-    if (handleSort) {
-      handleSort("price-lowtohigh");
-    }
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
-  // Desktop Filter (Hidden on mobile)
+  const handleFilterToggle = (category, value) => {
+    handleFilter(category, value);
+  };
+
+  const handleClearAll = () => {
+    clearAllFilters();
+    handleSort("price-lowtohigh");
+  };
+
+  // Desktop Filter Sidebar
   const DesktopFilter = () => (
-    <div className="hidden md:block bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden backdrop-blur-sm">
-      {/* Header */}
-      <div className="p-6 bg-gray-50 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-black rounded-xl shadow-md">
-            <Sliders className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Filters & Sort</h2>
-            <p className="text-sm text-gray-600 mt-0.5">Refine your search</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters Content */}
-      <ScrollArea className="h-[500px]">
-        <div className="p-6 space-y-6">
-          {/* Sort Section */}
-          <SortSection sort={sort} handleSort={handleSort} />
-
-          {/* Active Filters */}
-          <ActiveFiltersDisplay 
-            filters={filters} 
-            handleFilter={handleFilter}
-            clearAllFilters={clearAllFilters}
-          />
-
-          {/* Filter Sections */}
-          {Object.keys(filterOptions).map((keyItem) => (
-            <FilterSection
-              key={keyItem}
-              title={keyItem}
-              options={filterOptions[keyItem]}
-              filters={filters}
-              handleFilter={handleFilter}
-              keyItem={keyItem}
-            />
-          ))}
-        </div>
-      </ScrollArea>
-
-      {/* Footer */}
-      <div className="p-6 bg-gray-50 border-t border-gray-200">
-        <div className="space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleResetAll}
-            className="w-full hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200 font-medium"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset All Filters & Sort
-          </Button>
-          <p className="text-xs text-gray-500 text-center">
-            {activeFiltersCount > 0 ? `${activeFiltersCount} filters active` : 'No filters applied'}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Mobile Filter Content
-  const MobileFilterContent = () => (
-    <div className="flex flex-col h-full bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-gray-50">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-black rounded-xl shadow-md">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Filters & Sort</h2>
-            <p className="text-sm text-gray-600">Find exactly what you need</p>
+    <div className="hidden lg:block w-80 self-start">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="p-6 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-black rounded-xl">
+              <Sliders className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Filters</h2>
+              <p className="text-sm text-gray-600">Refine your search</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filters Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
-          {/* Sort Section */}
-          <SortSection sort={sort} handleSort={handleSort} />
+        {/* Filters Content */}
+        <div className="max-h-[70vh] overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Active Filters */}
+            {activeFiltersCount > 0 && (
+              <div className="bg-gray-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-800">Active Filters</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearAll}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Clear All
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(filters || {}).map(key => 
+                    filters[key]?.map(filterId => {
+                      const option = filterOptions[key]?.find(opt => opt.id === filterId);
+                      return option ? (
+                        <Badge
+                          key={`${key}-${filterId}`}
+                          onClick={() => handleFilter(key, filterId)}
+                          className="cursor-pointer hover:bg-red-100 hover:text-red-800"
+                        >
+                          {option.label} <X className="w-3 h-3 ml-1" />
+                        </Badge>
+                      ) : null;
+                    })
+                  )}
+                </div>
+              </div>
+            )}
 
-          {/* Active Filters */}
-          <ActiveFiltersDisplay 
-            filters={filters} 
-            handleFilter={handleFilter}
-            clearAllFilters={clearAllFilters}
-          />
-
-          {/* Filter Sections */}
-          {Object.keys(filterOptions).map((keyItem) => (
-            <FilterSection
-              key={keyItem}
-              title={keyItem}
-              options={filterOptions[keyItem]}
-              filters={filters}
-              handleFilter={handleFilter}
-              keyItem={keyItem}
-            />
-          ))}
+            {/* Filter Sections */}
+            {Object.keys(filterOptions).map((keyItem) => (
+              <DesktopFilterSection
+                key={keyItem}
+                title={keyItem}
+                options={filterOptions[keyItem]}
+                selectedValues={filters[keyItem] || []}
+                onToggle={(value) => handleFilterToggle(keyItem, value)}
+              />
+            ))}
+          </div>
         </div>
-      </ScrollArea>
-
-      {/* Footer Actions */}
-      <div className="p-6 border-t bg-white space-y-3">
-        <Button
-          className="w-full bg-black hover:bg-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          onClick={() => setIsOpen(false)}
-        >
-          <Check className="w-5 h-5 mr-2" />
-          Apply Filters & Sort
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleResetAll}
-          className="w-full hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors duration-200 font-medium"
-        >
-          <RotateCcw className="w-4 h-4 mr-2" />
-          Reset All
-        </Button>
-        <p className="text-xs text-gray-500 text-center">
-          {activeFiltersCount > 0 ? `${activeFiltersCount} filters active` : 'No filters applied'}
-        </p>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Filter Sidebar */}
+      {/* Desktop Filter */}
       <DesktopFilter />
 
-      {/* Mobile Filter Trigger */}
-      <MobileFilterTrigger activeFiltersCount={activeFiltersCount}>
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden">
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-40 rounded-full h-14 w-14 p-0 shadow-lg hover:shadow-xl"
+        >
+          <Filter className="w-6 h-6" />
+          {activeFiltersCount > 0 && (
+            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white min-w-[20px] h-5 flex items-center justify-center text-xs">
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </Button>
+
+        {/* Mobile Sheet */}
+        <MobileSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <Filter className="w-6 h-6 text-black" />
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                <p className="text-sm text-gray-500">
+                  {activeFiltersCount > 0 ? `${activeFiltersCount} active` : 'No filters applied'}
+                </p>
+              </div>
+            </div>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="relative bg-white hover:bg-gray-50 border-2 border-black hover:border-gray-800 text-black hover:text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-semibold"
+              onClick={() => setIsOpen(false)}
+              className="rounded-full h-10 w-10 p-0"
             >
-              <Filter className="w-4 h-4 mr-2" />
-              Filter & Sort
-              {activeFiltersCount > 0 && (
-                <Badge className="ml-2 bg-black text-white text-xs px-2 py-1 rounded-full shadow-md">
-                  {activeFiltersCount}
-                </Badge>
-              )}
+              <X className="w-5 h-5" />
             </Button>
-          </SheetTrigger>
-          
-          <SheetContent 
-            side="bottom" 
-            className="h-[92vh] w-full p-0 rounded-t-3xl border-0 shadow-2xl"
-          >
-            <MobileFilterContent />
-          </SheetContent>
-        </Sheet>
-      </MobileFilterTrigger>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Sort Section */}
+            <MobileSortSection
+              currentSort={sort}
+              onSortChange={handleSort}
+              isExpanded={expandedSections.sort}
+              onToggleExpand={() => toggleSection('sort')}
+            />
+
+            {/* Filter Sections */}
+            {Object.keys(filterOptions).map((keyItem) => (
+              <MobileFilterSection
+                key={keyItem}
+                title={keyItem}
+                options={filterOptions[keyItem]}
+                selectedValues={filters[keyItem] || []}
+                onToggle={(value) => handleFilterToggle(keyItem, value)}
+                isExpanded={expandedSections[keyItem]}
+                onToggleExpand={() => toggleSection(keyItem)}
+              />
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-100 bg-white">
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleClearAll}
+                className="flex-1"
+                disabled={activeFiltersCount === 0}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
+              </Button>
+              <Button
+                onClick={() => setIsOpen(false)}
+                className="flex-1"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Apply ({activeFiltersCount})
+              </Button>
+            </div>
+          </div>
+        </MobileSheet>
+      </div>
     </>
   );
 }
 
 export default ProductFilter;
+
+// Demo wrapper with state management
+function ProductFilterDemo() {
+  const [filters, setFilters] = useState({});
+  const [sort, setSort] = useState("price-lowtohigh");
+
+  const handleFilter = (category, value) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      if (!newFilters[category]) {
+        newFilters[category] = [];
+      }
+      
+      const index = newFilters[category].indexOf(value);
+      if (index > -1) {
+        newFilters[category] = newFilters[category].filter(item => item !== value);
+        if (newFilters[category].length === 0) {
+          delete newFilters[category];
+        }
+      } else {
+        newFilters[category] = [...newFilters[category], value];
+      }
+      
+      return newFilters;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setFilters({});
+  };
+
+  const handleSort = (sortValue) => {
+    setSort(sortValue);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile header */}
+      <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-6">
+        <h1 className="text-2xl font-bold text-gray-900">All Products</h1>
+        <p className="text-gray-600">8 products found</p>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="flex gap-8">
+          <ProductFilter
+            filters={filters}
+            handleFilter={handleFilter}
+            clearAllFilters={clearAllFilters}
+            sort={sort}
+            handleSort={handleSort}
+          />
+          
+          {/* Demo product grid */}
+          <div className="flex-1 pb-24 lg:pb-8">
+            {/* Desktop header */}
+            <div className="hidden lg:block mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
+              <p className="text-gray-600 mt-2">8 products found</p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(item => (
+                <div key={item} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+                  <div className="aspect-square bg-gray-200 rounded-xl mb-4"></div>
+                  <h3 className="font-semibold text-gray-900 text-lg">Product {item}</h3>
+                  <p className="text-gray-600 text-sm mt-1">Beautiful product description</p>
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="text-lg font-bold text-gray-900">$99.99</span>
+                    <Button size="sm">Add to Cart</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
+    </div>
+  );
+}

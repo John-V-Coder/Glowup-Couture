@@ -60,6 +60,7 @@ function ShoppingHome() {
         productId: getCurrentProductId,
         quantity: 1,
         productDetails,
+        images: productDetails?.images || [],
       })
     ).then((data) => {
       if (data?.payload?.success) {
@@ -83,9 +84,9 @@ function ShoppingHome() {
   }, [dispatch, user?.id]);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-white">
+    <div className="flex flex-col min-h-full w-full bg-white">
       {/* Hero Section */}
-      <div className="relative w-full h-screen overflow-hidden">
+      <div className="relative w-full min-h-[80vh] md:min-h-[calc(100vh-5rem)] overflow-hidden">
   {featureImageList && featureImageList.length > 0 ? (
     featureImageList.map((slide, index) => (
       <div

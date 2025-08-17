@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
 import { useToast } from "../ui/use-toast";
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 
 function UserCartItemsContent({ cartItem }) {
   const { user } = useSelector((state) => state.auth);
@@ -11,7 +12,18 @@ function UserCartItemsContent({ cartItem }) {
   const { productList } = useSelector((state) => state.shopProducts || {});
   const dispatch = useDispatch();
   const { toast } = useToast();
+  
+  // Multi images: main image + additional images (if any)
+  const productImages = [
+    cartItem?.image,
+    ...(cartItem?.images || [])
+  ].filter((img) => img && String(img).trim() !== "");
+  const primaryImage = productImages[0] || '/placeholder-image.jpg';
+  const hoverImage = productImages[1] || primaryImage;
+  const [showHover, setShowHover] = useState(false);
 
+  
+  
   function handleUpdateQuantity(getCartItem, typeOfAction) {
     if (typeOfAction === "plus") {
       let getCartItems = cartItems.items || [];
@@ -73,11 +85,17 @@ function UserCartItemsContent({ cartItem }) {
     <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-6 bg-white hover:bg-gray-50 transition-all duration-300 rounded-2xl shadow-sm">
       {/* Image */}
       <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
-        <div className="relative overflow-hidden rounded-2xl">
+        <div className="relative overflow-hidden rounded-2xl group"
+             onMouseEnter={() => productImages.length > 1 && setShowHover(true)}
+             onMouseLeave={() => setShowHover(false)}
+        >
           <img
-            src={cartItem?.image}
+            src={showHover ? hoverImage : primaryImage}
             alt={cartItem?.title}
-            className="w-20 h-20 md:w-24 md:h-24 object-cover transition-transform duration-300 hover:scale-105"
+            className="w-20 h-20 md:w-24 md:h-24 object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder-image.jpg';
+            }}
           />
         </div>
       </div>

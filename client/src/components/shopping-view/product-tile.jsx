@@ -1,6 +1,7 @@
 import { brandOptionsMap, categoryOptionsMap } from "@/config";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { useState } from "react";
 
 function ShoppingProductTile({
   product,
@@ -12,17 +13,27 @@ function ShoppingProductTile({
     handleGetProductDetails(productId);
   };
 
+  // Prepare images: main + additional (if present)
+  const productImages = [product?.image, ...(product?.images || [])].filter(Boolean);
+  const primaryImage = productImages[0] || '/placeholder-image.jpg';
+  const hoverImage = productImages[1] || primaryImage;
+
+  const [showHover, setShowHover] = useState(false);
+
   return (
     <div className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] w-full max-w-xs mx-auto">
       {/* Image container */}
       <div
         className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
         onClick={() => handleProductClick(product?._id)}
+        onMouseEnter={() => productImages.length > 1 && setShowHover(true)}
+        onMouseLeave={() => setShowHover(false)}
       >
         <img
-          src={product?.image}
+          src={showHover ? hoverImage : primaryImage}
           alt={product?.title}
           className="w-full h-[360px] object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />

@@ -48,7 +48,7 @@ export const addToCart = createAsyncThunk(
           quantity,
           title: productDetails?.title || 'Product',
           image: productDetails?.image || '',
-          price: productDetails?.price || 0,
+                    price: productDetails?.price || 0,
           salePrice: productDetails?.salePrice || 0,
           category: productDetails?.category || 'General Product'
         };

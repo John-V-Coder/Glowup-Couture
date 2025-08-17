@@ -8,6 +8,7 @@ function AdminProductTile({
   setCurrentEditedId,
   handleDelete,
 }) {
+  
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div>
@@ -32,7 +33,8 @@ function AdminProductTile({
               <span className="text-lg font-bold">${product?.salePrice}</span>
             ) : null}
           </div>
-        </CardContent>
+
+                  </CardContent>
         <CardFooter className="flex justify-between items-center">
           <Button
             onClick={() => {

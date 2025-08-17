@@ -3,9 +3,7 @@ const Product = require("../../models/Product");
 
 const handleImageUpload = async (req, res) => {
   try {
-    const b64 = Buffer.from(req.file.buffer).toString("base64");
-    const url = "data:" + req.file.mimetype + ";base64," + b64;
-    const result = await imageUploadUtil(url);
+    const result = await imageUploadUtil(req.file.buffer);
 
     res.json({
       success: true,
@@ -25,10 +23,12 @@ const addProduct = async (req, res) => {
   try {
     const {
       image,
+      images,
       title,
       description,
       category,
       brand,
+      material,
       price,
       salePrice,
       totalStock,
@@ -39,10 +39,11 @@ const addProduct = async (req, res) => {
 
     const newlyCreatedProduct = new Product({
       image,
+      images: images || [],
       title,
       description,
       category,
-      brand,
+      brand: brand || material || "",
       price,
       salePrice,
       totalStock,
@@ -87,10 +88,12 @@ const editProduct = async (req, res) => {
     const { id } = req.params;
     const {
       image,
+      images,
       title,
       description,
       category,
       brand,
+      material,
       price,
       salePrice,
       totalStock,
@@ -107,12 +110,13 @@ const editProduct = async (req, res) => {
     findProduct.title = title || findProduct.title;
     findProduct.description = description || findProduct.description;
     findProduct.category = category || findProduct.category;
-    findProduct.brand = brand || findProduct.brand;
+    findProduct.brand = brand || material || findProduct.brand;
     findProduct.price = price === "" ? 0 : price || findProduct.price;
     findProduct.salePrice =
       salePrice === "" ? 0 : salePrice || findProduct.salePrice;
     findProduct.totalStock = totalStock || findProduct.totalStock;
     findProduct.image = image || findProduct.image;
+    findProduct.images = images || findProduct.images;
     findProduct.averageReview = averageReview || findProduct.averageReview;
 
     await findProduct.save();

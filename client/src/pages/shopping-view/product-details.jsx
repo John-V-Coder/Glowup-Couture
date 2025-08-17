@@ -75,6 +75,7 @@ function ProductDetailsPage() {
         productDetails: {
           title: productDetails.title,
           image: productDetails.image,
+          images: productDetails.images || [],
           price: productDetails.price,
           salePrice: productDetails.salePrice,
           category: productDetails.category
@@ -110,6 +111,7 @@ function ProductDetailsPage() {
         productDetails: {
           title: product.title,
           image: product.image,
+          images: product.images || [],
           price: product.price,
           salePrice: product.salePrice,
           category: product.category

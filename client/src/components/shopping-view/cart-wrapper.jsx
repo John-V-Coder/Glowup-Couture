@@ -71,7 +71,7 @@ function UserCartWrapper({ cartItems = [], setOpenCartSheet }) {
         {cartItems.length > 0 ? (
           cartItems.map((item, index) => (
             <UserCartItemsContent 
-              key={item.id || item._id || index} 
+              key={item.productId || item.id || item._id || index} 
               cartItem={item} 
             />
           ))

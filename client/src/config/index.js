@@ -81,6 +81,19 @@ export const addProductFormElements = [
     ],
   },
   {
+    label: "Size",
+    name: "size",
+    componentType: "select",
+    options: [
+      { id: "xs", label: "XS" },
+      { id: "s", label: "S" },
+      { id: "m", label: "M" },
+      { id: "l", label: "L" },
+      { id: "xl", label: "XL" },
+      { id: "xxl", label: "XXL" }
+    ],
+  },
+  {
     label: "Price",
     name: "price",
     componentType: "input",
@@ -158,6 +171,14 @@ export const filterOptions = {
     { id: "linen", label: "Linen" },
     { id: "viscose", label: "Viscose" }
   ],
+  size: [
+    { id: "xs", label: "XS" },
+    { id: "s", label: "S" },
+    { id: "m", label: "M" },
+    { id: "l", label: "L" },
+    { id: "xl", label: "XL" },
+    { id: "xxl", label: "XXL" }
+  ]
 };
 
 export const sortOptions = [
