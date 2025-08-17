@@ -91,13 +91,13 @@ function ShoppingCheckout() {
       });
       return false;
     }
-    if (
-      !billingInfo.firstName ||
-      !billingInfo.email
-    ) {
+    const name = (billingInfo.firstName || "").trim();
+    const email = (billingInfo.email || "").trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!name || name.length < 2 || !emailOk) {
       toast({
         title: "Billing Information Required",
-        description: "Please fill in all required billing details",
+        description: !emailOk ? "Enter a valid email address" : "Enter your full name (min 2 characters)",
         variant: "destructive",
       });
       return false;
@@ -121,6 +121,7 @@ function ShoppingCheckout() {
       cartItems: cartItems.items.map((singleCartItem) => ({
         productId: singleCartItem?.productId,
         title: singleCartItem?.title,
+        name: singleCartItem?.title,
         image: singleCartItem?.image,
         price:
           singleCartItem?.salePrice > 0
@@ -136,7 +137,7 @@ function ShoppingCheckout() {
         phone: currentSelectedAddress?.phone,
         notes: currentSelectedAddress?.notes,
       },
-      billingInfo,
+      billingInfo: { name: billingInfo.firstName?.trim(), firstName: billingInfo.firstName?.trim(), email: billingInfo.email?.trim() },
       orderStatus: "pending",
       paymentMethod: selectedPaymentMethod,
       paymentStatus: "pending",
@@ -150,14 +151,17 @@ function ShoppingCheckout() {
       payerId: "",
     };
 
-    dispatch(createNewOrder(orderData)).then((data) => {
-      if (data?.payload?.success) {
+    dispatch(createNewOrder(orderData)).then((action) => {
+      const ok =
+        action?.meta?.requestStatus === "fulfilled" &&
+        (action?.payload?.approvalURL || action?.payload?.orderId);
+      if (ok) {
         setIsPaymentStart(true);
       } else {
         setIsPaymentStart(false);
         toast({
           title: "Order Creation Failed",
-          description: "Please try again or contact support",
+          description: action?.payload?.message || "Please try again or contact support",
           variant: "destructive",
         });
       }
@@ -176,6 +180,7 @@ function ShoppingCheckout() {
         cartItems: cartItems.items.map((singleCartItem) => ({
           productId: singleCartItem?.productId,
           title: singleCartItem?.title,
+          name: singleCartItem?.title,
           image: singleCartItem?.image,
           price:
             singleCartItem?.salePrice > 0
@@ -191,7 +196,7 @@ function ShoppingCheckout() {
           phone: currentSelectedAddress?.phone,
           notes: currentSelectedAddress?.notes,
         },
-        billingInfo,
+        billingInfo: { name: billingInfo.firstName?.trim(), firstName: billingInfo.firstName?.trim(), email: billingInfo.email?.trim() },
         orderStatus: "confirmed",
         paymentMethod: "mpesa",
         paymentStatus: "paid",
@@ -205,18 +210,19 @@ function ShoppingCheckout() {
         payerId: mpesaPhone,
       };
 
-      dispatch(createNewOrder(orderData)).then((data) => {
+      dispatch(createNewOrder(orderData)).then((action) => {
         setIsProcessingMpesa(false);
-        if (data?.payload?.success) {
+        const ok = action?.meta?.requestStatus === "fulfilled" && action?.payload?.orderId;
+        if (ok) {
           toast({
             title: "M-Pesa Payment Successful!",
-            description: `Payment of $${finalTotal.toFixed(2)} completed via ${mpesaPhone}`,
+            description: `Payment of ${finalTotal.toFixed(2)} completed via ${mpesaPhone}`,
           });
           navigate('/shop/payment-success');
         } else {
           toast({
             title: "Payment Failed",
-            description: "Please try again or contact support",
+            description: action?.payload?.message || "Please try again or contact support",
             variant: "destructive",
           });
         }
