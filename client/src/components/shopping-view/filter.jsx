@@ -319,6 +319,23 @@ function ProductFilter({
         {/* Filters Content */}
         <div className="max-h-[70vh] overflow-y-auto">
           <div className="p-6 space-y-6">
+            {/* Desktop Sort By */}
+            <div className="hidden lg:block">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <label className="block text-sm font-semibold text-gray-800 mb-2">Sort By</label>
+                <select
+                  value={sort}
+                  onChange={(e) => handleSort(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
             {/* Active Filters */}
             {activeFiltersCount > 0 && (
               <div className="bg-gray-50 rounded-xl p-4">

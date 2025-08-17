@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs removed in favor of collapsible sections
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,6 +21,7 @@ import { ProductQA } from "@/components/shopping-view/productQA";
 import ProductImageGallery from "@/components/shopping-view/product-image-gallery";
 import AIProductRecommendations from "@/components/shopping-view/AIProductRecommendations";
 import ProductReviews from "@/pages/shopping-view/product-reviews-page";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 // Get related products from the same category
 const getRelatedProducts = (productDetails, productList) => {
@@ -40,6 +41,8 @@ function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
+  const [showQA, setShowQA] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -195,7 +198,7 @@ function ProductDetailsPage() {
     };
   }, [dispatch, id]);
 
-  // Fetch reviews + update recently viewed
+  // Fetch reviews + update recently viewed (store IDs in localStorage)
   useEffect(() => {
     if (!productDetails?._id) return;
 
@@ -203,12 +206,25 @@ function ProductDetailsPage() {
     dispatch(getReviews(productDetails._id))
       .finally(() => setReviewsLoading(false));
 
-    const viewed = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
-    const updated = [productDetails, ...viewed.filter(p => p._id !== productDetails._id)].slice(0, 3);
-    setRecentlyViewed(updated);
-    localStorage.setItem("recentlyViewed", JSON.stringify(updated));
+    try {
+      const raw = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+      const prevIds = Array.isArray(raw)
+        ? raw.map((v) => (typeof v === "string" ? v : v?._id)).filter(Boolean)
+        : [];
+      const ids = [productDetails._id, ...prevIds.filter((id) => id !== productDetails._id)].slice(0, 12);
+      localStorage.setItem("recentlyViewed", JSON.stringify(ids));
 
-  }, [productDetails?._id, dispatch]); // ✅ only runs when product ID changes
+      const objects = ids
+        .map((id) => (id === productDetails._id ? productDetails : productList?.find((p) => p._id === id)))
+        .filter(Boolean)
+        .slice(0, 4);
+      setRecentlyViewed(objects);
+    } catch {}
+
+    // collapse sections when product changes
+    setShowReviews(false);
+    setShowQA(false);
+  }, [productDetails?._id, productList, dispatch]);
 
   if (isLoading) {
     return (
@@ -287,23 +303,41 @@ function ProductDetailsPage() {
         </div>
       </div>
 
-  <Tabs defaultValue="reviews" className="mb-8">
-  <TabsList className="grid w-full grid-cols-2">
-    <TabsTrigger value="reviews">Reviews</TabsTrigger>
-    <TabsTrigger value="qa">Q&A</TabsTrigger>
-  </TabsList>
+  <div className="mb-8 space-y-4">
+    <div className="border rounded-lg">
+      <button
+        type="button"
+        onClick={() => setShowReviews((v) => !v)}
+        aria-expanded={showReviews}
+        className="w-full flex items-center justify-between p-4 text-left"
+      >
+        <span className="font-semibold">Reviews</span>
+        <span className="text-sm text-gray-500">{reviews?.length || 0}</span>
+      </button>
+      {showReviews && (
+        <div className="p-4 border-t space-y-6">
+          <ProductReviews productId={productDetails._id} currentUser={user} />
+        </div>
+      )}
+    </div>
 
-  <TabsContent value="reviews" className="space-y-6">
-    <ProductReviews
-      productId={productDetails._id}
-      currentUser={user}
-    />
-  </TabsContent>
-
-  <TabsContent value="qa" className="space-y-6">
-    <ProductQA questions={productDetails.questions || []} />
-  </TabsContent>
-</Tabs>
+    <div className="border rounded-lg">
+      <button
+        type="button"
+        onClick={() => setShowQA((v) => !v)}
+        aria-expanded={showQA}
+        className="w-full flex items-center justify-between p-4 text-left"
+      >
+        <span className="font-semibold">Q&A</span>
+        <span className="text-sm text-gray-500">{(productDetails.questions || []).length || 0}</span>
+      </button>
+      {showQA && (
+        <div className="p-4 border-t space-y-6">
+          <ProductQA questions={productDetails.questions || []} />
+        </div>
+      )}
+    </div>
+  </div>
 
 {getRelatedProducts(productDetails, productList).length > 0 && (
   <div className="space-y-6">
@@ -339,6 +373,7 @@ function ProductDetailsPage() {
     </div>
   </div>
 )}
+<WhatsAppButton/>
     </div>
   );
 }

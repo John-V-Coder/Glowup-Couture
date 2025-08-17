@@ -11,6 +11,8 @@ import { sortOptions } from "@/config";
 import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
 import { fetchAllFilteredProducts, fetchProductDetails } from "@/store/shop/products-slice";
 import { useCartNotification } from "@/hooks/use-cart-notification";
+import { MessageSquare } from "lucide-react";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -180,6 +182,7 @@ function ShoppingListing() {
             : null}
         </div>
       </div>
+         <WhatsAppButton/>
     </div>
   );
 }

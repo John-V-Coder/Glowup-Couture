@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { Heart, Users, Award, Sparkles } from "lucide-react";
 import heroBackground from "@/assets/images/hero-bg.jpg";
 import { Phone } from "lucide-react";
-import { MessageSquare } from "lucide-react";;
+import { MessageSquare } from "lucide-react";import WhatsAppButton from "@/components/common/whatsApp";
+;
 
 function AboutUs() {
   const fadeInUp = {
@@ -71,14 +72,7 @@ function AboutUs() {
       transition={{ delay: 0.4 }}
     />
   </div>
-  {/* Fixed WhatsApp button */}
-  <a 
-    href="https://wa.me/254797613671" 
-    className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white p-4 rounded-full shadow-xl z-50 flex items-center gap-2"
-  >
-    <MessageSquare className="w-5 h-5" />
-    <span className="text-sm font-medium">Chat Now</span>
-  </a>
+  <WhatsAppButton/>
 </motion.section>
 
       {/* Story Section */}

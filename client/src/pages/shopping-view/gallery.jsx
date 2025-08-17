@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFeatureImages } from "@/store/common-slice";
 import { Heart, Share2, Download, X, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 function Gallery() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -311,8 +313,10 @@ function Gallery() {
               </div>
             </div>
           </motion.div>
+            
         </motion.div>
       )}
+     <WhatsAppButton/>
     </div>
   );
 }

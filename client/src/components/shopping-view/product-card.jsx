@@ -8,6 +8,11 @@ export function ProductCard({ product, onClick, handleAddToCart }) {
     if (onClick) onClick(productId)
   }
 
+  const discountPercent =
+    product?.salePrice > 0 && product?.price > 0
+      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+      : 0
+
   return (
     <div className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] w-full max-w-xs mx-auto">
       {/* Image container */}
@@ -39,6 +44,12 @@ export function ProductCard({ product, onClick, handleAddToCart }) {
           </Badge>
         ) : null}
 
+        {discountPercent > 0 && (
+          <Badge className="absolute top-3 right-3 bg-red-500/90 text-white text-[10px] px-2 py-1 rounded">
+            {discountPercent}% OFF
+          </Badge>
+        )}
+
         {/* Floating Add to Cart (desktop only) */}
         {handleAddToCart && (
           <div className="absolute bottom-3 right-3 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
@@ -68,7 +79,7 @@ export function ProductCard({ product, onClick, handleAddToCart }) {
 
       {/* Product details */}
       <div className="pt-3 px-1" onClick={() => handleProductClick(product?._id)}>
-        <h2 className="text-lg font-bold mb-2 text-gray-900 leading-tight line-clamp-2">
+        <h2 className="text-base font-semibold mb-2 text-gray-900 leading-tight line-clamp-2">
           {product?.title}
         </h2>
 
@@ -87,15 +98,15 @@ export function ProductCard({ product, onClick, handleAddToCart }) {
         <div className="flex items-center gap-2">
           {product?.salePrice > 0 ? (
             <>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-base font-semibold text-gray-900">
                 ${product?.salePrice}
               </span>
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-xs text-gray-500 line-through">
                 ${product?.price}
               </span>
             </>
           ) : (
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-base font-semibold text-gray-900">
               ${product?.price}
             </span>
           )}

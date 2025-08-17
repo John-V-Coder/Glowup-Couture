@@ -11,6 +11,8 @@ import { createNewOrder } from "@/store/shop/order-slice";
 import { ArrowDown, Smartphone, CreditCard, MapPin, User } from "lucide-react";
 import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
+import { MessageSquare } from "lucide-react";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -475,6 +477,7 @@ function ShoppingCheckout() {
         </div>
       )}
       <div ref={checkoutSectionRef}></div>
+       <WhatsAppButton/>
     </div>
   );
 }

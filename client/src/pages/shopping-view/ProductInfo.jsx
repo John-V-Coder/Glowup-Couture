@@ -3,6 +3,10 @@ import { StarRatingComponent } from "@/components/common/star-rating";
 import { brandOptionsMap, categoryOptionsMap } from "@/config";
 
 export function ProductInfo({ product, averageReview, reviewCount }) {
+  const discountPercent =
+    product?.salePrice > 0 && product?.price > 0
+      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+      : 0;
   return (
     <div className="space-y-6">
       {/* 🔹 Product Title & Badges */}
@@ -47,9 +51,9 @@ export function ProductInfo({ product, averageReview, reviewCount }) {
             ${product.salePrice}
           </p>
         )}
-        {product.salePrice > 0 && (
+        {product.salePrice > 0 && product.price > 0 && (
           <Badge variant="destructive" className="text-sm">
-            Save ${product.price - product.salePrice}
+            {discountPercent}% OFF
           </Badge>
         )}
       </div>

@@ -2,6 +2,7 @@ import { Calendar, Phone, MessageCircle, Ruler, Music, Instagram, Facebook } fro
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import React from 'react';
+import { MessageSquare } from "lucide-react";
 
 export const ScrollingPromoBar = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -84,14 +85,14 @@ export const ContactBar = () => {
               type="book" 
               clickedButton={clickedButton}
               icon={<Calendar className="w-4 h-4" />}
-              label="Book Measurement"
+              label="Book Appointment"
               onClick={handleAction}
             />
             <ActionButton 
               type="call" 
               clickedButton={clickedButton}
-              icon={<Phone className="w-4 h-4" />}
-              label="Call Now"
+              icon={<MessageSquare className="w-4 h-4" />}
+              label="Message Us"
               variant="outline"
               onClick={handleAction}
             />
@@ -133,17 +134,17 @@ const ContactInfo = ({ icon, text, mobileText }) => (
 
 const SocialLinks = () => (
   <div className="flex items-center gap-3">
-    <span className="text-xs text-gray-500 font-medium">Follow Us:</span>
+    <span className="text-xs text-gray-500 font-large">Follow Us:</span>
     <SocialIcon 
-      href="https://instagram.com/glowupcouture" 
+      href="https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
       icon={<Instagram className="w-4 h-4" />}
     />
     <SocialIcon 
-      href="https://facebook.com/glowupcouture" 
+      href="https://www.facebook.com/p/Glow-Couture-100037207131507/" 
       icon={<Facebook className="w-4 h-4" />}
     />
     <SocialIcon 
-      href="https://tiktok.com/@glowupcouture" 
+      href="https://www.tiktok.com/@glowupcouture" 
       icon={<Music className="w-4 h-4" />
       }
     />

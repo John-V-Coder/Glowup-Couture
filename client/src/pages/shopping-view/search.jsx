@@ -8,6 +8,7 @@ import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
 import { fetchProductDetails } from "@/store/shop/products-slice";
 import { getSearchResults, resetSearchResults } from "@/store/shop/search-slice";
 import { Search } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 
 function SearchProducts() {
@@ -107,6 +108,14 @@ function SearchProducts() {
           />
         ))}
       </div>
+        {/* Fixed WhatsApp button */}
+              <a 
+                href="https://wa.me/254797613671" 
+                className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white p-4 rounded-full shadow-xl z-50 flex items-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span className="text-sm font-medium"> WhatsApp Us </span>
+              </a>
     </div>
   );
 }

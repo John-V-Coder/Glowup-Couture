@@ -1,10 +1,11 @@
 import { ChevronLeftIcon, ChevronRightIcon, ShirtIcon, Shirt, UmbrellaIcon, Gem, Diamond, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
+import { ProductCard } from "@/components/shopping-view/product-card";
 import { useNavigate } from "react-router-dom";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,6 +13,8 @@ import { useCartNotification } from "@/hooks/use-cart-notification";
 import { getFeatureImages } from "@/store/common-slice";
 import { Leaf, ShieldEllipsisIcon, SliceIcon, Flame, LineChart, VenusIcon } from "lucide-react";
 import { BrandLogo } from "@/components/shopping-view/header";
+import { MessageSquare } from "lucide-react";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 const categoriesWithIcon = [
   { id: "women", label: "Women's Collection", icon: ShirtIcon },
@@ -75,7 +78,62 @@ function ShoppingHome() {
     });
   }
 
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState([]);
+
   useEffect(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+      const unique = Array.from(new Set(ids));
+      setRecentlyViewedIds(unique);
+    } catch {}
+  }, []);
+
+  const recentlyViewedProducts = (recentlyViewedIds || [])
+    .map((id) => productList?.find((p) => p._id === id))
+    .filter(Boolean)
+    .slice(0, 12);
+
+  const latestArrivals = (productList || [])
+    ?.slice()
+    ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    ?.slice(0, 16);
+
+  const latestRef = useRef(null);
+
+  useEffect(() => {
+    const el = latestRef.current;
+    if (!el || !latestArrivals?.length || latestArrivals.length <= 1) return;
+
+    let rafId;
+    const speed = 0.6; // pixels per frame (~36px/s @ 60fps)
+    const halfWidth = () => el.scrollWidth / 2;
+
+    const step = () => {
+      if (el.scrollLeft >= halfWidth()) {
+        // Seamless loop back to start of first set
+        el.scrollLeft = 0;
+      } else {
+        el.scrollLeft += speed;
+      }
+      rafId = requestAnimationFrame(step);
+    };
+
+    el.scrollLeft = 0;
+    rafId = requestAnimationFrame(step);
+
+    const handleResize = () => {
+      if (el.scrollLeft >= halfWidth()) el.scrollLeft = 0;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [latestArrivals.length]);
+
+  useEffect(() => {
+    if (!featureImageList || featureImageList.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
     }, 15000);
@@ -154,63 +212,59 @@ function ShoppingHome() {
 </div>
 
 
-      {/* Shop by Collection */}
+      {/* Latest Arrivals - Horizontal Scroller */}
       <section className="py-20 w-full bg-white">
         <div className="w-full px-0">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Shop by <span className="text-amber-600">Collection</span>
+              Latest <span className="text-amber-600">Arrivals</span>
             </h2>
+            <p className="text-gray-600 text-lg"></p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 px-6">
-            {categoriesWithIcon.map((categoryItem) => (
-              <Card
-                key={categoryItem.id}
-                onClick={() => handleNavigateToListingPage(categoryItem, "category")}
-                className="group cursor-pointer border border-amber-100 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 bg-white"
-              >
-                <CardContent className="p-8 text-center space-y-4">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-amber-50 to-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-amber-100">
-                    <categoryItem.icon className="w-10 h-10 text-amber-600 group-hover:text-amber-800" />
-                  </div>
-                  <h3 className="font-bold text-lg text-gray-900 group-hover:text-amber-600">
-                    {categoryItem.label}
-                  </h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+          <div className="relative px-6">
+            
+            <div
+              ref={latestRef}
+              className="flex gap-6 overflow-hidden pr-2"
+            >
+              {[...latestArrivals, ...latestArrivals].map((product, idx) => (
+                <div key={`${product._id}-${idx}`} className="snap-start shrink-0 w-[260px] sm:w-[280px]">
+                  <ShoppingProductTile
+                    product={product}
+                    handleGetProductDetails={handleGetProductDetails}
+                    handleAddtoCart={handleAddtoCart}
+                  />
+                </div>
+              ))}
+            </div>
+
+                      </div>
         </div>
       </section>
 
-      {/* Shop by Brand */}
-      <section className="py-20 w-full bg-gradient-to-br from-amber-50 to-white">
-        <div className="w-full px-0">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Shop by <span className="text-amber-800">Brand</span>
-            </h2>
+      {/* Recently Viewed */}
+      {recentlyViewedProducts.length > 0 && (
+        <section className="py-20 w-full bg-gradient-to-br from-gray-50 to-white">
+          <div className="w-full px-0">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                Popular <span className="text-amber-700">Items</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-6">
+              {recentlyViewedProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  onClick={handleGetProductDetails}
+                  handleAddToCart={handleAddtoCart}
+                />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-6">
-            {brandsWithIcon.map((brandItem) => (
-              <Card
-                key={brandItem.id}
-                onClick={() => handleNavigateToListingPage(brandItem, "brand")}
-                className="group cursor-pointer border border-amber-100 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white"
-              >
-                <CardContent className="p-6 text-center space-y-3">
-                  <div className="w-14 h-14 mx-auto bg-gradient-to-br from-amber-50 to-white rounded-lg flex items-center justify-center border border-amber-100">
-                    <brandItem.icon className="w-7 h-7 text-amber-600 group-hover:text-amber-800" />
-                  </div>
-                  <span className="font-semibold text-sm text-gray-900 group-hover:text-amber-600">
-                    {brandItem.label}
-                  </span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured Pieces */}
       <section className="py-20 w-full bg-white">
@@ -233,6 +287,7 @@ function ShoppingHome() {
           </div>
         </div>
       </section>
+         <WhatsAppButton/>
     </div>
   );
 }

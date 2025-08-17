@@ -28,6 +28,7 @@ function ShoppingAccount() {
           </Tabs>
         </div>
       </div>
+        <WhatsAppButton/>
     </div>
   );
 }
