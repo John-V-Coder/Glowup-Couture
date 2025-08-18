@@ -50,11 +50,11 @@ function ShoppingProductTile({
           </Badge>
         ) : product?.totalStock < 10 ? (
           <Badge className="absolute top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
-            {`Only ${product?.totalStock} left`}
+            {`${product?.totalStock} left`}
           </Badge>
         ) : product?.salePrice > 0 ? (
           <Badge className="absolute top-3 left-3 bg-green-500/90 text-white text-xs px-2 py-1">
-            Sale
+            New
           </Badge>
         ) : null}
 
