@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+import PageWrapper from '@/components/common/page-wrapper';
 
 export default function ReturnRefundExchangePolicy() {
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -210,6 +211,7 @@ export default function ReturnRefundExchangePolicy() {
     };
 
     return (
+        <PageWrapper message="Loading return policy...">
         <>
 
             <div style={styles.body}>
@@ -333,5 +335,6 @@ export default function ReturnRefundExchangePolicy() {
                 )}
             </div>
         </>
+        </PageWrapper>
     );
 }

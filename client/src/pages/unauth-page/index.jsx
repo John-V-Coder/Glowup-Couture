@@ -1,9 +1,13 @@
 
 
 
-
+import PageWrapper from "@/components/common/page-wrapper";
 function UnauthPage(){
-    return <div>Unathorized zone</div>
+    return (
+        <PageWrapper message="Loading...">
+            <div>Unauthorized zone</div>
+        </PageWrapper>
+    )
 }
 
 export default UnauthPage;

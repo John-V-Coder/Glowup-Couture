@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function PaypalCancelPage() {
   return (
+    <PageWrapper message="Loading...">
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center px-6">
       <div className="max-w-md bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-red-600 mb-4">Payment Canceled</h1>
@@ -24,6 +26,7 @@ function PaypalCancelPage() {
         </div>
       </div>
     </div>
+    </PageWrapper>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PageWrapper from '@/components/common/page-wrapper';
 
 export default function TermsAndConditions() {
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -209,6 +210,7 @@ export default function TermsAndConditions() {
     };
 
     return (
+        <PageWrapper message="Loading terms and conditions...">
         <div style={styles.body}>
             <div style={styles.header}>
                 <div style={styles.container}>
@@ -428,5 +430,6 @@ export default function TermsAndConditions() {
                 </button>
             )}
         </div>
+        </PageWrapper>
     );
 }

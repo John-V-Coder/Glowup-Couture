@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { capturePayment } from "@/store/shop/order-slice";
 
+import PageWrapper from "@/components/common/page-wrapper";
 
 function PaypalReturnPage() {
   const dispatch = useDispatch();
@@ -26,11 +27,13 @@ function PaypalReturnPage() {
   }, [paymentId, payerId, dispatch]);
 
   return (
+    <PageWrapper message="Processing payment...">
     <Card>
       <CardHeader>
         <CardTitle>Processing Payment...Please wait!</CardTitle>
       </CardHeader>
     </Card>
+    </PageWrapper>
   );
 }
 

@@ -19,9 +19,10 @@ import PaymentSuccessPage from './pages/shopping-view/payment-success';
 import UnauthPage from './pages/unauth-page';
 import NotFound from './pages/not-found';
 import { useSelector, useDispatch  } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import CheckAuth from './components/common/check-auth';
 import Preloader from './components/common/preloader';
+import RoutePreloader from './components/common/route-preloader.jsx';
 import { checkAuth, setLoadingFalse } from './store/auth-slice';
 import { loadGuestCart } from './store/shop/cart-slice';
 import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
@@ -89,6 +90,7 @@ function App() {
   console.log(isLoading, JSON, user);
 
   return (
+    <RoutePreloader>
         <div className="flex flex-col min-h-screen">
       <Routes>
         <Route
@@ -151,6 +153,7 @@ function App() {
       </Routes>
           <Footer />
     </div>
+    </RoutePreloader>
   );
 }
 

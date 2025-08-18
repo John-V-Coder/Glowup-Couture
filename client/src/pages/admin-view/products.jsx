@@ -13,6 +13,7 @@ import {
   editProduct,
   fetchAllProducts,
 } from "@/store/admin/products-slice";
+import PageWrapper from "@/components/common/page-wrapper";
 
 const initialFormData = {
   image: null,
@@ -120,6 +121,7 @@ function AdminProducts() {
   }, [currentEditedId, productList]);
 
   return (
+    <PageWrapper message="Loading products...">
     <Fragment>
       <div className="mb-5 w-full flex justify-end">
         <Button onClick={() => setOpenCreateProductsDialog(true)}>Add New Product</Button>
@@ -172,6 +174,7 @@ function AdminProducts() {
         </SheetContent>
       </Sheet>
     </Fragment>
+    </PageWrapper>
   );
 }
 

@@ -1,5 +1,11 @@
+import PageWrapper from "@/components/common/page-wrapper";
+
 function NotFound(){
-    return <div>Page Not Found</div>
+    return (
+        <PageWrapper message="Loading...">
+            <div>Page Not Found</div>
+        </PageWrapper>
+    )
 }
 
 export default NotFound;

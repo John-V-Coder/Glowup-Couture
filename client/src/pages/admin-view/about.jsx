@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Save, RefreshCw, Eye, Edit3 } from "lucide-react";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function AdminAbout() {
   const [aboutData, setAboutData] = useState({
@@ -165,6 +166,7 @@ function AdminAbout() {
   }
 
   return (
+    <PageWrapper message="Loading about management...">
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 border-b pb-2">Manage About Us Page</h1>
@@ -335,6 +337,7 @@ function AdminAbout() {
         </Card>
       </div>
     </div>
+    </PageWrapper>
   );
 }
 

@@ -9,6 +9,7 @@ import { fetchProductDetails } from "@/store/shop/products-slice";
 import { getSearchResults, resetSearchResults } from "@/store/shop/search-slice";
 import { Search } from "lucide-react";
 import { MessageSquare } from "lucide-react";
+import PageWrapper from "@/components/common/page-wrapper";
 
 
 function SearchProducts() {
@@ -79,6 +80,7 @@ function SearchProducts() {
   }
   console.log(searchResults, "searchResults");
   return (
+    <PageWrapper message="Loading search...">
     <div className="container mx-auto md:px-6 px-4 py-8">
       <div className="flex justify-center mb-8">
         <div className="w-full flex items-center justify-center">
@@ -117,6 +119,7 @@ function SearchProducts() {
                 <span className="text-sm font-medium"> WhatsApp Us </span>
               </a>
     </div>
+    </PageWrapper>
   );
 }
 

@@ -13,6 +13,7 @@ import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
 import { MessageSquare } from "lucide-react";
 import WhatsAppButton from "@/components/common/whatsApp";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -33,6 +34,15 @@ function ShoppingCheckout() {
   const { toast } = useToast();
   const checkoutSectionRef = useRef(null);
   const navigate = useNavigate();
+
+  // Fix: Redirect admin users to the dashboard after successful login.
+  // This prioritizes the admin user flow over the standard checkout redirect.
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
 
   // Initialize billing info when user data is available
   useEffect(() => {
@@ -233,6 +243,7 @@ function ShoppingCheckout() {
   };
 
   return (
+    <PageWrapper message="Loading checkout...">
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="relative h-[200px] w-full overflow-hidden">
         <img
@@ -252,7 +263,7 @@ function ShoppingCheckout() {
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <User className="h-5 w-5 text-blue-600" />
-                <h2 className="text-xl font-semibold">{isAuthenticated ? 'Billing Information' : 'Account Authentication'}</h2>
+                <h2 className="text-xl font-semibold">{isAuthenticated ? 'Billing Information' : 'Billing Account Here!'}</h2>
               </div>
 
               {!isAuthenticated ? (
@@ -479,6 +490,7 @@ function ShoppingCheckout() {
       <div ref={checkoutSectionRef}></div>
        <WhatsAppButton/>
     </div>
+    </PageWrapper>
   );
 }
 

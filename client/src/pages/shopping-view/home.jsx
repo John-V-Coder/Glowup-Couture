@@ -15,6 +15,7 @@ import { Leaf, ShieldEllipsisIcon, SliceIcon, Flame, LineChart, VenusIcon } from
 import { BrandLogo } from "@/components/shopping-view/header";
 import { MessageSquare } from "lucide-react";
 import WhatsAppButton from "@/components/common/whatsApp";
+import PageWrapper from "@/components/common/page-wrapper";
 
 const categoriesWithIcon = [
   { id: "women", label: "Women's Collection", icon: ShirtIcon },
@@ -147,148 +148,148 @@ function ShoppingHome() {
   }, [dispatch, user?.id]);
 
   return (
-    <div className="flex flex-col min-h-full w-full bg-white">
-      {/* Hero Section */}
-      <div className="relative w-full min-h-[80vh] md:min-h-[calc(100vh-5rem)] overflow-hidden">
-  {featureImageList && featureImageList.length > 0 ? (
-    featureImageList.map((slide, index) => (
-      <div
-        key={index}
-        className={`${index === currentSlide ? "opacity-100" : "opacity-0"} absolute inset-0 transition-opacity duration-1000`}
-      >
-        {/* Background Blur Fill */}
-        <div
-          className="absolute inset-0 bg-center bg-cover scale-110 blur-2xl"
-          style={{ backgroundImage: `url(${slide?.image})` }}
-        ></div>
+    <PageWrapper message="Loading home page...">
+      <div className="flex flex-col min-h-full w-full bg-white">
+        {/* Hero Section */}
+        <div className="relative w-full min-h-[60vh] md:min-h-[calc(100vh-5rem)] overflow-hidden">
+          {featureImageList && featureImageList.length > 0 ? (
+            featureImageList.map((slide, index) => (
+              <div
+                key={index}
+                className={`${index === currentSlide ? "opacity-100" : "opacity-0"} absolute inset-0 transition-opacity duration-1000`}
+              >
+                {/* Background Blur Fill */}
+                <div
+                  className="absolute inset-0 bg-center bg-cover scale-110 blur-2xl"
+                  style={{ backgroundImage: `url(${slide?.image})` }}
+                ></div>
 
-        {/* Foreground Image */}
-        <img
-          src={slide?.image}
-          alt={`Featured look ${index + 1}`}
-          className="relative w-full h-full object-contain mx-auto z-10"
-        />
+                {/* Foreground Image */}
+                <img
+                  src={slide?.image}
+                  alt={`Featured look ${index + 1}`}
+                  className="relative w-full h-full object-contain mx-auto z-10"
+                />
 
-        {/* Overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-20">
-          <div className="scale-100 md:scale-125 lg:scale-150">
-  <BrandLogo />
+                {/* Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-20 p-4">
+                  <div className="scale-75 sm:scale-100 md:scale-125 lg:scale-150 transform transition-transform duration-500">
+                    <BrandLogo />
+                    <a
+                      href="/shop/listing"
+                      className="mt-6 px-4 py-2 text-base sm:px-6 sm:py-3 sm:text-lg bg-amber-600 text-white font-semibold rounded-full shadow-lg hover:bg-amber-700 transition-all block mx-auto"
+                    >
+                      Shop Now
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-800 to-gray-900 flex items-center justify-center p-4">
+              <div className="text-center text-white space-y-2 sm:space-y-4">
+                <h1 className="text-3xl sm:text-5xl font-bold">Glowup Couture</h1>
+                <p className="text-base sm:text-xl">Ready To Wear</p>
+                <a
+                  href="/shop/listing"
+                  className="px-4 py-2 text-base sm:px-6 sm:py-3 bg-white text-amber-800 font-semibold rounded-full shadow-lg hover:bg-amber-200 transition-all inline-block mt-4"
+                >
+                  Shop Now
+                </a>
+              </div>
+            </div>
+          )}
 
-          <a
-            href="/shop/listing"
-            className="px-6 py-3 bg-amber-600 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-amber-700 transition-all"
-          >
-            Shop Now
-          </a>
+          {/* Dots */}
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3 z-30">
+            {featureImageList?.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${index === currentSlide ? "bg-amber-500" : "bg-white/50"}`}
+              />
+            ))}
           </div>
         </div>
-      </div>
-    ))
-  ) : (
-    <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-800 to-gray-900 flex items-center justify-center">
-      <div className="text-center text-white space-y-4">
-        <h1 className="text-5xl font-bold">Glowup Couture</h1>
-        <p className="text-xl">Ready To Wear</p>
-        <a
-          href="/shop/listing"
-          className="px-6 py-3 bg-white text-amber-800 text-lg font-semibold rounded-full shadow-lg hover:bg-amber-200 transition-all"
-        >
-          Shop Now
-        </a>
-      </div>
-    </div>
-  )}
-
-  {/* Dots */}
-  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
-    {featureImageList?.map((_, index) => (
-      <button
-        key={index}
-        onClick={() => setCurrentSlide(index)}
-        className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-amber-500" : "bg-white/50"}`}
-      />
-    ))}
-  </div>
-</div>
 
 
-      {/* Latest Arrivals - Horizontal Scroller */}
-      <section className="py-20 w-full bg-white">
-        <div className="w-full px-0">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Latest <span className="text-amber-600">Arrivals</span>
-            </h2>
-            <p className="text-gray-600 text-lg"></p>
-          </div>
-
-          <div className="relative px-6">
-            
-            <div
-              ref={latestRef}
-              className="flex gap-6 overflow-hidden pr-2"
-            >
-              {[...latestArrivals, ...latestArrivals].map((product, idx) => (
-                <div key={`${product._id}-${idx}`} className="snap-start shrink-0 w-[260px] sm:w-[280px]">
-                  <ShoppingProductTile
-                    product={product}
-                    handleGetProductDetails={handleGetProductDetails}
-                    handleAddtoCart={handleAddtoCart}
-                  />
-                </div>
-              ))}
+        {/* Latest Arrivals - Horizontal Scroller */}
+        <section className="py-12 sm:py-20 w-full bg-white">
+          <div className="w-full px-4 sm:px-6">
+            <div className="text-center mb-8 sm:mb-10">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+                Latest <span className="text-amber-600">Arrivals</span>
+              </h2>
+              <p className="text-gray-600 text-sm sm:text-lg"></p>
             </div>
 
-                      </div>
-        </div>
-      </section>
+            <div className="relative">
+              <div
+                ref={latestRef}
+                className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2" // Added no-scrollbar for cleaner look
+                // Added overflow-x-auto and no-scrollbar
+              >
+                {[...latestArrivals, ...latestArrivals].map((product, idx) => (
+                  <div key={`${product._id}-${idx}`} className="flex-none w-[180px] sm:w-[260px] md:w-[280px]">
+                    <ShoppingProductTile
+                      product={product}
+                      handleGetProductDetails={handleGetProductDetails}
+                      handleAddtoCart={handleAddtoCart}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
-      {/* Recently Viewed */}
-      {recentlyViewedProducts.length > 0 && (
-        <section className="py-20 w-full bg-gradient-to-br from-gray-50 to-white">
-          <div className="w-full px-0">
-            <div className="text-center mb-10">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Popular <span className="text-amber-700">Items</span>
+        {/* Recently Viewed */}
+        {recentlyViewedProducts.length > 0 && (
+          <section className="py-12 sm:py-20 w-full bg-gradient-to-br from-gray-50 to-white">
+            <div className="w-full px-4 sm:px-6">
+              <div className="text-center mb-8 sm:mb-10">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+                  Popular <span className="text-amber-700">Items</span>
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+                {recentlyViewedProducts.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    onClick={handleGetProductDetails}
+                    handleAddToCart={handleAddtoCart}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Featured Pieces */}
+        <section className="py-12 sm:py-20 w-full bg-white">
+          <div className="w-full px-4 sm:px-6">
+            <div className="text-center mb-8 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+                Featured <span className="text-amber-600">Pieces</span>
               </h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-6">
-              {recentlyViewedProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  onClick={handleGetProductDetails}
-                  handleAddToCart={handleAddtoCart}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
+              {productList?.slice(0, 8).map((productItem) => (
+                <ShoppingProductTile
+                  key={productItem._id}
+                  handleGetProductDetails={handleGetProductDetails}
+                  product={productItem}
+                  handleAddtoCart={handleAddtoCart}
                 />
               ))}
             </div>
           </div>
         </section>
-      )}
-
-      {/* Featured Pieces */}
-      <section className="py-20 w-full bg-white">
-        <div className="w-full px-0">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Featured <span className="text-amber-600">Pieces</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 px-6">
-            {productList?.slice(0, 8).map((productItem) => (
-              <ShoppingProductTile
-                key={productItem._id}
-                handleGetProductDetails={handleGetProductDetails}
-                product={productItem}
-                handleAddtoCart={handleAddtoCart}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-         <WhatsAppButton/>
-    </div>
+        <WhatsAppButton />
+      </div>
+    </PageWrapper>
   );
 }
 

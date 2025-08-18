@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PageWrapper from '@/components/common/page-wrapper';
 
 export default function DeliveryPolicy() {
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -244,6 +245,7 @@ export default function DeliveryPolicy() {
     };
 
     return (
+        <PageWrapper message="Loading delivery policy...">
         <>
          
             
@@ -397,5 +399,6 @@ export default function DeliveryPolicy() {
                 )}
             </div>
         </>
+        </PageWrapper>
     );
 }

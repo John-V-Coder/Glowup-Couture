@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeatureImage, getFeatureImages } from "@/store/common-slice";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function AdminDashboard() {
   const [uploadedImages, setUploadedImages] = useState([]);
@@ -26,6 +27,7 @@ function AdminDashboard() {
   }, [dispatch]);
 
   return (
+    <PageWrapper message="Loading dashboard...">
     <div>
       <ProductImageUpload
         uploadedImages={uploadedImages}
@@ -64,6 +66,7 @@ function AdminDashboard() {
 
 
     </div>
+    </PageWrapper>
   );
 }
 

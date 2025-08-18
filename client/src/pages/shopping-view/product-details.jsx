@@ -11,6 +11,7 @@ import { fetchProductDetails, setProductDetails, fetchAllFilteredProducts } from
 import { useCartNotification } from "@/hooks/use-cart-notification";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 // Import components
 import { ProductInfo } from "@/pages/shopping-view/ProductInfo";
 import { QuantitySelector } from "@/components/common/quality-selector";
@@ -22,6 +23,7 @@ import ProductImageGallery from "@/components/shopping-view/product-image-galler
 import AIProductRecommendations from "@/components/shopping-view/AIProductRecommendations";
 import ProductReviews from "@/pages/shopping-view/product-reviews-page";
 import WhatsAppButton from "@/components/common/whatsApp";
+import PageWrapper from "@/components/common/page-wrapper";
 
 // Get related products from the same category
 const getRelatedProducts = (productDetails, productList) => {
@@ -54,6 +56,38 @@ function ProductDetailsPage() {
 
   const { toast } = useToast();
   const { showCartNotification } = useCartNotification();
+
+  // Animation variants
+  const preloaderVariants = {
+    initial: { opacity: 1 },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.8, ease: "easeInOut" }
+    }
+  };
+
+  const contentVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut", delay: 0.2 }
+    }
+  };
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 }
+  };
 
   const averageReview =
     reviews?.length > 0
@@ -226,161 +260,352 @@ function ProductDetailsPage() {
     setShowQA(false);
   }, [productDetails?._id, productList, dispatch]);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-8">
-          <div className="h-8 w-24 bg-gray-200 rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gray-200 aspect-square rounded-lg"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!productDetails && !isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-        <Button onClick={() => navigate("/shop/listing/")}>Back to Shop</Button>
-      </div>
-    );
-  }
-
   // Deduplicate main image from additional images for gallery
   const galleryMainImage = productDetails?.image || (productDetails?.images?.[0] || "");
   const galleryAdditionalImages = Array.from(
     new Set((productDetails?.images || []).filter((img) => img && img !== galleryMainImage))
   );
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <Button
-        variant="ghost"
-        onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-2"
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <motion.div
+      variants={preloaderVariants}
+      initial="initial"
+      exit="exit"
+      className="container mx-auto px-4 py-8"
+    >
+      <motion.div 
+        className="animate-pulse space-y-8"
+        initial={{ opacity: 0.6 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </Button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <ProductImageGallery
-          additionalImages={galleryAdditionalImages}
-          mainImage={galleryMainImage}
-          productTitle={productDetails.title}
+        {/* Back button skeleton */}
+        <motion.div 
+          className="h-10 w-24 bg-gray-200 rounded"
+          initial={{ opacity: 0.3, scale: 0.95 }}
+          animate={{ 
+            opacity: [0.3, 0.6, 0.3],
+            scale: [0.95, 1, 0.95]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
         />
-
-        <div className="space-y-6">
-          <ProductInfo
-            product={productDetails}
-            averageReview={averageReview}
-            reviewCount={reviews?.length || 0}
-          />
-
-          <div className="flex flex-col gap-4">
-            <QuantitySelector
-              quantity={quantity}
-              onQuantityChange={(change) => {
-                const newQty = quantity + change;
-                if (newQty > 0 && newQty <= productDetails.totalStock) {
-                  setQuantity(newQty);
-                }
+        
+        {/* Main product grid skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Image gallery skeleton */}
+          <motion.div 
+            className="space-y-4"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              variants={fadeInUp}
+              className="bg-gray-200 aspect-square rounded-lg"
+              animate={{ 
+                opacity: [0.3, 0.6, 0.3]
               }}
-              maxStock={productDetails.totalStock}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: 0.2,
+                ease: "easeInOut"
+              }}
             />
-
-            <Button
-              className="w-full py-6 text-lg"
-              onClick={() => handleAddToCart(productDetails._id, productDetails.totalStock)}
-              disabled={productDetails.totalStock === 0}
+            <div className="flex gap-2">
+              {[...Array(4)].map((_, index) => (
+                <motion.div
+                  key={index}
+                  variants={fadeInUp}
+                  className="w-20 h-20 bg-gray-200 rounded"
+                  animate={{ 
+                    opacity: [0.3, 0.6, 0.3]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: 0.3 + index * 0.1,
+                    ease: "easeInOut"
+                  }}
+                />
+              ))}
+            </div>
+          </motion.div>
+          
+          {/* Product info skeleton */}
+          <motion.div 
+            className="space-y-6"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            </motion.div>
+            
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+            </motion.div>
+            
+            <motion.div variants={fadeInUp} className="space-y-2">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="h-4 bg-gray-200 rounded"></div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+        
+        {/* Collapsible sections skeleton */}
+        <motion.div 
+          className="space-y-4"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          {[...Array(2)].map((_, index) => (
+            <motion.div
+              key={index}
+              variants={fadeInUp}
+              className="border rounded-lg p-4"
             >
-              {productDetails.totalStock === 0 ? "Out of Stock" : "Add to Cart"}
-            </Button>
+              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+            </motion.div>
+          ))}
+        </motion.div>
+        
+        {/* Related products skeleton */}
+        <motion.div 
+          className="space-y-6"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          <motion.div variants={fadeInUp} className="h-8 bg-gray-200 rounded w-1/3"></motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                className="space-y-4"
+              >
+                <div className="bg-gray-200 aspect-square rounded-lg"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </motion.div>
+            ))}
           </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
 
-          <ProductFeatures features={productDetails.features} />
+  if (!productDetails && !isLoading) {
+    return (
+      <PageWrapper message="Loading product details...">
+        <div className="container mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
+          <Button onClick={() => navigate("/shop/listing/")}>Back to Shop</Button>
         </div>
+      </PageWrapper>
+    );
+  }
+
+  return (
+    <PageWrapper message="Loading product details...">
+      <div className="relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <LoadingSkeleton key="skeleton" />
+          ) : (
+            <motion.div
+              key="content"
+              variants={contentVariants}
+              initial="initial"
+              animate="animate"
+              className="container mx-auto px-4 py-8"
+            >
+              <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="mb-6 flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+
+              <motion.div 
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                <motion.div variants={fadeInUp}>
+                  <ProductImageGallery
+                    additionalImages={galleryAdditionalImages}
+                    mainImage={galleryMainImage}
+                    productTitle={productDetails.title}
+                  />
+                </motion.div>
+
+                <motion.div className="space-y-6" variants={fadeInUp}>
+                  <ProductInfo
+                    product={productDetails}
+                    averageReview={averageReview}
+                    reviewCount={reviews?.length || 0}
+                  />
+
+                  <div className="flex flex-col gap-4">
+                    <QuantitySelector
+                      quantity={quantity}
+                      onQuantityChange={(change) => {
+                        const newQty = quantity + change;
+                        if (newQty > 0 && newQty <= productDetails.totalStock) {
+                          setQuantity(newQty);
+                        }
+                      }}
+                      maxStock={productDetails.totalStock}
+                    />
+
+                    <Button
+                      className="w-full py-6 text-lg"
+                      onClick={() => handleAddToCart(productDetails._id, productDetails.totalStock)}
+                      disabled={productDetails.totalStock === 0}
+                    >
+                      {productDetails.totalStock === 0 ? "Out of Stock" : "Add to Cart"}
+                    </Button>
+                  </div>
+
+                  <ProductFeatures features={productDetails.features} />
+                </motion.div>
+              </motion.div>
+
+              <motion.div 
+                className="mb-8 space-y-4"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                <motion.div className="border rounded-lg" variants={fadeInUp}>
+                  <button
+                    type="button"
+                    onClick={() => setShowReviews((v) => !v)}
+                    aria-expanded={showReviews}
+                    className="w-full flex items-center justify-between p-4 text-left"
+                  >
+                    <span className="font-semibold">Reviews</span>
+                    <span className="text-sm text-gray-500">{reviews?.length || 0}</span>
+                  </button>
+                  {showReviews && (
+                    <motion.div 
+                      className="p-4 border-t space-y-6"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductReviews productId={productDetails._id} currentUser={user} />
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                <motion.div className="border rounded-lg" variants={fadeInUp}>
+                  <button
+                    type="button"
+                    onClick={() => setShowQA((v) => !v)}
+                    aria-expanded={showQA}
+                    className="w-full flex items-center justify-between p-4 text-left"
+                  >
+                    <span className="font-semibold">Q&A</span>
+                    <span className="text-sm text-gray-500">{(productDetails.questions || []).length || 0}</span>
+                  </button>
+                  {showQA && (
+                    <motion.div 
+                      className="p-4 border-t space-y-6"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductQA questions={productDetails.questions || []} />
+                    </motion.div>
+                  )}
+                </motion.div>
+              </motion.div>
+
+              {getRelatedProducts(productDetails, productList).length > 0 && (
+                <motion.div 
+                  className="space-y-6"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                >
+                  <motion.h2 className="text-2xl font-bold" variants={fadeInUp}>
+                    Related Products
+                  </motion.h2>
+                  <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    {getRelatedProducts(productDetails, productList).map((product) => (
+                      <motion.div key={product._id} variants={fadeInUp}>
+                        <ProductCard
+                          product={product}
+                          onClick={() => navigate(`/shop/product/${product._id}`)}
+                          handleAddToCart={() => handleRelatedAddToCart(product._id)}
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {recentlyViewed.length > 0 && (
+                <motion.div 
+                  className="space-y-6 mt-8"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                >
+                  <motion.h2 className="text-2xl font-bold flex items-center gap-2" variants={fadeInUp}>
+                    <Eye className="w-6 h-6" />
+                    Recently Viewed
+                  </motion.h2>
+                  <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    {recentlyViewed.map((product) => (
+                      <motion.div key={product._id} variants={fadeInUp}>
+                        <ProductCard
+                          product={product}
+                          onClick={() => navigate(`/shop/product/${product._id}`)}
+                          handleAddToCart={() => handleRelatedAddToCart(product._id)}
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              )}
+              <WhatsAppButton/>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-  <div className="mb-8 space-y-4">
-    <div className="border rounded-lg">
-      <button
-        type="button"
-        onClick={() => setShowReviews((v) => !v)}
-        aria-expanded={showReviews}
-        className="w-full flex items-center justify-between p-4 text-left"
-      >
-        <span className="font-semibold">Reviews</span>
-        <span className="text-sm text-gray-500">{reviews?.length || 0}</span>
-      </button>
-      {showReviews && (
-        <div className="p-4 border-t space-y-6">
-          <ProductReviews productId={productDetails._id} currentUser={user} />
-        </div>
-      )}
-    </div>
-
-    <div className="border rounded-lg">
-      <button
-        type="button"
-        onClick={() => setShowQA((v) => !v)}
-        aria-expanded={showQA}
-        className="w-full flex items-center justify-between p-4 text-left"
-      >
-        <span className="font-semibold">Q&A</span>
-        <span className="text-sm text-gray-500">{(productDetails.questions || []).length || 0}</span>
-      </button>
-      {showQA && (
-        <div className="p-4 border-t space-y-6">
-          <ProductQA questions={productDetails.questions || []} />
-        </div>
-      )}
-    </div>
-  </div>
-
-{getRelatedProducts(productDetails, productList).length > 0 && (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold">Related Products</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {getRelatedProducts(productDetails, productList).map((product) => (
-        <ProductCard
-          key={product._id}
-          product={product}
-          onClick={() => navigate(`/shop/product/${product._id}`)}
-          handleAddToCart={() => handleRelatedAddToCart(product._id)}
-        />
-      ))}
-    </div>
-  </div>
-)}
-
-{recentlyViewed.length > 0 && (
-  <div className="space-y-6 mt-8">
-    <h2 className="text-2xl font-bold flex items-center gap-2">
-      <Eye className="w-6 h-6" />
-      Recently Viewed
-    </h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {recentlyViewed.map((product) => (
-        <ProductCard
-          key={product._id}
-          product={product}
-          onClick={() => navigate(`/shop/product/${product._id}`)}
-          handleAddToCart={() => handleRelatedAddToCart(product._id)}
-        />
-      ))}
-    </div>
-  </div>
-)}
-<WhatsAppButton/>
-    </div>
+    </PageWrapper>
   );
 }
 

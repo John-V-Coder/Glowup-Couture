@@ -2,9 +2,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Address from "@/components/shopping-view/address";
 import ShoppingOrders from "@/components/shopping-view/orders";
 import accImg from "../../assets/account.jpg";
+import PageWrapper from "@/components/common/page-wrapper";
+import WhatsAppButton from "@/components/common/whatsApp";
 
 function ShoppingAccount() {
   return (
+    <PageWrapper message="Loading account...">
     <div className="flex flex-col">
       <div className="relative h-[300px] w-full overflow-hidden">
         <img
@@ -30,6 +33,7 @@ function ShoppingAccount() {
       </div>
         <WhatsAppButton/>
     </div>
+    </PageWrapper>
   );
 }
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import heroBackground from "@/assets/images/tweeter-bg.jpg";
 import { Phone } from "lucide-react";
 import { MessageSquare } from "lucide-react";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function Gallery() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -145,6 +146,7 @@ function Gallery() {
   }, [likeTimers]);
 
   return (
+    <PageWrapper message="Loading gallery...">
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-cream-50">
       <motion.section 
         className="py-16 px-4"
@@ -314,6 +316,7 @@ function Gallery() {
         </motion.div>
       )}
     </div>
+    </PageWrapper>
   );
 }
 

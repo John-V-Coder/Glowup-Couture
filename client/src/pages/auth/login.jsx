@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { loginUser } from "@/store/auth-slice";
 import { loginFormControls } from "@/config";
 import Preloader from "@/components/common/preloader";
+import PageWrapper from "@/components/common/page-wrapper";
 
 const initialState = {
   email: "",
@@ -38,14 +39,15 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/checkout" }) {
   }
 
   return (
+    <PageWrapper message="Loading login...">
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Sign in to your account
+          LogIn Account
         </h1>
         {!embedded && (
           <p className="mt-2">
-            Don't have an account
+            Don't Have Account
             <Link
               className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
               to="/auth/register"
@@ -63,6 +65,7 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/checkout" }) {
         onSubmit={onSubmit}
       />
     </div>
+    </PageWrapper>
   );
 }
 

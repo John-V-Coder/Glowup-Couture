@@ -13,6 +13,7 @@ import { fetchAllFilteredProducts, fetchProductDetails } from "@/store/shop/prod
 import { useCartNotification } from "@/hooks/use-cart-notification";
 import { MessageSquare } from "lucide-react";
 import WhatsAppButton from "@/components/common/whatsApp";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -154,6 +155,7 @@ function ShoppingListing() {
   console.log(productList, "productListproductListproductList");
 
   return (
+    <PageWrapper message="Loading products...">
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 p-4 md:p-6">
       <ProductFilter 
         filters={filters} 
@@ -184,6 +186,7 @@ function ShoppingListing() {
       </div>
          <WhatsAppButton/>
     </div>
+    </PageWrapper>
   );
 }
 

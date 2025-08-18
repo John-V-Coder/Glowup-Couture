@@ -6,6 +6,7 @@ import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { useCartNotification } from "@/hooks/use-cart-notification";
+import PageWrapper from "@/components/common/page-wrapper";
 
 function SalePage() {
   const dispatch = useDispatch();
@@ -69,6 +70,7 @@ function SalePage() {
   }
 
   return (
+    <PageWrapper message="Loading sale items...">
     <div className="min-h-screen w-full bg-white">
       <div className="container mx-auto px-4 py-10">
         <div className="mb-8 text-center">
@@ -99,6 +101,7 @@ function SalePage() {
         )}
       </div>
     </div>
+    </PageWrapper>
   );
 }
 

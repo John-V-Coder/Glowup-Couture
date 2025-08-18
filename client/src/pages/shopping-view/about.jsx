@@ -4,6 +4,7 @@ import heroBackground from "@/assets/images/hero-bg.jpg";
 import { Phone } from "lucide-react";
 import { MessageSquare } from "lucide-react";import WhatsAppButton from "@/components/common/whatsApp";
 ;
+import PageWrapper from "@/components/common/page-wrapper";
 
 function AboutUs() {
   const fadeInUp = {
@@ -21,6 +22,7 @@ function AboutUs() {
   };
 
   return (
+    <PageWrapper message="Loading about page...">
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-cream-50">
       {/* Hero Section */}
    <motion.section 
@@ -200,6 +202,7 @@ function AboutUs() {
         </div>
       </motion.section>
     </div>
+    </PageWrapper>
   );
 }
 export default AboutUs;

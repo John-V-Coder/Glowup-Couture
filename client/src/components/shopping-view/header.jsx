@@ -7,13 +7,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useDispatch, useSelector } from "react-redux";
 import { resetTokenAndCredentials } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame } from "lucide-react";
+import { Flame, User, LogIn } from "lucide-react";
+import AuthLogin from "@/pages/auth/login";
+import AuthRegister from "@/pages/auth/register";
 
 const shoppingViewHeaderMenuItems = [
   {
@@ -30,6 +34,14 @@ const shoppingViewHeaderMenuItems = [
       { id: "men", label: "Men's Collection", path: "/shop/listing?category=men" },
       { id: "kids", label: "Kids Wear", path: "/shop/listing?category=kids" },
       { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom" },
+      {
+        id: "sale",
+        path: "/shop/listing?category=sale", // Fixed the path (was category/sale)
+        label: "Sale",
+        buttonStyle: true,
+        destructive: true,
+        icon: <Flame className="w-4 h-4" />,
+      },
     ],
   },
   {
@@ -47,8 +59,8 @@ const shoppingViewHeaderMenuItems = [
     path: "/shop/search",
     label: "Search",
   },
-  { 
-    id: "sale", 
+  {
+    id: "sale",
     path: "/shop/listing?category=sale", // Fixed the path (was category/sale)
     label: "Sale",
     buttonStyle: true,
@@ -62,9 +74,7 @@ const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="relative cursor-pointer">
-          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${
-            isScrolled ? 'text-xs' : 'text-sm'
-          }`}>
+          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${isScrolled ? 'text-xs' : 'text-sm'}`}>
             {menuItem.label}
           </Label>
         </div>
@@ -257,6 +267,55 @@ export const BrandLogo = ({ isScrolled }) => {
   );
 };
 
+const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("signin");
+
+  const handleAuthSuccess = (user) => {
+    setIsOpen(false);
+    onAuthSuccess(user);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size={isScrolled ? "sm" : "default"}
+          className="border-amber-300 hover:bg-amber-50 hover:border-amber-400 text-amber-800 hover:text-amber-950 flex items-center gap-2"
+        >
+          <User className="w-4 h-4" />
+          Account
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-full max-w-lg bg-white border border-amber-200 rounded-lg p-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-amber-50 border-b border-amber-200 rounded-none rounded-t-lg">
+            <TabsTrigger
+              value="signin"
+              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-none"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-none"
+            >
+              Join Now
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin" className="mt-0">
+            <AuthLogin embedded={true} onSuccess={handleAuthSuccess} />
+          </TabsContent>
+          <TabsContent value="register" className="mt-0">
+            <AuthRegister embedded={true} onSuccess={handleAuthSuccess} />
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const HeaderRightContent = ({ isScrolled }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -273,7 +332,15 @@ const HeaderRightContent = ({ isScrolled }) => {
   const handleLogout = () => {
     dispatch(resetTokenAndCredentials());
     sessionStorage.clear();
-    navigate("/auth/login");
+    navigate("/shop/home");
+  };
+
+  const handleAuthSuccess = (user) => {
+    if (user?.role === "admin") {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/shop/home");
+    }
   };
 
   return (
@@ -287,9 +354,7 @@ const HeaderRightContent = ({ isScrolled }) => {
         >
           Cart
           {cartItems?.items?.length > 0 && (
-            <Badge className={`ml-2 bg-amber-800 text-amber-50 rounded-full ${
-              isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-            }`}>
+            <Badge className={`ml-2 bg-amber-800 text-amber-50 rounded-full ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`}>
               {cartItems?.items?.length || 0}
             </Badge>
           )}
@@ -303,7 +368,7 @@ const HeaderRightContent = ({ isScrolled }) => {
       {isAuthenticated ? (
         <UserDropdown user={user} onLogout={handleLogout} isScrolled={isScrolled} />
       ) : (
-        <AuthButtons isScrolled={isScrolled} />
+        <UnifiedAuthDialog isScrolled={isScrolled} onAuthSuccess={handleAuthSuccess} />
       )}
     </div>
   );
@@ -316,9 +381,7 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="cursor-pointer">
-          <Avatar className={`bg-amber-100 border border-amber-200 ${
-            isScrolled ? 'w-8 h-8' : 'w-10 h-10'
-          }`}>
+          <Avatar className={`bg-amber-100 border border-amber-200 ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`}>
             <AvatarFallback className="bg-transparent text-amber-800">
               {user?.userName?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
@@ -352,33 +415,10 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
           onClick={onLogout}
           className="p-3 rounded-md hover:bg-red-50 text-red-600 cursor-pointer"
         >
-          <div className="font-medium">Sign Out</div>
+          <div className="font-medium">Log Out</div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-};
-
-const AuthButtons = ({ isScrolled }) => {
-  const navigate = useNavigate();
-  return (
-    <div className="flex gap-3">
-      <Button
-        variant="outline"
-        onClick={() => navigate("/auth/login")}
-        size={isScrolled ? "sm" : "default"}
-        className="border-amber-300 hover:bg-amber-50 hover:border-amber-400 text-amber-800 hover:text-amber-950 px-6"
-      >
-        Sign In
-      </Button>
-      <Button
-        onClick={() => navigate("/auth/register")}
-        size={isScrolled ? "sm" : "default"}
-        className="bg-amber-600 hover:bg-amber-700 text-white px-6"
-      >
-        Join Now
-      </Button>
-    </div>
   );
 };
 
