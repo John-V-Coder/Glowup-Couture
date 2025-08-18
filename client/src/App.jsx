@@ -34,6 +34,7 @@ import ProductDetailsPage from './pages/shopping-view/product-details';
 import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
+import SalePage from './pages/shopping-view/sale';
 
 function App() {
 
@@ -131,6 +132,7 @@ function App() {
         >
           <Route path="home" element={<ShoppingHome />} />
           <Route path="listing" element={<ShoppingListing />} />
+          <Route path="listing?category/sale" element={<SalePage />} />
           <Route path="gallery" element={<ShoppingGallery />} />
           <Route path="about" element={<ShoppingAbout />} />
           <Route path="product/:id" element={<ProductDetailsPage />} />

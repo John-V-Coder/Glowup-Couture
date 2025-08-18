@@ -253,6 +253,12 @@ function ProductDetailsPage() {
     );
   }
 
+  // Deduplicate main image from additional images for gallery
+  const galleryMainImage = productDetails?.image || (productDetails?.images?.[0] || "");
+  const galleryAdditionalImages = Array.from(
+    new Set((productDetails?.images || []).filter((img) => img && img !== galleryMainImage))
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Button
@@ -266,8 +272,8 @@ function ProductDetailsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <ProductImageGallery
-          additionalImages={productDetails.images}
-          mainImage={productDetails.image}
+          additionalImages={galleryAdditionalImages}
+          mainImage={galleryMainImage}
           productTitle={productDetails.title}
         />
 

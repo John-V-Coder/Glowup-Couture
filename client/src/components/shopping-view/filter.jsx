@@ -17,7 +17,8 @@ const filterOptions = {
     { id: "men", label: "Men" },
     { id: "women", label: "Women" },
     { id: "kids", label: "Kids" },
-    { id: "custom", label: "Modern Custom" }
+    { id: "custom", label: "Modern Custom" },
+    { id: "sale", label: "Sale" }
   ],
   material: [
     { id: "cotton", label: "Cotton" },

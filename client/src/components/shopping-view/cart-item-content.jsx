@@ -13,13 +13,22 @@ function UserCartItemsContent({ cartItem }) {
   const dispatch = useDispatch();
   const { toast } = useToast();
   
-  // Multi images: main image + additional images (if any)
-  const productImages = [
-    cartItem?.image,
-    ...(cartItem?.images || [])
-  ].filter((img) => img && String(img).trim() !== "");
-  const primaryImage = productImages[0] || '/placeholder-image.jpg';
-  const hoverImage = productImages[1] || primaryImage;
+  // Build images robustly: prefer cart item, fallback to store, deduplicate
+  const productFromStore = (productList || []).find((p) => p._id === cartItem?.productId) || {};
+  const storeImages = (productFromStore.images || []).filter((img) => img && String(img).trim() !== "");
+  const mainCandidate = cartItem?.image || productFromStore?.image;
+  const combined = [
+    mainCandidate,
+    ...(Array.isArray(cartItem?.images) ? cartItem.images : []),
+    ...storeImages
+  ]
+    .map((img) => (img ? String(img) : ""))
+    .map((img) => img.trim())
+    .filter((img) => !!img);
+  const dedupImages = combined.filter((img, idx, arr) => arr.indexOf(img) === idx);
+  const primaryImage = dedupImages[0] || productFromStore?.image || '/placeholder-image.jpg';
+  const hoverImage = dedupImages.find((img) => img !== primaryImage) || primaryImage;
+  const hasHoverAlt = hoverImage !== primaryImage;
   const [showHover, setShowHover] = useState(false);
 
   
@@ -86,17 +95,23 @@ function UserCartItemsContent({ cartItem }) {
       {/* Image */}
       <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
         <div className="relative overflow-hidden rounded-2xl group"
-             onMouseEnter={() => productImages.length > 1 && setShowHover(true)}
+             onMouseEnter={() => hasHoverAlt && setShowHover(true)}
              onMouseLeave={() => setShowHover(false)}
         >
           <img
-            src={showHover ? hoverImage : primaryImage}
+            src={primaryImage}
             alt={cartItem?.title}
-            className="w-20 h-20 md:w-24 md:h-24 object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={(e) => {
-              e.currentTarget.src = '/placeholder-image.jpg';
-            }}
+            className={`w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 ${showHover && hasHoverAlt ? 'opacity-0' : 'opacity-100'}`}
+            onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
           />
+          {hasHoverAlt && (
+            <img
+              src={hoverImage}
+              alt={cartItem?.title}
+              className={`absolute inset-0 w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 ${showHover ? 'opacity-100' : 'opacity-0'}`}
+              onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
+            />
+          )}
         </div>
       </div>
 

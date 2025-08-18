@@ -13,6 +13,7 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
+import { Flame } from "lucide-react";
 
 const shoppingViewHeaderMenuItems = [
   {
@@ -46,7 +47,140 @@ const shoppingViewHeaderMenuItems = [
     path: "/shop/search",
     label: "Search",
   },
+  { 
+    id: "sale", 
+    path: "/shop/listing?category=sale", // Fixed the path (was category/sale)
+    label: "Sale",
+    buttonStyle: true,
+    destructive: true,
+    icon: <Flame className="w-4 h-4" />,
+  },
 ];
+
+const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="relative cursor-pointer">
+          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${
+            isScrolled ? 'text-xs' : 'text-sm'
+          }`}>
+            {menuItem.label}
+          </Label>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-72 border border-amber-200 rounded-lg bg-white p-2"
+        align="start"
+        sideOffset={8}
+      >
+        <div className="grid gap-1">
+          {menuItem.dropdown.map((subItem) => (
+            <DropdownMenuItem
+              key={subItem.id}
+              onClick={() => handleNavigate(subItem)}
+              className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="flex-1">
+                  <div className="font-medium text-amber-950">
+                    {subItem.label}
+                  </div>
+                </div>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+// Single MenuItems component definition
+const MenuItems = ({ onItemClick, isScrolled }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const handleNavigate = (getCurrentMenuItem) => {
+    if (getCurrentMenuItem.id === "search") {
+      navigate("/shop/search");
+      onItemClick?.();
+      return;
+    }
+
+    sessionStorage.removeItem("filters");
+
+    const currentFilter =
+      getCurrentMenuItem.id === "home" ||
+      getCurrentMenuItem.id === "products" ||
+      getCurrentMenuItem.id === "search" ||
+      getCurrentMenuItem.id === "gallery" ||
+      getCurrentMenuItem.id === "about" ||
+      getCurrentMenuItem.id === "sale"
+        ? null
+        : { category: [getCurrentMenuItem.id] };
+
+    if (currentFilter) {
+      sessionStorage.setItem("filters", JSON.stringify(currentFilter));
+    }
+
+    if (location.pathname.includes("listing") && currentFilter !== null) {
+      setSearchParams(new URLSearchParams(`?category=${getCurrentMenuItem.id}`));
+    } else {
+      navigate(getCurrentMenuItem.path);
+    }
+
+    onItemClick?.();
+  };
+
+  return (
+    <nav className={`flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row ${isScrolled ? 'gap-4' : 'gap-6'}`}>
+      {shoppingViewHeaderMenuItems.map((menuItem) => (
+        <div key={menuItem.id} className="relative">
+          <ErrorBoundary>
+            {menuItem.dropdown ? (
+              <CollectionDropdown
+                menuItem={menuItem}
+                handleNavigate={handleNavigate}
+                isScrolled={isScrolled}
+              />
+            ) : menuItem.buttonStyle ? (
+              <Button
+                onClick={() => handleNavigate(menuItem)}
+                variant={menuItem.destructive ? "destructive" : "default"}
+                size={isScrolled ? "sm" : "default"}
+                className="flex items-center gap-2 relative"
+              >
+                {menuItem.icon}
+                {menuItem.label}
+                {menuItem.badge && (
+                  <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs font-bold bg-white text-red-600 rounded-full border border-red-200">
+                    {menuItem.badge}
+                  </span>
+                )}
+              </Button>
+            ) : (
+              <Label
+                onClick={() => handleNavigate(menuItem)}
+                className={`font-medium cursor-pointer ${
+                  location.pathname === menuItem.path ||
+                  (menuItem.id === "search" && location.pathname.includes("search")) ||
+                  (menuItem.id === "products" && location.pathname.includes("listing"))
+                    ? "text-amber-950 font-bold"
+                    : "text-amber-800 hover:text-amber-950"
+                } ${isScrolled ? 'text-xs' : 'text-sm'}`}
+              >
+                {menuItem.label}
+              </Label>
+            )}
+          </ErrorBoundary>
+        </div>
+      ))}
+    </nav>
+  );
+};
+
 export const BrandLogo = ({ isScrolled }) => {
   return (
     <>
@@ -60,7 +194,6 @@ export const BrandLogo = ({ isScrolled }) => {
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap"
         rel="stylesheet"
       />
-
       <Link
         to="/shop/home"
         className="flex flex-col items-center justify-center text-center cursor-pointer"
@@ -121,117 +254,6 @@ export const BrandLogo = ({ isScrolled }) => {
         </div>
       </Link>
     </>
-  );
-};
-
-const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="relative cursor-pointer">
-          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${
-            isScrolled ? 'text-xs' : 'text-sm'
-          }`}>
-            {menuItem.label}
-          </Label>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-72 border border-amber-200 rounded-lg bg-white p-2"
-        align="start"
-        sideOffset={8}
-      >
-        <div className="grid gap-1">
-          {menuItem.dropdown.map((subItem) => (
-            <DropdownMenuItem
-              key={subItem.id}
-              onClick={() => handleNavigate(subItem)}
-              className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
-            >
-              <div className="flex items-center gap-3 w-full">
-                <div className="flex-1">
-                  <div className="font-medium text-amber-950">
-                    {subItem.label}
-                  </div>
-                </div>
-              </div>
-            </DropdownMenuItem>
-          ))}
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-const MenuItems = ({ onItemClick, isScrolled }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  function handleNavigate(getCurrentMenuItem) {
-    if (getCurrentMenuItem.id === "search") {
-      navigate("/shop/search");
-      if (onItemClick) onItemClick();
-      return;
-    }
-
-    sessionStorage.removeItem("filters");
-
-    const currentFilter =
-      getCurrentMenuItem.id === "home" ||
-      getCurrentMenuItem.id === "products" ||
-      getCurrentMenuItem.id === "search" ||
-      getCurrentMenuItem.id === "gallery" ||
-      getCurrentMenuItem.id === "about"
-        ? null
-        : { category: [getCurrentMenuItem.id] };
-
-    if (currentFilter) {
-      sessionStorage.setItem("filters", JSON.stringify(currentFilter));
-    }
-
-    if (location.pathname.includes("listing") && currentFilter !== null) {
-      setSearchParams(new URLSearchParams(`?category=${getCurrentMenuItem.id}`));
-    } else {
-      navigate(getCurrentMenuItem.path);
-    }
-
-    if (onItemClick) onItemClick();
-  }
-
-  return (
-    <nav className={`flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row ${isScrolled ? 'gap-4' : 'gap-6'}`}>
-      {shoppingViewHeaderMenuItems.map((menuItem) => (
-        <div key={menuItem.id} className="relative">
-          <ErrorBoundary>
-            {menuItem.dropdown ? (
-              <CollectionDropdown
-                menuItem={menuItem}
-                handleNavigate={handleNavigate}
-                isScrolled={isScrolled}
-              />
-            ) : (
-              <div className="relative">
-                <Label
-                  onClick={() => handleNavigate(menuItem)}
-                  className={`font-medium cursor-pointer ${
-                    location.pathname === menuItem.path ||
-                    (menuItem.id === "search" && location.pathname.includes("search")) ||
-                    (menuItem.id === "products" && location.pathname.includes("listing"))
-                      ? "text-amber-950 font-bold"
-                      : "text-amber-800 hover:text-amber-950"
-                  } ${
-                    isScrolled ? 'text-xs' : 'text-sm'
-                  }`}
-                >
-                  {menuItem.label}
-                </Label>
-              </div>
-            )}
-          </ErrorBoundary>
-        </div>
-      ))}
-    </nav>
   );
 };
 

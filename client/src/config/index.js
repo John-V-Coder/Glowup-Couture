@@ -62,7 +62,8 @@ export const addProductFormElements = [
       { id: "men", label: "Men" },
       { id: "women", label: "Women" },
       { id: "kids", label: "Kids" },
-      { id: "custom", label: "Modern Custom" }
+      { id: "custom", label: "Modern Custom" },
+      { id: "sale", label: "Sale" },
     ],
   },
   {
@@ -127,7 +128,8 @@ export const shoppingViewHeaderMenuItems = [
       { id: "men", path: "/shop/listing?category=men", label: "Men's Collection" },
       { id: "women", path: "/shop/listing?category=women", label: "Women's Collection" },
       { id: "kids", path: "/shop/listing?category=kids", label: "Kid's Collection" },
-      { id: "custom", path: "/shop/listing?category=custom", label: "Modern Customs" }
+      { id: "custom", path: "/shop/listing?category=custom", label: "Modern Customs" },
+      { id: "sale", path: "/shop/listing?category/sale", label: "Sale" }
     ]
   },
   { id: "about", path: "/shop/about", label: "About Us" },
@@ -140,7 +142,8 @@ export const categoryOptionsMap = {
   men: "Men",
   women: "Women",
   kids: "Kids",
-  custom: "Modern Customed"
+  custom: "Modern Customed",
+  sale: "Sale"
 };
 
 export const brandOptionsMap = {
@@ -159,7 +162,8 @@ export const filterOptions = {
     { id: "men", label: "Men" },
     { id: "women", label: "Women" },
     { id: "kids", label: "Kids" },
-    { id: "custom", label: "Modern Custom" }
+    { id: "custom", label: "Modern Custom" },
+    { id: "sale", label: "Sale" },
   ],
   material: [
     { id: "cotton", label: "Cotton" },
