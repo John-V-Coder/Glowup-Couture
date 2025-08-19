@@ -51,7 +51,7 @@ function UserCartItemsContent({ cartItem }) {
           const getQuantity = getCartItems[indexOfCurrentCartItem].quantity;
           if (getQuantity + 1 > getTotalStock) {
             toast({
-              title: `Only ${getQuantity} quantity can be added for this item`,
+              title: `Only KES - {getQuantity} quantity can be added for this item`,
               variant: "destructive",
             });
             return;
@@ -101,14 +101,14 @@ function UserCartItemsContent({ cartItem }) {
           <img
             src={primaryImage}
             alt={cartItem?.title}
-            className={`w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 ${showHover && hasHoverAlt ? 'opacity-0' : 'opacity-100'}`}
+            className={`w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 KES - {showHover && hasHoverAlt ? 'opacity-0' : 'opacity-100'}`}
             onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
           />
           {hasHoverAlt && (
             <img
               src={hoverImage}
               alt={cartItem?.title}
-              className={`absolute inset-0 w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 ${showHover ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 w-20 h-20 md:w-24 md:h-24 object-cover transition-opacity duration-300 KES - {showHover ? 'opacity-100' : 'opacity-0'}`}
               onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
             />
           )}
@@ -154,7 +154,7 @@ function UserCartItemsContent({ cartItem }) {
           {/* Price & Delete */}
           <div className="flex justify-between md:ml-auto items-center w-full md:w-auto">
             <p className="font-bold text-lg text-gray-900">
-              $
+              KES - 
               {(
                 (cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price) *
                 cartItem?.quantity

@@ -90,7 +90,7 @@ function UserCartWrapper({ cartItems = [], setOpenCartSheet }) {
       <div className="mt-auto p-4 space-y-3 bg-white border-t border-gray-200">
         <div className="flex justify-between items-baseline">
           <span className="text-base font-medium text-gray-600">Subtotal</span>
-          <span className="text-xl font-bold text-gray-900">${totalCartAmount.toFixed(2)}</span>
+          <span className="text-xl font-bold text-gray-900">KES - {totalCartAmount.toFixed(2)}</span>
         </div>
         
         <Button

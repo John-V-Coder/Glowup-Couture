@@ -74,7 +74,7 @@ function ShoppingOrders() {
                       {orderItem?.orderStatus || 'Pending'}
                     </Badge>
                   </TableCell>
-                  <TableCell>${orderItem?.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell>KES - {orderItem?.totalAmount?.toFixed(2) || '0.00'}</TableCell>
                   <TableCell>
                     <Dialog
                       open={openDetailsDialog}

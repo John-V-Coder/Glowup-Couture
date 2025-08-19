@@ -210,7 +210,7 @@ function ShoppingCheckout() {
         totalAmount: totalCartAmount,
         orderDate: new Date(),
         orderUpdateDate: new Date(),
-        paymentId: `MP${Date.now()}`,
+        paymentId: `MPKES - {Date.now()}`,
         payerId: mpesaPhone,
       };
 
@@ -324,7 +324,7 @@ function ShoppingCheckout() {
               <div className="grid grid-cols-1 gap-4">
                 {/* PayPal Option */}
                 <div
-                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                  className={`border rounded-lg p-4 cursor-pointer transition-all KES - {
                     selectedPaymentMethod === "paypal"
                       ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
                       : "border-gray-200 hover:border-gray-300"
@@ -333,7 +333,7 @@ function ShoppingCheckout() {
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
+                      className={`w-4 h-4 rounded-full border-2 KES - {
                         selectedPaymentMethod === "paypal"
                           ? "border-blue-500 bg-blue-500"
                           : "border-gray-300"
@@ -353,7 +353,7 @@ function ShoppingCheckout() {
 
                 {/* M-Pesa Option */}
                 <div
-                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                  className={`border rounded-lg p-4 cursor-pointer transition-all KES - {
                     selectedPaymentMethod === "mpesa"
                       ? "border-green-500 bg-green-50 ring-2 ring-green-200"
                       : "border-gray-200 hover:border-gray-300"
@@ -362,7 +362,7 @@ function ShoppingCheckout() {
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
+                      className={`w-4 h-4 rounded-full border-2 KES - {
                         selectedPaymentMethod === "mpesa"
                           ? "border-green-500 bg-green-500"
                           : "border-gray-300"
@@ -417,7 +417,7 @@ function ShoppingCheckout() {
                         <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <p className="text-sm font-semibold">
-                        ${((item.salePrice > 0 ? item.salePrice : item.price) * item.quantity).toFixed(2)}
+                        KES - {((item.salePrice > 0 ? item.salePrice : item.price) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))
@@ -429,7 +429,7 @@ function ShoppingCheckout() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${totalCartAmount.toFixed(2)}</span>
+                  <span>KES - {totalCartAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
@@ -437,7 +437,7 @@ function ShoppingCheckout() {
                 </div>
                                 <div className="border-t pt-2 flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>${totalCartAmount.toFixed(2)}</span>
+                  <span>KES - {totalCartAmount.toFixed(2)}</span>
                 </div>
               </div>
               {/* Checkout Button */}
@@ -488,7 +488,7 @@ function ShoppingCheckout() {
         </div>
       )}
       <div ref={checkoutSectionRef}></div>
-       <WhatsAppButton/>
+     
     </div>
     </PageWrapper>
   );

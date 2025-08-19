@@ -287,7 +287,7 @@ function ShoppingHome() {
             </div>
           </div>
         </section>
-        <WhatsAppButton />
+        
       </div>
     </PageWrapper>
   );

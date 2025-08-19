@@ -36,6 +36,7 @@ import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
+import ShoppingHeader from './components/shopping-view/header';
 
 function App() {
 
@@ -92,6 +93,9 @@ function App() {
   return (
     <RoutePreloader>
         <div className="flex flex-col min-h-screen">
+           <div className="sticky top-0 z-50">
+         
+        </div>
       <Routes>
         <Route
           path="/"
@@ -151,9 +155,10 @@ function App() {
         <Route path="/unauth-page" element={<UnauthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-          <Footer />
+      
     </div>
     </RoutePreloader>
+    
   );
 }
 

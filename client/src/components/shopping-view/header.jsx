@@ -15,7 +15,7 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn } from "lucide-react";
+import { Flame, User, LogIn, Search } from "lucide-react";
 import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
 
@@ -36,7 +36,7 @@ const shoppingViewHeaderMenuItems = [
       { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom" },
       {
         id: "sale",
-        path: "/shop/listing?category=sale", // Fixed the path (was category/sale)
+        path: "/shop/listing?category=sale",
         label: "Sale",
         buttonStyle: true,
         destructive: true,
@@ -58,10 +58,12 @@ const shoppingViewHeaderMenuItems = [
     id: "search",
     path: "/shop/search",
     label: "Search",
+    icon: <Search className="w-4 h-4" />,
+    iconOnly: true,
   },
   {
     id: "sale",
-    path: "/shop/listing?category=sale", // Fixed the path (was category/sale)
+    path: "/shop/listing?category=sale",
     label: "Sale",
     buttonStyle: true,
     destructive: true,
@@ -169,6 +171,16 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
                     {menuItem.badge}
                   </span>
                 )}
+              </Button>
+            ) : menuItem.iconOnly ? (
+              <Button
+                onClick={() => handleNavigate(menuItem)}
+                variant="ghost"
+                size={isScrolled ? "sm" : "default"}
+                className="p-2 hover:bg-amber-100 text-amber-800 hover:text-amber-950"
+                title={menuItem.label}
+              >
+                {menuItem.icon}
               </Button>
             ) : (
               <Label
@@ -463,40 +475,42 @@ const ShoppingHeader = () => {
   }, []);
 
   return (
-    <div className="relative">
-      <ScrollingPromoBar />
-      <ContactBar />
+    <div className="relative -mx-4 md:-mx-6 lg:-mx-8">
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <ScrollingPromoBar />
+        <ContactBar />
 
-      <header
-        ref={headerRef}
-        className={`sticky top-0 z-50 w-full ${
-          headerScrolled
-            ? 'bg-white border-b border-amber-300 shadow-sm'
-            : 'bg-amber-50 border-b border-amber-200'
-        }`}
-      >
-        <div className={`flex items-center justify-between px-4 md:px-6 ${
-          headerScrolled ? 'h-16' : 'h-20'
-        }`}>
-          <div className="flex items-center gap-4">
-            <BrandLogo isScrolled={headerScrolled} />
+        <header
+          ref={headerRef}
+          className={`sticky top-0 z-50 w-full ${
+            headerScrolled
+              ? 'bg-white border-b border-amber-300 shadow-sm'
+              : 'bg-amber-50 border-b border-amber-200'
+          }`}
+        >
+          <div className={`w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 ${
+            headerScrolled ? 'h-16' : 'h-20'
+          }`}>
+            <div className="flex items-center gap-4">
+              <BrandLogo isScrolled={headerScrolled} />
+            </div>
+
+            <MobileMenu
+              isSheetOpen={isSheetOpen}
+              setIsSheetOpen={setIsSheetOpen}
+              isScrolled={headerScrolled}
+            />
+
+            <div className="hidden lg:block">
+              <MenuItems isScrolled={headerScrolled} />
+            </div>
+
+            <div className="hidden lg:block">
+              <HeaderRightContent isScrolled={headerScrolled} />
+            </div>
           </div>
-
-          <MobileMenu
-            isSheetOpen={isSheetOpen}
-            setIsSheetOpen={setIsSheetOpen}
-            isScrolled={headerScrolled}
-          />
-
-          <div className="hidden lg:block">
-            <MenuItems isScrolled={headerScrolled} />
-          </div>
-
-          <div className="hidden lg:block">
-            <HeaderRightContent isScrolled={headerScrolled} />
-          </div>
-        </div>
-      </header>
+        </header>
+      </div>
     </div>
   );
 };

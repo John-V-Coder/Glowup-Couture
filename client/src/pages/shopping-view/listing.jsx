@@ -4,15 +4,13 @@ import { useToast } from "@/components/ui/use-toast";
 import ProductFilter from "@/components/shopping-view/filter";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { ArrowUpDownIcon } from "lucide-react";
-import { useState, useEffect  } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { sortOptions } from "@/config";
 import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
-import { fetchAllFilteredProducts, fetchProductDetails } from "@/store/shop/products-slice";
+import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { useCartNotification } from "@/hooks/use-cart-notification";
-import { MessageSquare } from "lucide-react";
-import WhatsAppButton from "@/components/common/whatsApp";
 import PageWrapper from "@/components/common/page-wrapper";
 
 function createSearchParamsHelper(filterParams) {
@@ -21,22 +19,16 @@ function createSearchParamsHelper(filterParams) {
   for (const [key, value] of Object.entries(filterParams)) {
     if (Array.isArray(value) && value.length > 0) {
       const paramValue = value.join(",");
-
       queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
     }
   }
-
-  console.log(queryParams, "queryParams");
-
   return queryParams.join("&");
 }
 
 function ShoppingListing() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { productList, productDetails } = useSelector(
-    (state) => state.shopProducts
-  );
+  const { productList } = useSelector((state) => state.shopProducts);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const [filters, setFilters] = useState({});
@@ -61,14 +53,11 @@ function ShoppingListing() {
         [getSectionId]: [getCurrentOption],
       };
     } else {
-      const indexOfCurrentOption =
-        cpyFilters[getSectionId].indexOf(getCurrentOption);
-
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
       if (indexOfCurrentOption === -1)
         cpyFilters[getSectionId].push(getCurrentOption);
       else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
     }
-
     setFilters(cpyFilters);
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
   }
@@ -84,7 +73,6 @@ function ShoppingListing() {
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
-    console.log(cartItems);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -98,13 +86,11 @@ function ShoppingListing() {
             title: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
-
           return;
         }
       }
     }
 
-    // Find product details from the product list
     const productDetails = productList.find(product => product._id === getCurrentProductId);
 
     dispatch(
@@ -118,7 +104,6 @@ function ShoppingListing() {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        // Show user-friendly cart notification with View Cart option
         showCartNotification(productDetails?.title || "Product");
         toast({
           title: "Added to cart!",
@@ -133,7 +118,6 @@ function ShoppingListing() {
     setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
   }, [categorySearchParam]);
 
-  // Load cart items on component mount
   useEffect(() => {
     dispatch(fetchCartItems(user?.id));
   }, [dispatch, user?.id]);
@@ -143,7 +127,7 @@ function ShoppingListing() {
       const createQueryString = createSearchParamsHelper(filters);
       setSearchParams(new URLSearchParams(createQueryString));
     }
-  }, [filters]);
+  }, [filters, setSearchParams]);
 
   useEffect(() => {
     if (filters !== null && sort !== null)
@@ -152,40 +136,37 @@ function ShoppingListing() {
       );
   }, [dispatch, sort, filters]);
 
-  console.log(productList, "productListproductListproductList");
-
   return (
     <PageWrapper message="Loading products...">
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 p-4 md:p-6">
-      <ProductFilter 
-        filters={filters} 
-        handleFilter={handleFilter} 
-        sort={sort} 
-        handleSort={handleSort}
-        clearAllFilters={clearAllFilters}
-      />
-      <div className="bg-background w-full rounded-lg shadow-sm">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">All Products</h2>
-          <span className="text-muted-foreground">
+      <div className="container mx-auto px-4 py-2 md:px-6 md:py-4">
+        {/* Filter Section with Product Count */}
+        <div className="mb-4 flex items-center justify-between">
+          <ProductFilter
+            filters={filters}
+            handleFilter={handleFilter}
+            clearAllFilters={clearAllFilters}
+            sort={sort}
+            handleSort={handleSort}
+          />
+          
+          {/* Small Product Count - Same line as filter */}
+          <span className="text-sm text-muted-foreground">
             {productList?.length} Products
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-          {productList && productList.length > 0
-            ? productList.map((productItem) => (
-                <ShoppingProductTile
-                  key={productItem._id}
-                  handleGetProductDetails={handleGetProductDetails}
-                  product={productItem}
-                  handleAddtoCart={handleAddtoCart}
-                />
-              ))
-            : null}
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+          {productList?.map((productItem) => (
+            <ShoppingProductTile
+              key={productItem._id}
+              handleGetProductDetails={handleGetProductDetails}
+              product={productItem}
+              handleAddtoCart={handleAddtoCart}
+            />
+          ))}
         </div>
       </div>
-         <WhatsAppButton/>
-    </div>
     </PageWrapper>
   );
 }

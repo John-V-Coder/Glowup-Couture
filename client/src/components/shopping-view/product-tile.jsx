@@ -48,13 +48,13 @@ function ShoppingProductTile({
           <Badge className="absolute top-3 left-3 bg-red-500/90 text-white text-xs px-2 py-1">
             Out Of Stock
           </Badge>
-        ) : product?.totalStock < 10 ? (
+        ) : product?.totalStock < 2 ? (
           <Badge className="absolute top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
             {`${product?.totalStock} left`}
           </Badge>
         ) : product?.salePrice > 0 ? (
           <Badge className="absolute top-3 left-3 bg-green-500/90 text-white text-xs px-2 py-1">
-            New
+            sale
           </Badge>
         ) : null}
 
@@ -109,15 +109,15 @@ function ShoppingProductTile({
             {product?.salePrice > 0 ? (
               <>
                 <span className="text-base font-semibold text-gray-900">
-                  ${product?.salePrice}
+                  KES {product?.salePrice}
                 </span>
                 <span className="text-xs text-gray-500 line-through">
-                  ${product?.price}
+                 KES {product?.price}
                 </span>
               </>
             ) : (
               <span className="text-base font-semibold text-gray-900">
-                ${product?.price}
+                KES {product?.price}
               </span>
             )}
           </div>

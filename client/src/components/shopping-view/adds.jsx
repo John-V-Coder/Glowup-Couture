@@ -1,8 +1,15 @@
-import { Calendar, Phone, MessageCircle, Ruler, Music, Instagram, Facebook } from "lucide-react";
+import { Calendar, Phone, MessageCircle, Ruler, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import React from 'react';
 import { MessageSquare } from "lucide-react";
+
+// Custom TikTok Icon Component
+const TikTokIcon = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M19.321 5.562a5.122 5.122 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.849-1.372-1.956-1.479-3.158-.014-.159-.021-.319-.021-.48V0h-3.126v16.021c0 1.644-1.295 2.98-2.896 2.98-1.6 0-2.895-1.336-2.895-2.98s1.295-2.98 2.895-2.98c.317 0 .622.051.906.146V9.895a6.188 6.188 0 0 0-.906-.069C6.51 9.826 3.5 12.895 3.5 16.664S6.51 23.5 10.219 23.5s6.719-3.069 6.719-6.836V8.432a9.212 9.212 0 0 0 5.027 1.458V6.89c-1.006 0-1.94-.328-2.644-.828z"/>
+  </svg>
+);
 
 export const ScrollingPromoBar = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,76 +38,31 @@ export const ScrollingPromoBar = () => {
           </span>
         </div>
       </div>
-      <style dangerouslySetInnerHTML={{
-  __html: `
-    @keyframes fade-in-out {
-      0%, 100% { opacity: 0.8; }
-      50% { opacity: 1; }
-    }
-    .animate-fade-in-out {
-      animation: fade-in-out 4s infinite;
-    }
-  `
-}} />
+      <style jsx>{`
+        @keyframes fade-in-out {
+          0%, 100% { opacity: 0.8; }
+          50% { opacity: 1; }
+        }
+        .animate-fade-in-out {
+          animation: fade-in-out 4s infinite;
+        }
+      `}</style>
     </div>
   );
 };
 
 export const ContactBar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [clickedButton, setClickedButton] = useState(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleAction = (type) => {
-    setClickedButton(type);
-    setTimeout(() => setClickedButton(null), 300);
-    
-    const actions = {
-      book: () => {
-        const message = encodeURIComponent("Hi! I'd like to book a measurement consultation.");
-        window.open(`https://wa.me/254797613671?text=${message}`, '_blank');
-      },
-      call: () => window.location.href = "tel:+254 797 613671",
-      whatsapp: () => {
-        const message = encodeURIComponent("Hello! I need more information about your products.");
-        window.open(`https://wa.me/254797613671?text=${message}`, '_blank');
-      }
-    };
-    actions[type]?.();
-  };
-
   return (
-    <div className={`bg-white border-b border-gray-200 transition-all duration-500 ${isScrolled ? 'shadow-lg' : 'shadow-sm'}`}>
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-3 lg:gap-0">
-          <div className="flex items-center gap-4">
-            <ActionButton 
-              type="book" 
-              clickedButton={clickedButton}
-              icon={<Calendar className="w-4 h-4" />}
-              label="Book Appointment"
-              onClick={handleAction}
-            />
-            <ActionButton 
-              type="call" 
-              clickedButton={clickedButton}
-              icon={<MessageSquare className="w-4 h-4" />}
-              label="Message Us"
-              variant="outline"
-              onClick={handleAction}
-            />
+    <>
+      <HorizontalScrollingSocialIcons />
+      <div className="bg-white py-3">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center">
+            {/* Your other content can go here */}
           </div>
-          <SocialLinks />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -109,12 +71,12 @@ const ActionButton = ({ type, clickedButton, icon, label, variant, onClick }) =>
     onClick={() => onClick(type)}
     variant={variant}
     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-      variant === 'outline' 
-        ? clickedButton === type 
-          ? 'bg-blue-600 text-white border-blue-600' 
+      variant === 'outline'
+        ? clickedButton === type
+          ? 'bg-blue-600 text-white border-blue-600'
           : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-        : clickedButton === type 
-          ? 'bg-green-600 text-white' 
+        : clickedButton === type
+          ? 'bg-green-600 text-white'
           : 'bg-gray-800 hover:bg-black text-white shadow-md hover:shadow-lg'
     } flex items-center gap-2`}
   >
@@ -124,6 +86,167 @@ const ActionButton = ({ type, clickedButton, icon, label, variant, onClick }) =>
   </Button>
 );
 
+const HorizontalScrollingSocialIcons = () => {
+  const socialIcons = [
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-4 h-4" />,
+      color: "text-pink-500",
+      bgColor: "bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400",
+      href: "https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook className="w-4 h-4" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-600",
+      href: "https://www.facebook.com/p/Glow-Couture-100037207131507/"
+    },
+    {
+      name: "TikTok",
+      icon: <TikTokIcon className="w-4 h-4" />,
+      color: "text-black",
+      bgColor: "bg-gradient-to-r from-black via-red-500 to-blue-400",
+      href: "https://www.tiktok.com/@glowupcouture"
+    },
+  ];
+
+  // Duplicate the array multiple times to create seamless horizontal scrolling
+  const duplicatedIcons = [...socialIcons, ...socialIcons, ...socialIcons, ...socialIcons];
+
+  return (
+    <div className="fixed bottom-6 left-0 right-0 z-50 pointer-events-none">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-center">
+          <div className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 p-2 pointer-events-auto">
+            <div className="flex items-center gap-2">
+              {/* "Follow Us" text */}
+              <span className="text-xs text-gray-600 font-semibold px-3 py-1">
+                Follow Us
+              </span>
+              
+              {/* Horizontal scrolling container */}
+              <div className="relative overflow-hidden" style={{ width: '200px' }}>
+                <div className="animate-scroll-horizontal flex gap-4 items-center">
+                  {duplicatedIcons.map((social, index) => (
+                    <a
+                      key={`${social.name}-${index}`}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`
+                        w-8 h-8 rounded-full ${social.bgColor} flex-shrink-0
+                        flex items-center justify-center text-white
+                        transition-all duration-300 transform hover:scale-110 hover:shadow-lg
+                        group relative overflow-hidden hover:z-10
+                      `}
+                      title={`Visit our ${social.name}`}
+                    >
+                      <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+                      <div className="relative z-10">
+                        {social.icon}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scroll-horizontal {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-25%); }
+        }
+        .animate-scroll-horizontal {
+          animation: scroll-horizontal 8s linear infinite;
+        }
+        .animate-scroll-horizontal:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Alternative version positioned at the top
+export const TopHorizontalScrollingSocialIcons = () => {
+  const socialIcons = [
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-5 h-5" />,
+      color: "text-pink-500",
+      bgColor: "bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400",
+      href: "https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook className="w-5 h-5" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-600",
+      href: "https://www.facebook.com/p/Glow-Couture-100037207131507/"
+    },
+    {
+      name: "TikTok",
+      icon: <TikTokIcon className="w-5 h-5" />,
+      color: "text-black",
+      bgColor: "bg-gradient-to-r from-black via-red-500 to-blue-400",
+      href: "https://www.tiktok.com/@glowupcouture"
+    },
+  ];
+
+  // Duplicate for seamless scrolling
+  const duplicatedIcons = [...socialIcons, ...socialIcons, ...socialIcons];
+
+  return (
+    <div className="w-full bg-gray-50 py-4 overflow-hidden">
+      <div className="flex items-center justify-center gap-4 mb-2">
+        <span className="text-sm font-semibold text-gray-700">Follow Us</span>
+      </div>
+      
+      <div className="relative overflow-hidden">
+        <div className="animate-scroll-horizontal-full flex gap-6 items-center justify-center">
+          {duplicatedIcons.map((social, index) => (
+            <a
+              key={`${social.name}-${index}`}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`
+                w-12 h-12 rounded-full ${social.bgColor} flex-shrink-0
+                flex items-center justify-center text-white
+                transition-all duration-300 transform hover:scale-110 hover:shadow-xl
+                group relative overflow-hidden hover:z-10
+              `}
+              title={`Visit our ${social.name}`}
+            >
+              <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+              <div className="relative z-10">
+                {social.icon}
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scroll-horizontal-full {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-scroll-horizontal-full {
+          animation: scroll-horizontal-full 15s linear infinite;
+        }
+        .animate-scroll-horizontal-full:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </div>
+  );
+};
+
 const ContactInfo = ({ icon, text, mobileText }) => (
   <div className="flex items-center gap-2">
     {icon}
@@ -132,35 +255,4 @@ const ContactInfo = ({ icon, text, mobileText }) => (
   </div>
 );
 
-const SocialLinks = () => (
-  <div className="flex items-center gap-3">
-    <span className="text-xs text-gray-500 font-large">Follow Us:</span>
-    <SocialIcon 
-      href="https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
-      icon={<Instagram className="w-4 h-4" />}
-    />
-    <SocialIcon 
-      href="https://www.facebook.com/p/Glow-Couture-100037207131507/" 
-      icon={<Facebook className="w-4 h-4" />}
-    />
-    <SocialIcon 
-      href="https://www.tiktok.com/@glowupcouture" 
-      icon={<Music className="w-4 h-4" />
-      }
-    />
-  </div>
-);
-
-const SocialIcon = ({ href, icon }) => {
-  const IconComponent = icon.type;
-  return (
-    <a 
-      href={href} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-gray-300 transition-all duration-300 transform hover:scale-110 group"
-    >
-      <IconComponent className="w-4 h-4 text-gray-600 group-hover:text-gray-800 transition-colors" />
-    </a>
-  );
-};
+export default ContactBar;
