@@ -1,9 +1,33 @@
 // src/layouts/AuthLayout.jsx
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { ScrollingPromoBar, ContactBar } from "../shopping-view/adds";
 import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 
 function AuthLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("signin");
+
+  // Determine active tab based on current route
+  useEffect(() => {
+    if (location.pathname.includes('/register')) {
+      setActiveTab("register");
+    } else if (location.pathname.includes('/login')) {
+      setActiveTab("signin");
+    }
+  }, [location.pathname]);
+
+  // Handle tab switching
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    if (value === "signin") {
+      navigate("/auth/login");
+    } else if (value === "register") {
+      navigate("/auth/register");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen w-full bg-[#FFFBEA]">
       {/* Top Bars */}
@@ -11,28 +35,51 @@ function AuthLayout() {
       <ContactBar className="bg-[#EEDFCC] text-[#5C4033]" />
 
       <div className="flex flex-1">
-        {/* Left Side (Image / Welcome Text) */}
-        <div className="hidden lg:flex items-center justify-center bg-[#FAF3E0] w-1/2 px-12">
-          <div className="max-w-md space-y-6 text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#5C4033]">
-              Welcome to Glowup Couture
-            </h1>
-            <p className="text-lg text-[#7B5E57]">
-              Discover your unique style with our curated fashion collection
-            </p>
-          </div>
-        </div>
 
         {/* Main Content */}
         <div className="flex flex-1 items-center justify-center bg-[#FFFBEA] px-4 py-12 sm:px-6 lg:px-8">
-          <div className="w-full max-w-md space-y-6">
-            <div className="bg-white shadow-lg rounded-lg p-6 border border-[#EEDFCC]">
-              <Outlet />
+          <div className="w-full max-w-lg space-y-6">
+            {/* Dialog-style Container with Tabs */}
+            <div className="bg-white border border-gray-200 rounded-lg p-0 shadow-lg">
+              {/* Tab Navigation */}
+              <div className="grid w-full grid-cols-2 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+                <button
+                  onClick={() => handleTabChange("signin")}
+                  className={`
+                    py-3 px-4 text-center font-medium transition-colors
+                    ${activeTab === "signin" 
+                      ? "bg-gray-800 text-white" 
+                      : "bg-gray-50 text-gray-600 hover:text-gray-800"
+                    }
+                    rounded-tl-lg
+                  `}
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => handleTabChange("register")}
+                  className={`
+                    py-3 px-4 text-center font-medium transition-colors
+                    ${activeTab === "register" 
+                      ? "bg-gray-800 text-white" 
+                      : "bg-gray-50 text-gray-600 hover:text-gray-800"
+                    }
+                    rounded-tr-lg
+                  `}
+                >
+                  Register
+                </button>
+              </div>
+
+              {/* Content Area */}
+              <div className="p-6">
+                <Outlet />
+              </div>
             </div>
-            
+
             {/* Prominent Back to Home Button */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="
                 w-full
                 flex items-center justify-center

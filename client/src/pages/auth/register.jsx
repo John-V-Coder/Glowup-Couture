@@ -13,7 +13,7 @@ const initialState = {
   password: "",
 };
 
-function AuthRegister({ embedded = false, redirectTo = "/shop/home" }) {
+function AuthRegister({ embedded = false, redirectTo }) {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ function AuthRegister({ embedded = false, redirectTo = "/shop/home" }) {
         toast({
           title: data?.payload?.message,
         });
-        // After registration, send user to checkout to continue
+        // After registration, send user to login page or the specified redirect path
         navigate(redirectTo || "/auth/login");
       } else {
         toast({
