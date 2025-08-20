@@ -600,7 +600,7 @@ function ProductDetailsPage() {
                   </motion.div>
                 </motion.div>
               )}
-              <WhatsAppButton/>
+             
             </motion.div>
           )}
         </AnimatePresence>

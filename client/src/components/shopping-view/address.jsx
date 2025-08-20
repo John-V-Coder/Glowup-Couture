@@ -7,8 +7,6 @@ import { useToast } from "../ui/use-toast";
 import { addressFormControls } from "@/config";
 import AddressCard from "./address-card";
 
-
-
 const initialAddressFormData = {
   address: "",
   city: "",

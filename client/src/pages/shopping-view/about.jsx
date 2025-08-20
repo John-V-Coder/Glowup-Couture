@@ -74,7 +74,7 @@ function AboutUs() {
       transition={{ delay: 0.4 }}
     />
   </div>
-  <WhatsAppButton/>
+
 </motion.section>
 
       {/* Story Section */}

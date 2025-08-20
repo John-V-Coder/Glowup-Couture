@@ -159,9 +159,7 @@ function Gallery() {
       {/* Instagram-style Header */}
       <div className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-light text-white text-center tracking-wide">
-            GlowUp Couture Gallery
-          </h1>
+          
         </div>
       </div>
 
@@ -316,7 +314,7 @@ function Gallery() {
             
         </motion.div>
       )}
-     <WhatsAppButton/>
+    
     </div>
   );
 }

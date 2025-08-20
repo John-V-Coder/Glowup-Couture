@@ -30,13 +30,12 @@ import AdminGallery from './pages/admin-view/gallery';
 import AdminAbout from './pages/admin-view/about';
 import ShoppingGallery from './pages/shopping-view/gallery';
 import ShoppingAbout from './pages/shopping-view/about';
-import Footer from './components/shopping-view/footer';
 import ProductDetailsPage from './pages/shopping-view/product-details';
 import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
-import ShoppingHeader from './components/shopping-view/header';
+
 
 function App() {
 

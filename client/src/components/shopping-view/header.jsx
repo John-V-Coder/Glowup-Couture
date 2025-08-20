@@ -15,59 +15,54 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn, Search } from "lucide-react";
+import { Flame, User, LogIn, Search, Gift } from "lucide-react";
 import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
+import ProductFilter from "@/components/shopping-view/filter";
 
 const shoppingViewHeaderMenuItems = [
   {
     id: "home",
     path: "/shop/home",
-    label: "Home",
+    label: "HOME",
   },
   {
     id: "collections",
-    label: "Collections",
+    label: "COLLECTIONS",
     dropdown: [
       { id: "products", path: "/shop/listing?category=products", label: "All Products" },
       { id: "women", label: "Women's Collection", path: "/shop/listing?category=women" },
       { id: "men", label: "Men's Collection", path: "/shop/listing?category=men" },
       { id: "kids", label: "Kids Wear", path: "/shop/listing?category=kids" },
       { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom" },
+        {
+    id: "sale",
+    path: "/shop/listing?category=sale",
+    label: "Sale",
+  },
       {
-        id: "sale",
-        path: "/shop/listing?category=sale",
-        label: "Sale",
-        buttonStyle: true,
-        destructive: true,
-        icon: <Flame className="w-4 h-4" />,
-      },
+    id: "gift",
+    path: "/shop/listing?category=gift",
+    label: "Gift Card",
+  },
     ],
   },
   {
     id: "gallery",
     path: "/shop/gallery",
-    label: "Gallery",
+    label: "GALLERY",
   },
   {
     id: "about",
     path: "/shop/about",
-    label: "About Us",
+    label: "ABOUT US",
   },
   {
     id: "search",
     path: "/shop/search",
-    label: "Search",
+    label: "SEARCH",
     icon: <Search className="w-4 h-4" />,
     iconOnly: true,
-  },
-  {
-    id: "sale",
-    path: "/shop/listing?category=sale",
-    label: "Sale",
-    buttonStyle: true,
-    destructive: true,
-    icon: <Flame className="w-4 h-4" />,
   },
 ];
 
@@ -76,13 +71,13 @@ const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="relative cursor-pointer">
-          <Label className={`font-medium cursor-pointer text-amber-800 hover:text-amber-950 ${isScrolled ? 'text-xs' : 'text-sm'}`}>
+          <Label className="font-medium cursor-pointer text-black hover:text-gray-800 text-sm">
             {menuItem.label}
           </Label>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-72 border border-amber-200 rounded-lg bg-white p-2"
+        className="w-72 border border-gray-200 rounded-lg bg-white p-2"
         align="start"
         sideOffset={8}
       >
@@ -91,11 +86,11 @@ const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
             <DropdownMenuItem
               key={subItem.id}
               onClick={() => handleNavigate(subItem)}
-              className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
+              className="p-3 rounded-md hover:bg-gray-100 cursor-pointer"
             >
               <div className="flex items-center gap-3 w-full">
                 <div className="flex-1">
-                  <div className="font-medium text-amber-950">
+                  <div className="font-medium text-black">
                     {subItem.label}
                   </div>
                 </div>
@@ -121,6 +116,12 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
       return;
     }
 
+    if (getCurrentMenuItem.id === "gift-card") {
+      navigate("/shop/gift-card");
+      onItemClick?.();
+      return;
+    }
+
     sessionStorage.removeItem("filters");
 
     const currentFilter =
@@ -129,7 +130,8 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
       getCurrentMenuItem.id === "search" ||
       getCurrentMenuItem.id === "gallery" ||
       getCurrentMenuItem.id === "about" ||
-      getCurrentMenuItem.id === "sale"
+      getCurrentMenuItem.id === "sale" ||
+      getCurrentMenuItem.id === "gift-card"
         ? null
         : { category: [getCurrentMenuItem.id] };
 
@@ -147,7 +149,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
   };
 
   return (
-    <nav className={`flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row ${isScrolled ? 'gap-4' : 'gap-6'}`}>
+    <nav className="flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row">
       {shoppingViewHeaderMenuItems.map((menuItem) => (
         <div key={menuItem.id} className="relative">
           <ErrorBoundary>
@@ -161,7 +163,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
               <Button
                 onClick={() => handleNavigate(menuItem)}
                 variant={menuItem.destructive ? "destructive" : "default"}
-                size={isScrolled ? "sm" : "default"}
+                size="default"
                 className="flex items-center gap-2 relative"
               >
                 {menuItem.icon}
@@ -176,8 +178,8 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
               <Button
                 onClick={() => handleNavigate(menuItem)}
                 variant="ghost"
-                size={isScrolled ? "sm" : "default"}
-                className="p-2 hover:bg-amber-100 text-amber-800 hover:text-amber-950"
+                size="default"
+                className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
                 title={menuItem.label}
               >
                 {menuItem.icon}
@@ -185,13 +187,14 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
             ) : (
               <Label
                 onClick={() => handleNavigate(menuItem)}
-                className={`font-medium cursor-pointer ${
+                className={`font-medium cursor-pointer text-sm ${
                   location.pathname === menuItem.path ||
                   (menuItem.id === "search" && location.pathname.includes("search")) ||
-                  (menuItem.id === "products" && location.pathname.includes("listing"))
-                    ? "text-amber-950 font-bold"
-                    : "text-amber-800 hover:text-amber-950"
-                } ${isScrolled ? 'text-xs' : 'text-sm'}`}
+                  (menuItem.id === "products" && location.pathname.includes("listing")) ||
+                  (menuItem.id === "gift-card" && location.pathname.includes("gift-card"))
+                    ? "text-black font-bold"
+                    : "text-black hover:text-gray-800"
+                }`}
               >
                 {menuItem.label}
               </Label>
@@ -203,7 +206,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
   );
 };
 
-export const BrandLogo = ({ isScrolled }) => {
+export const BrandLogo = () => {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -216,60 +219,54 @@ export const BrandLogo = ({ isScrolled }) => {
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap"
         rel="stylesheet"
       />
+
       <Link
         to="/shop/home"
         className="flex flex-col items-center justify-center text-center cursor-pointer"
       >
-        <div className="relative leading-tight">
-          <span
-            className={`font-extrabold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent ${
-              isScrolled ? 'text-base' : 'text-lg'
-            }`}
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: "800",
-            }}
-          >
+        {/* Brand Text */}
+        <div
+          className="leading-tight text-center"
+          style={{
+            fontFamily: "'Playfair Display', serif",
+          }}
+        >
+          <div className="font-extrabold bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 bg-clip-text text-transparent text-lg md:text-xl tracking-wide">
             GLOW
-          </span>
-          <br />
-          <span
-            className={`font-semibold bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 bg-clip-text text-transparent ${
-              isScrolled ? 'text-sm' : 'text-base'
-            }`}
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: "700",
-            }}
-          >
+          </div>
+          <div className="font-extrabold bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 bg-clip-text text-transparent text-lg md:text-xl tracking-wide">
             COUTURE
-          </span>
+          </div>
         </div>
 
-        <div className={`relative mt-1 ${isScrolled ? 'w-12' : 'w-16'}`}>
+        {/* Golden Waves Underline */}
+        <div className="relative mt-1 w-20 md:w-28">
           <svg
-            viewBox="0 0 200 20"
+            viewBox="0 0 300 60"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="w-full"
           >
+            {/* Thick wave */}
             <path
-              d="M0 10 C50 20, 150 0, 200 10"
+              d="M0 40 C80 60, 220 20, 300 40"
+              stroke="url(#grad1)"
+              strokeWidth="4"
+              fill="transparent"
+            />
+            {/* Thin wave */}
+            <path
+              d="M0 50 C80 70, 220 30, 300 50"
               stroke="url(#grad1)"
               strokeWidth="2"
               fill="transparent"
             />
-            <path
-              d="M0 15 C50 25, 150 5, 200 15"
-              stroke="url(#grad1)"
-              strokeWidth="1.5"
-              fill="transparent"
-            />
+
             <defs>
-              <linearGradient id="grad1" x1="0" x2="200" y1="0" y2="0">
-                <stop offset="0%" stopColor="#f59e0b" />
+              <linearGradient id="grad1" x1="0" x2="300" y1="0" y2="0">
+                <stop offset="0%" stopColor="#fbbf24" />
                 <stop offset="50%" stopColor="#d97706" />
-                <stop offset="100%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#fbbf24" />
               </linearGradient>
             </defs>
           </svg>
@@ -278,6 +275,9 @@ export const BrandLogo = ({ isScrolled }) => {
     </>
   );
 };
+
+
+
 
 const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -293,25 +293,25 @@ const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          size={isScrolled ? "sm" : "default"}
-          className="border-amber-300 hover:bg-amber-50 hover:border-amber-400 text-amber-800 hover:text-amber-950 flex items-center gap-2"
+          size="default"
+          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 flex items-center gap-2"
         >
           <User className="w-4 h-4" />
           Account
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-full max-w-lg bg-white border border-amber-200 rounded-lg p-0">
+      <DialogContent className="w-full max-w-lg bg-white border border-gray-200 rounded-lg p-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-amber-50 border-b border-amber-200 rounded-none rounded-t-lg">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-50 border-b border-gray-200 rounded-none rounded-t-lg">
             <TabsTrigger
               value="signin"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-none"
+              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white rounded-none"
             >
               Sign In
             </TabsTrigger>
             <TabsTrigger
               value="register"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-none"
+              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white rounded-none"
             >
               Join Now
             </TabsTrigger>
@@ -361,12 +361,12 @@ const HeaderRightContent = ({ isScrolled }) => {
         <Button
           onClick={() => setOpenCartSheet(true)}
           variant="outline"
-          size={isScrolled ? "sm" : "default"}
-          className="border-amber-300 hover:bg-amber-50 hover:border-amber-400"
+          size="default"
+          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black"
         >
           Cart
           {cartItems?.items?.length > 0 && (
-            <Badge className={`ml-2 bg-amber-800 text-amber-50 rounded-full ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`}>
+            <Badge className="ml-2 bg-gray-800 text-white rounded-full w-6 h-6">
               {cartItems?.items?.length || 0}
             </Badge>
           )}
@@ -393,8 +393,8 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="cursor-pointer">
-          <Avatar className={`bg-amber-100 border border-amber-200 ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`}>
-            <AvatarFallback className="bg-transparent text-amber-800">
+          <Avatar className="bg-gray-100 border border-gray-200 w-10 h-10">
+            <AvatarFallback className="bg-transparent text-black">
               {user?.userName?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -402,23 +402,23 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
-        className="w-64 border border-amber-200 rounded-lg bg-white p-2"
+        className="w-64 border border-gray-200 rounded-lg bg-white p-2"
         sideOffset={8}
       >
-        <div className="p-4 bg-amber-50 rounded-lg mb-2">
-          <DropdownMenuLabel className="text-amber-800 font-semibold text-base">
+        <div className="p-4 bg-gray-50 rounded-lg mb-2">
+          <DropdownMenuLabel className="text-black font-semibold text-base">
             Welcome back!
           </DropdownMenuLabel>
-          <div className="text-sm text-amber-700 mt-1">
+          <div className="text-sm text-gray-700 mt-1">
             {user?.userName}
           </div>
         </div>
 
         <DropdownMenuItem
           onClick={() => navigate("/shop/account")}
-          className="p-3 rounded-md hover:bg-amber-50 cursor-pointer"
+          className="p-3 rounded-md hover:bg-gray-100 cursor-pointer"
         >
-          <div className="font-medium text-amber-950">My Account</div>
+          <div className="font-medium text-black">My Account</div>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="my-2" />
@@ -439,25 +439,92 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
     <SheetTrigger asChild>
       <Button
         variant="outline"
-        size={isScrolled ? "sm" : "default"}
-        className="lg:hidden border-amber-300 hover:bg-amber-50 hover:border-amber-400"
+        size="default"
+        className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black"
       >
         Menu
       </Button>
     </SheetTrigger>
-    <SheetContent side="left" className="w-full max-w-xs bg-white border-r border-amber-200">
+    <SheetContent side="left" className="w-full max-w-xs bg-white border-r border-gray-200">
       <div className="pt-6">
         <div className="mb-8">
           <BrandLogo isScrolled={false} />
         </div>
         <MenuItems onItemClick={() => setIsSheetOpen(false)} isScrolled={false} />
-        <div className="mt-8 pt-8 border-t border-amber-200">
+        <div className="mt-8 pt-8 border-t border-gray-200">
           <HeaderRightContent isScrolled={false} />
         </div>
       </div>
     </SheetContent>
   </Sheet>
 );
+
+// Filter Section Component - Only shows on listing pages
+const HeaderFilterSection = ({ isScrolled }) => {
+  const location = useLocation();
+  const { productList } = useSelector((state) => state.shopProducts);
+  const [filters, setFilters] = useState({});
+  const [sort, setSort] = useState("price-lowtohigh");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Only show on listing pages
+  const showFilter = location.pathname.includes("/shop/listing");
+
+  useEffect(() => {
+    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
+  }, [location.pathname]);
+
+  const handleFilter = (getSectionId, getCurrentOption) => {
+    let cpyFilters = { ...filters };
+    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
+
+    if (indexOfCurrentSection === -1) {
+      cpyFilters = {
+        ...cpyFilters,
+        [getSectionId]: [getCurrentOption],
+      };
+    } else {
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
+      if (indexOfCurrentOption === -1)
+        cpyFilters[getSectionId].push(getCurrentOption);
+      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+    }
+    setFilters(cpyFilters);
+    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
+  };
+
+  const clearAllFilters = () => {
+    setFilters({});
+    sessionStorage.removeItem("filters");
+    setSearchParams(new URLSearchParams());
+  };
+
+  const handleSort = (value) => {
+    setSort(value);
+  };
+
+  if (!showFilter) return null;
+
+  return (
+    <div className="w-full border-t border-gray-200 bg-white">
+      <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 py-3">
+        <div className="flex items-center gap-4 relative z-50">
+          <ProductFilter
+            filters={filters}
+            handleFilter={handleFilter}
+            clearAllFilters={clearAllFilters}
+            sort={sort}
+            handleSort={handleSort}
+          />
+          {/* Product Count - Next to filter */}
+          <span className="text-sm text-muted-foreground font-medium">
+            {productList?.length || 0} Products
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ShoppingHeader = () => {
   const [headerScrolled, setHeaderScrolled] = useState(false);
@@ -478,19 +545,17 @@ const ShoppingHeader = () => {
     <div className="relative -mx-4 md:-mx-6 lg:-mx-8">
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
         <ScrollingPromoBar />
-        <ContactBar />
 
         <header
           ref={headerRef}
           className={`sticky top-0 z-50 w-full ${
             headerScrolled
-              ? 'bg-white border-b border-amber-300 shadow-sm'
-              : 'bg-amber-50 border-b border-amber-200'
+              ? 'bg-white border-b border-gray-300 shadow-sm'
+              : 'bg-white border-b border-gray-200'
           }`}
         >
-          <div className={`w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 ${
-            headerScrolled ? 'h-16' : 'h-20'
-          }`}>
+          {/* Main Header */}
+          <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 h-20">
             <div className="flex items-center gap-4">
               <BrandLogo isScrolled={headerScrolled} />
             </div>
@@ -509,6 +574,9 @@ const ShoppingHeader = () => {
               <HeaderRightContent isScrolled={headerScrolled} />
             </div>
           </div>
+
+          {/* Filter Section - Only on listing pages */}
+          <HeaderFilterSection isScrolled={headerScrolled} />
         </header>
       </div>
     </div>

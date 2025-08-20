@@ -31,7 +31,8 @@ const filterOptions = {
     { id: "women", label: "Women" },
     { id: "kids", label: "Kids" },
     { id: "custom", label: "Modern Custom" },
-    { id: "sale", label: "Sale" }
+    { id: "sale", label: "Sale" },
+    { id: "gift", label: "Gift Card" }
   ],
   material: [
     { id: "cotton", label: "Cotton" },
@@ -97,7 +98,6 @@ const NavigationHeader = ({ currentView, onBack, onHome, title }) => {
     </div>
   );
 };
-
 const MainView = ({ 
   filters, 
   sort, 
@@ -109,10 +109,8 @@ const MainView = ({
   const activeFiltersCount = Object.values(filters || {}).reduce(
     (count, filterArray) => count + (filterArray?.length || 0), 0
   );
-
   const ActiveFilters = () => {
     if (activeFiltersCount === 0) return null;
-
     return (
       <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center justify-between">

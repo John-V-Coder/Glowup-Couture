@@ -64,6 +64,7 @@ export const addProductFormElements = [
       { id: "kids", label: "Kids" },
       { id: "custom", label: "Modern Custom" },
       { id: "sale", label: "Sale" },
+      { id: "gift", label: "Gift Card" },
     ],
   },
   {
@@ -129,7 +130,8 @@ export const shoppingViewHeaderMenuItems = [
       { id: "women", path: "/shop/listing?category=women", label: "Women's Collection" },
       { id: "kids", path: "/shop/listing?category=kids", label: "Kid's Collection" },
       { id: "custom", path: "/shop/listing?category=custom", label: "Modern Customs" },
-      { id: "sale", path: "/shop/listing?category/sale", label: "Sale" }
+      { id: "sale", path: "/shop/listing?category=sale", label: "Sale" },
+      { id: "gift", path: "/shop/listing?category=gift", label: "Gift Card" },
     ]
   },
   { id: "about", path: "/shop/about", label: "About Us" },
@@ -143,7 +145,8 @@ export const categoryOptionsMap = {
   women: "Women",
   kids: "Kids",
   custom: "Modern Customed",
-  sale: "Sale"
+  sale: "Sale",
+  gift: "Gift Card"
 };
 
 export const brandOptionsMap = {
@@ -164,6 +167,7 @@ export const filterOptions = {
     { id: "kids", label: "Kids" },
     { id: "custom", label: "Modern Custom" },
     { id: "sale", label: "Sale" },
+    { id: "gift", label: "Gift Card" }
   ],
   material: [
     { id: "cotton", label: "Cotton" },

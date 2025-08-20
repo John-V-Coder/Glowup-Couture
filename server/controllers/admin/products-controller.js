@@ -100,29 +100,33 @@ const editProduct = async (req, res) => {
       averageReview,
     } = req.body;
 
-    let findProduct = await Product.findById(id);
-    if (!findProduct)
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    if (brand !== undefined || material !== undefined) updateData.brand = brand || material;
+    if (price !== undefined) updateData.price = price === "" ? 0 : price;
+    if (salePrice !== undefined) updateData.salePrice = salePrice === "" ? 0 : salePrice;
+    if (totalStock !== undefined) updateData.totalStock = totalStock;
+    if (image !== undefined) updateData.image = image; // Allows setting image to null
+    if (images !== undefined) updateData.images = images;
+    if (averageReview !== undefined) updateData.averageReview = averageReview;
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProduct)
       return res.status(404).json({
         success: false,
         message: "Product not found",
       });
 
-    findProduct.title = title || findProduct.title;
-    findProduct.description = description || findProduct.description;
-    findProduct.category = category || findProduct.category;
-    findProduct.brand = brand || material || findProduct.brand;
-    findProduct.price = price === "" ? 0 : price || findProduct.price;
-    findProduct.salePrice =
-      salePrice === "" ? 0 : salePrice || findProduct.salePrice;
-    findProduct.totalStock = totalStock || findProduct.totalStock;
-    findProduct.image = image || findProduct.image;
-    findProduct.images = images || findProduct.images;
-    findProduct.averageReview = averageReview || findProduct.averageReview;
-
-    await findProduct.save();
     res.status(200).json({
       success: true,
-      data: findProduct,
+      data: updatedProduct,
     });
   } catch (e) {
     console.log(e);

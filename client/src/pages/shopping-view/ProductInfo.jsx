@@ -13,13 +13,10 @@ export function ProductInfo({ product, averageReview, reviewCount }) {
     <div className="space-y-6 text-left"> {/* Aligned all content to the left */}
       {/* Product Title and Badges */}
       <div>
-        <h1 className="text-3xl font-bold text-black underline decoration-2 decoration-black underline-offset-4 mb-3">
+        <h1 className="text-2xl font-bold text-black underline decoration-2 decoration-black underline-offset-4 mb-3">
           {product.title}
         </h1>
         <div className="flex flex-wrap items-center justify-start gap-2"> {/* Justify-start for left alignment of badges */}
-          <Badge variant="secondary">
-            {categoryOptionsMap[product.category] || product.category}
-          </Badge>
           {product.brand && (
             <Badge variant="outline">
               {brandOptionsMap[product.brand] || product.brand}
@@ -41,29 +38,37 @@ export function ProductInfo({ product, averageReview, reviewCount }) {
 
       {/* Description Title and Content */}
       <div className="space-y-2"> {/* Added a div to group description title and content */}
-        <h3 className="text-xl font-semibold text-black">Description</h3> {/* New title for description */}
-        <p className="text-black text-base leading-relaxed underline decoration-1 decoration-black">
+        <h3 className="text-lg font-semibold text-black">Description</h3> {/* New title for description */}
+        <p className="text-sm text-black leading-relaxed underline decoration-1 decoration-black">
           {product.description}
         </p>
       </div>
 
       {/* Pricing */}
       <div className="flex items-center justify-start gap-4"> {/* Justify-start for left alignment of pricing */}
-        <p
-          className={`text-3xl font-bold ${
-            product.salePrice > 0
-              ? "line-through text-black" // Original price is black with line-through
-              : "text-blue-600" // If no sale, price is blue
-          }`}
-        >
-          ${product.price}
-        </p>
+        {product.salePrice > 0 ? (
+          // Display original price with line-through and custom "cutting" underline when there's a sale
+          <div className="relative inline-flex items-center">
+            <p className="text-lg font-bold text-red-500 line-through">
+              KES {product.price}
+            </p>
+            {/* Custom line to appear "over" the price */}
+            <span className="absolute left-0 right-0 h-[1.5px] bg-red-500" style={{ top: 'calc(50% + 1px)' }}></span>
+          </div>
+        ) : (
+          // Display original price normally if no sale
+          <p className="text-lg font-bold text-black"> {/* Changed to text-black and reduced font size */}
+            KES {product.price}
+          </p>
+        )}
         {product.salePrice > 0 && (
-          <p className="text-3xl font-bold text-blue-600">
-            ${product.salePrice}
+          // Display sale price if applicable
+          <p className="text-lg font-bold text-black"> {/* Changed to text-black and reduced font size */}
+            KES {product.salePrice}
           </p>
         )}
         {product.salePrice > 0 && product.price > 0 && (
+          // Display discount percentage if applicable
           <Badge variant="destructive" className="text-sm">
             {discountPercent}% OFF
           </Badge>

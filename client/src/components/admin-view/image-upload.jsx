@@ -35,7 +35,7 @@ function ProductImageUpload({
   const inputRef = useRef(null);
   const [uploadingIndex, setUploadingIndex] = useState(null);
 
-  const MAX_IMAGES = 4;
+  const MAX_IMAGES = 10;
 
   const validateFile = (file) => {
     const isValidType = /image\/(png|jpe?g|webp)/i.test(file.type);

@@ -40,6 +40,7 @@ const Footer = () => {
             className="rounded border border-gray-200"
           />
         </div>
+          <ContactBar />
       </div>
     </footer>
   );

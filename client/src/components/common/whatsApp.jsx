@@ -44,9 +44,6 @@ const WhatsAppButton = () => {
           whileTap={{ scale: 0.95 }}
         >
           <WhatsAppIcon size={20} />
-          <div className="flex flex-col">
-            
-          </div>
         </motion.a>
       </div>
     </div>

@@ -149,9 +149,10 @@ function ShoppingHome() {
 
   return (
     <PageWrapper message="Loading home page...">
-      <div className="flex flex-col min-h-full w-full bg-white">
-        {/* Hero Section */}
-        <div className="relative w-full min-h-[60vh] md:min-h-[calc(100vh-5rem)] overflow-hidden">
+      {/* Full viewport container - no constraints */}
+      <div className="w-full bg-white">
+        {/* Hero Section - Full viewport height minus header */}
+        <div className="relative w-full h-screen overflow-hidden">
           {featureImageList && featureImageList.length > 0 ? (
             featureImageList.map((slide, index) => (
               <div
@@ -212,7 +213,6 @@ function ShoppingHome() {
           </div>
         </div>
 
-
         {/* Latest Arrivals - Horizontal Scroller */}
         <section className="py-12 sm:py-20 w-full bg-white">
           <div className="w-full px-4 sm:px-6">
@@ -226,8 +226,7 @@ function ShoppingHome() {
             <div className="relative">
               <div
                 ref={latestRef}
-                className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2" // Added no-scrollbar for cleaner look
-                // Added overflow-x-auto and no-scrollbar
+                className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2"
               >
                 {[...latestArrivals, ...latestArrivals].map((product, idx) => (
                   <div key={`${product._id}-${idx}`} className="flex-none w-[180px] sm:w-[260px] md:w-[280px]">

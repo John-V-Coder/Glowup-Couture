@@ -94,7 +94,7 @@ function AdminProducts() {
 
   function isFormValid() {
     // Required fields (salePrice is optional)
-    const requiredFields = ["image", "title", "description", "category", "material", "size", "price", "totalStock"];
+    const requiredFields = ["image", "title", "description", "category", "price", "totalStock"];
     
     return requiredFields.every((field) => {
       const value = formData[field];
@@ -111,11 +111,13 @@ function AdminProducts() {
     if (currentEditedId !== null) {
       const productToEdit = productList.find((p) => p._id === currentEditedId);
       if (productToEdit) {
-        setFormData(productToEdit);
-        const existingImages = Array.isArray(productToEdit.images) && productToEdit.images.length
-          ? productToEdit.images
-          : (productToEdit.image ? [productToEdit.image] : []);
-        setUploadedImages(existingImages);
+        // Consolidate main image and other images into a single, unique array
+        const mainImage = productToEdit.image;
+        const otherImages = Array.isArray(productToEdit.images) ? productToEdit.images : [];
+        const combinedImages = [...new Set([mainImage, ...otherImages].filter(Boolean))];
+
+        setUploadedImages(combinedImages);
+        setFormData(productToEdit); // The useEffect for uploadedImages will sync them correctly
       }
     }
   }, [currentEditedId, productList]);

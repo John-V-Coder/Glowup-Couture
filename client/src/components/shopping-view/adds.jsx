@@ -29,11 +29,11 @@ export const ScrollingPromoBar = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white py-2 overflow-hidden relative">
+    <div className="bg-black text-white py-2 overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
       <div className="container mx-auto px-4 relative">
         <div className="text-center">
-          <span className="text-sm font-medium animate-fade-in-out">
+          <span className="text-sm font-medium animate-fade-in-out underline decoration-white decoration-1 underline-offset-2">
             {promoMessages[currentIndex]}
           </span>
         </div>
@@ -51,14 +51,77 @@ export const ScrollingPromoBar = () => {
   );
 };
 
+// New component for static social icons
+const StaticSocialIcons = () => {
+  const socialIcons = [
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-4 h-4" />,
+      color: "text-pink-500",
+      bgColor: "bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400",
+      href: "https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook className="w-4 h-4" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-600",
+      href: "https://www.facebook.com/p/Glow-Couture-100037207131507/"
+    },
+    {
+      name: "TikTok",
+      icon: <TikTokIcon className="w-4 h-4" />,
+      color: "text-black",
+      bgColor: "bg-gradient-to-r from-black via-red-500 to-blue-400",
+      href: "https://www.tiktok.com/@glowupcouture"
+    },
+  ];
+
+  return (
+    <div className="flex items-center justify-center gap-2 py-2"> {/* Added padding and centering */}
+      {/* "Follow Us" text */}
+      <span className="text-xs text-gray-600 font-semibold px-3 py-1">
+        Follow Us
+      </span>
+      
+      {/* Static social icons row */}
+      <div className="flex items-center gap-4"> {/* Increased gap for better spacing */}
+        {socialIcons.map((social, index) => ( // Removed duplication as there's no scrolling
+          <a
+            key={`${social.name}-${index}`}
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`
+              w-8 h-8 rounded-full ${social.bgColor} flex-shrink-0
+              flex items-center justify-center text-white
+              transition-all duration-300 transform hover:scale-110 hover:shadow-lg
+              group relative overflow-hidden hover:z-10
+            `}
+            title={`Visit our ${social.name}`}
+          >
+            <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+            <div className="relative z-10">
+              {social.icon}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const ContactBar = () => {
   return (
     <>
-      <HorizontalScrollingSocialIcons />
+      {/* Replaced HorizontalScrollingSocialIcons with StaticSocialIcons */}
+      <StaticSocialIcons />
       <div className="bg-white py-3">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
             {/* Your other content can go here */}
+            {/* Example: A simple contact message */}
+             <ContactInfo icon={<Phone className="w-4 h-4 text-gray-700" />} text="+254 797 613671" mobileText="Call Us" />
           </div>
         </div>
       </div>
@@ -86,92 +149,15 @@ const ActionButton = ({ type, clickedButton, icon, label, variant, onClick }) =>
   </Button>
 );
 
-const HorizontalScrollingSocialIcons = () => {
-  const socialIcons = [
-    {
-      name: "Instagram",
-      icon: <Instagram className="w-4 h-4" />,
-      color: "text-pink-500",
-      bgColor: "bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400",
-      href: "https://www.instagram.com/glowup_couture?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
-    },
-    {
-      name: "Facebook",
-      icon: <Facebook className="w-4 h-4" />,
-      color: "text-blue-600",
-      bgColor: "bg-blue-600",
-      href: "https://www.facebook.com/p/Glow-Couture-100037207131507/"
-    },
-    {
-      name: "TikTok",
-      icon: <TikTokIcon className="w-4 h-4" />,
-      color: "text-black",
-      bgColor: "bg-gradient-to-r from-black via-red-500 to-blue-400",
-      href: "https://www.tiktok.com/@glowupcouture"
-    },
-  ];
+const ContactInfo = ({ icon, text, mobileText }) => (
+  <div className="flex items-center gap-2">
+    {icon}
+    <span className="font-medium hidden lg:inline">{text}</span>
+    {mobileText && <span className="font-medium lg:hidden">{mobileText}</span>}
+  </div>
+);
 
-  // Duplicate the array multiple times to create seamless horizontal scrolling
-  const duplicatedIcons = [...socialIcons, ...socialIcons, ...socialIcons, ...socialIcons];
-
-  return (
-    <div className="fixed bottom-6 left-0 right-0 z-50 pointer-events-none">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-center">
-          <div className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 p-2 pointer-events-auto">
-            <div className="flex items-center gap-2">
-              {/* "Follow Us" text */}
-              <span className="text-xs text-gray-600 font-semibold px-3 py-1">
-                Follow Us
-              </span>
-              
-              {/* Horizontal scrolling container */}
-              <div className="relative overflow-hidden" style={{ width: '200px' }}>
-                <div className="animate-scroll-horizontal flex gap-4 items-center">
-                  {duplicatedIcons.map((social, index) => (
-                    <a
-                      key={`${social.name}-${index}`}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`
-                        w-8 h-8 rounded-full ${social.bgColor} flex-shrink-0
-                        flex items-center justify-center text-white
-                        transition-all duration-300 transform hover:scale-110 hover:shadow-lg
-                        group relative overflow-hidden hover:z-10
-                      `}
-                      title={`Visit our ${social.name}`}
-                    >
-                      <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-                      <div className="relative z-10">
-                        {social.icon}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes scroll-horizontal {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-25%); }
-        }
-        .animate-scroll-horizontal {
-          animation: scroll-horizontal 8s linear infinite;
-        }
-        .animate-scroll-horizontal:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
-    </div>
-  );
-};
-
-// Alternative version positioned at the top
+// This component is no longer used for the main contact bar, but kept for reference if needed elsewhere.
 export const TopHorizontalScrollingSocialIcons = () => {
   const socialIcons = [
     {
@@ -246,13 +232,5 @@ export const TopHorizontalScrollingSocialIcons = () => {
     </div>
   );
 };
-
-const ContactInfo = ({ icon, text, mobileText }) => (
-  <div className="flex items-center gap-2">
-    {icon}
-    <span className="font-medium hidden lg:inline">{text}</span>
-    {mobileText && <span className="font-medium lg:hidden">{mobileText}</span>}
-  </div>
-);
 
 export default ContactBar;

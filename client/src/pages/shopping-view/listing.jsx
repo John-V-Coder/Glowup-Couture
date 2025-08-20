@@ -137,37 +137,46 @@ function ShoppingListing() {
   }, [dispatch, sort, filters]);
 
   return (
-    <PageWrapper message="Loading products...">
-      <div className="container mx-auto px-4 py-2 md:px-6 md:py-4">
-        {/* Filter Section with Product Count */}
-        <div className="mb-4 flex items-center justify-between">
-          <ProductFilter
-            filters={filters}
-            handleFilter={handleFilter}
-            clearAllFilters={clearAllFilters}
-            sort={sort}
-            handleSort={handleSort}
-          />
-          
-          {/* Small Product Count - Same line as filter */}
-          <span className="text-sm text-muted-foreground">
-            {productList?.length} Products
-          </span>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          {productList?.map((productItem) => (
-            <ShoppingProductTile
-              key={productItem._id}
-              handleGetProductDetails={handleGetProductDetails}
-              product={productItem}
-              handleAddtoCart={handleAddtoCart}
-            />
-          ))}
-        </div>
+<PageWrapper message="Loading products...">
+  {/* Filter Section Container */}
+  {/* This is a self-contained div for the filter and product count */}
+  <div className="w-full px-4 py-6 md:px-6 md:py-8">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 relative z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 pb-4">
+      
+      {/* Product Filter */}
+      <div className="relative z-50 mb-4 md:mb-0">
+        <ProductFilter
+          filters={filters}
+          handleFilter={handleFilter}
+          clearAllFilters={clearAllFilters}
+          sort={sort}
+          handleSort={handleSort}
+        />
       </div>
-    </PageWrapper>
+      
+      {/* Product Count */}
+      <span className="text-sm text-muted-foreground font-medium">
+        {productList?.length} Products
+      </span>
+      
+    </div>
+  </div>
+
+  {/* Product Grid Container */}
+  {/* This is a new, separate container for the product grid */}
+  <div className="w-full px-4 md:px-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
+      {productList?.map((productItem) => (
+        <ShoppingProductTile
+          key={productItem._id}
+          handleGetProductDetails={handleGetProductDetails}
+          product={productItem}
+          handleAddtoCart={handleAddtoCart}
+        />
+      ))}
+    </div>
+  </div>
+</PageWrapper>
   );
 }
 
