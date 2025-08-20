@@ -11,29 +11,9 @@ import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { useCartNotification } from "@/hooks/use-cart-notification";
 import { getFeatureImages } from "@/store/common-slice";
-import { Leaf, ShieldEllipsisIcon, SliceIcon, Flame, LineChart, VenusIcon } from "lucide-react";
 import { BrandLogo } from "@/components/shopping-view/header";
-import { MessageSquare } from "lucide-react";
-import WhatsAppButton from "@/components/common/whatsApp";
 import PageWrapper from "@/components/common/page-wrapper";
 
-const categoriesWithIcon = [
-  { id: "women", label: "Women's Collection", icon: ShirtIcon },
-  { id: "men", label: "Men's Collection", icon: Shirt },
-  { id: "kids", label: "Kids Wear", icon: Diamond },
-  { id: "custom", label: "Modern Custom", icon: Gem },
-];
-
-const brandsWithIcon = [
-  { id: "cotton", label: "Cotton", icon: Leaf },
-  { id: "wool", label: "Wool", icon: ShieldEllipsisIcon },
-  { id: "denim", label: "Denim", icon: Sparkles },
-  { id: "polyester", label: "Polyester", icon: UmbrellaIcon },
-  { id: "silk", label: "Silk", icon: SliceIcon },
-  { id: "fleece", label: "Fleece", icon: Flame },
-  { id: "linen", label: "Linen", icon: LineChart },
-  { id: "viscose", label: "Viscose", icon: VenusIcon },
-];
 
 function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -152,7 +132,7 @@ function ShoppingHome() {
       {/* Full viewport container - no constraints */}
       <div className="w-full bg-white">
         {/* Hero Section - Full viewport height minus header */}
-        <div className="relative w-full h-screen overflow-hidden">
+          <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen h-screen overflow-hidden">
           {featureImageList && featureImageList.length > 0 ? (
             featureImageList.map((slide, index) => (
               <div
@@ -193,7 +173,7 @@ function ShoppingHome() {
                 <p className="text-base sm:text-xl">Ready To Wear</p>
                 <a
                   href="/shop/listing"
-                  className="px-4 py-2 text-base sm:px-6 sm:py-3 bg-white text-amber-800 font-semibold rounded-full shadow-lg hover:bg-amber-200 transition-all inline-block mt-4"
+                  className="px-4 py-2 text-base sm:px-2 sm:py-3 bg-white text-amber-800 font-semibold rounded-full shadow-lg hover:bg-amber-200 transition-all inline-block mt-4"
                 >
                   Shop Now
                 </a>

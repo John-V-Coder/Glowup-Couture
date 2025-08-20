@@ -13,7 +13,7 @@ const initialState = {
   password: "",
 };
 
-function AuthLogin({ embedded = false, redirectTo = "/shop/checkout" }) {
+function AuthLogin({ embedded = false, redirectTo = "/shop/home" }) {
   const [formData, setFormData] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/checkout" }) {
         toast({
           title: data?.payload?.message,
         });
-        navigate(redirectTo || "/shop/checkout");
+        navigate(redirectTo || "/shop/home");
       } else {
         toast({
           title: data?.payload?.message,

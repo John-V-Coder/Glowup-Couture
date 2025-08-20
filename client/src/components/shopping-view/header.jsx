@@ -313,7 +313,7 @@ const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
               value="register"
               className="data-[state=active]:bg-gray-800 data-[state=active]:text-white rounded-none"
             >
-              Join Now
+              Register
             </TabsTrigger>
           </TabsList>
           <TabsContent value="signin" className="mt-0">

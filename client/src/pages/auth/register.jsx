@@ -13,7 +13,7 @@ const initialState = {
   password: "",
 };
 
-function AuthRegister({ embedded = false, redirectTo = "/shop/checkout" }) {
+function AuthRegister({ embedded = false, redirectTo = "/shop/home" }) {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ function AuthRegister({ embedded = false, redirectTo = "/shop/checkout" }) {
           title: data?.payload?.message,
         });
         // After registration, send user to checkout to continue
-        navigate(redirectTo || "/shop/checkout");
+        navigate(redirectTo || "/auth/login");
       } else {
         toast({
           title: data?.payload?.message,
