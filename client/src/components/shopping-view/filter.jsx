@@ -24,42 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const filterOptions = {
-  category: [
-    { id: "men", label: "Men" },
-    { id: "women", label: "Women" },
-    { id: "kids", label: "Kids" },
-    { id: "custom", label: "Modern Custom" },
-    { id: "sale", label: "Sale" },
-    { id: "gift", label: "Gift Card" }
-  ],
-  material: [
-    { id: "cotton", label: "Cotton" },
-    { id: "wool", label: "Wool" },
-    { id: "denim", label: "Denim" },
-    { id: "polyester", label: "Polyester" },
-    { id: "silk", label: "Silk" },
-    { id: "fleece", label: "Fleece" },
-    { id: "linen", label: "Linen" },
-    { id: "viscose", label: "Viscose" }
-  ],
-  size: [
-    { id: "xs", label: "XS" },
-    { id: "s", label: "S" },
-    { id: "m", label: "M" },
-    { id: "l", label: "L" },
-    { id: "xl", label: "XL" },
-    { id: "xxl", label: "XXL" }
-  ]
-};
-
-const sortOptions = [
-  { id: "price-lowtohigh", label: "Price: Low to High" },
-  { id: "price-hightolow", label: "Price: High to Low" },
-  { id: "title-atoz", label: "Title: A to Z" },
-  { id: "title-ztoa", label: "Title: Z to A" }
-];
+import { filterOptions, sortOptions } from "@/config";
 
 const NavigationHeader = ({ currentView, onBack, onHome, title }) => {
   return (

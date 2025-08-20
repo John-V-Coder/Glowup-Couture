@@ -15,6 +15,9 @@ const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
+const emailRouter = require("./routes/email/email-routes");
+const { verifyTransporter } = require("./config/email");
+const { seedEmailTemplates } = require("./utils/seedEmailTemplates");
 
 
 const app = express();
@@ -22,7 +25,15 @@ const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("MongoDB connected"))
+  .then(async () => {
+    console.log("MongoDB connected");
+    
+    // Verify email configuration
+    await verifyTransporter();
+    
+    // Seed email templates
+    await seedEmailTemplates();
+  })
   .catch((error) => console.error("MongoDB connection error:", error));
 
 // Middlewares
@@ -54,6 +65,7 @@ app.use("/api/shop/review", shopReviewRouter);
 
 
 app.use("/api/common/feature", commonFeatureRouter);
+app.use("/api/email", emailRouter);
 
 // Test route
 app.get("/", (req, res) => {

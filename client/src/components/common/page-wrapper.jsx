@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Preloader from './preloader';
 
-function PageWrapper({ children, message = "Loading..." }) {
+function PageWrapper({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,11 +12,15 @@ function PageWrapper({ children, message = "Loading..." }) {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <Preloader message={message} />;
-  }
-
-  return children;
+  return (
+    <>
+      {loading ? (
+        <Preloader/>
+      ) : (
+        children
+      )}
+    </>
+  );
 }
 
 export default PageWrapper;

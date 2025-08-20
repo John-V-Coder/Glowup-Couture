@@ -44,20 +44,24 @@ function ShoppingListing() {
   }
 
   function handleFilter(getSectionId, getCurrentOption) {
-    let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
+    const cpyFilters = { ...filters };
+    const filterSection = cpyFilters[getSectionId] ? [...cpyFilters[getSectionId]] : [];
+    const indexOfCurrentOption = filterSection.indexOf(getCurrentOption);
 
-    if (indexOfCurrentSection === -1) {
-      cpyFilters = {
-        ...cpyFilters,
-        [getSectionId]: [getCurrentOption],
-      };
+    if (indexOfCurrentOption === -1) {
+      // Add the filter option
+      filterSection.push(getCurrentOption);
     } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
-      if (indexOfCurrentOption === -1)
-        cpyFilters[getSectionId].push(getCurrentOption);
-      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+      // Remove the filter option
+      filterSection.splice(indexOfCurrentOption, 1);
     }
+
+    if (filterSection.length === 0) {
+      delete cpyFilters[getSectionId];
+    } else {
+      cpyFilters[getSectionId] = filterSection;
+    }
+
     setFilters(cpyFilters);
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
   }

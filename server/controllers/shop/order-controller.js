@@ -2,6 +2,8 @@ const paypal = require("../../helpers/paypal");
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
+const User = require("../../models/User");
+const emailService = require("../../services/emailService");
 
 const createOrder = async (req, res) => {
   try {
@@ -74,6 +76,30 @@ const createOrder = async (req, res) => {
         });
 
         await newlyCreatedOrder.save();
+
+        // Send order confirmation email asynchronously
+        if (userId) {
+          User.findById(userId)
+            .then(user => {
+              if (user && user.email) {
+                const orderData = {
+                  userName: user.userName,
+                  orderId: newlyCreatedOrder._id,
+                  total: totalAmount,
+                  shippingAddress: `${addressInfo?.address}, ${addressInfo?.city}, ${addressInfo?.pincode}`,
+                  estimatedDelivery: 'Within 3-5 business days'
+                };
+                
+                return emailService.sendOrderConfirmationEmail(user.email, orderData);
+              }
+            })
+            .then(() => {
+              console.log(`✅ Order confirmation email sent for order ${newlyCreatedOrder._id}`);
+            })
+            .catch((error) => {
+              console.error(`❌ Failed to send order confirmation email:`, error.message);
+            });
+        }
 
         const approvalURL = paymentInfo.links.find(
           (link) => link.rel === "approval_url"
