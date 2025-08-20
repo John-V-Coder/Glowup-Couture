@@ -64,7 +64,6 @@ export const addProductFormElements = [
       { id: "kids", label: "Kids" },
       { id: "custom", label: "Modern Custom" },
       { id: "sale", label: "Sale" },
-      { id: "gift", label: "Gift Card" },
     ],
   },
   {
@@ -131,7 +130,6 @@ export const shoppingViewHeaderMenuItems = [
       { id: "kids", path: "/shop/listing?category=kids", label: "Kid's Collection" },
       { id: "custom", path: "/shop/listing?category=custom", label: "Modern Customs" },
       { id: "sale", path: "/shop/listing?category=sale", label: "Sale" },
-      { id: "gift", path: "/shop/listing?category=gift", label: "Gift Card" },
     ]
   },
   { id: "about", path: "/shop/about", label: "About Us" },
@@ -146,7 +144,6 @@ export const categoryOptionsMap = {
   kids: "Kids",
   custom: "Modern Customed",
   sale: "Sale",
-  gift: "Gift Card"
 };
 
 export const brandOptionsMap = {

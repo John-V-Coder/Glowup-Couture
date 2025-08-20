@@ -15,7 +15,7 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn, Search, Gift } from "lucide-react";
+import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart } from "lucide-react";
 import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
 import ProductFilter from "@/components/shopping-view/filter";
@@ -39,11 +39,6 @@ const shoppingViewHeaderMenuItems = [
     id: "sale",
     path: "/shop/listing?category=sale",
     label: "Sale",
-  },
-      {
-    id: "gift",
-    path: "/shop/listing?category=gift",
-    label: "Gift Card",
   },
     ],
   },
@@ -276,9 +271,6 @@ export const BrandLogo = () => {
   );
 };
 
-
-
-
 const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
@@ -294,10 +286,10 @@ const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
         <Button
           variant="outline"
           size="default"
-          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 flex items-center gap-2"
+          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 p-2"
         >
-          <User className="w-4 h-4" />
-          Account
+          <User className="w-5 h-5" />
+          <span className="sr-only">Account</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full max-w-lg bg-white border border-gray-200 rounded-lg p-0">
@@ -328,7 +320,7 @@ const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
   );
 };
 
-const HeaderRightContent = ({ isScrolled }) => {
+const HeaderRightContent = ({ isScrolled, isMobile = false }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [openCartSheet, setOpenCartSheet] = useState(false);
@@ -356,17 +348,18 @@ const HeaderRightContent = ({ isScrolled }) => {
   };
 
   return (
-    <div className="flex lg:items-center lg:flex-row flex-col gap-4">
+    <div className={`flex items-center gap-2 ${isMobile ? 'flex-row' : 'lg:items-center lg:flex-row flex-col gap-4'}`}>
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <Button
           onClick={() => setOpenCartSheet(true)}
           variant="outline"
           size="default"
-          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black"
+          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2 relative"
         >
-          Cart
+          <ShoppingCart className="w-5 h-5" />
+          <span className="sr-only">Cart</span>
           {cartItems?.items?.length > 0 && (
-            <Badge className="ml-2 bg-gray-800 text-white rounded-full w-6 h-6">
+            <Badge className="absolute -top-2 -right-2 bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
               {cartItems?.items?.length || 0}
             </Badge>
           )}
@@ -440,9 +433,10 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
       <Button
         variant="outline"
         size="default"
-        className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black"
+        className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2"
       >
-        Menu
+        <Menu className="w-5 h-5" />
+        <span className="sr-only">Open menu</span>
       </Button>
     </SheetTrigger>
     <SheetContent side="left" className="w-full max-w-xs bg-white border-r border-gray-200">
@@ -451,9 +445,6 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
           <BrandLogo isScrolled={false} />
         </div>
         <MenuItems onItemClick={() => setIsSheetOpen(false)} isScrolled={false} />
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <HeaderRightContent isScrolled={false} />
-        </div>
       </div>
     </SheetContent>
   </Sheet>
@@ -530,6 +521,7 @@ const ShoppingHeader = () => {
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const headerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -560,12 +552,26 @@ const ShoppingHeader = () => {
               <BrandLogo isScrolled={headerScrolled} />
             </div>
 
-            <MobileMenu
-              isSheetOpen={isSheetOpen}
-              setIsSheetOpen={setIsSheetOpen}
-              isScrolled={headerScrolled}
-            />
+            {/* Mobile Layout: Search + Account + Cart + Menu */}
+            <div className="lg:hidden flex items-center gap-2">
+              <Button
+                onClick={() => navigate("/shop/search")}
+                variant="outline"
+                size="default"
+                className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2"
+              >
+                <Search className="w-5 h-5" />
+                <span className="sr-only">Search</span>
+              </Button>
+              <HeaderRightContent isScrolled={headerScrolled} isMobile={true} />
+              <MobileMenu
+                isSheetOpen={isSheetOpen}
+                setIsSheetOpen={setIsSheetOpen}
+                isScrolled={headerScrolled}
+              />
+            </div>
 
+            {/* Desktop Layout */}
             <div className="hidden lg:block">
               <MenuItems isScrolled={headerScrolled} />
             </div>
