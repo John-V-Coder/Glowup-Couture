@@ -8,11 +8,11 @@ const initialState = {
   user: null,
   token: null,
   error: null,
+  message: null,
 };
 
 export const registerUser = createAsyncThunk(
   "/auth/register",
-
   async (formData) => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/auth/register`,
@@ -28,7 +28,6 @@ export const registerUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   "/auth/login",
-
   async (formData, { dispatch }) => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/auth/login`,
@@ -49,7 +48,6 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   "/auth/logout",
-
   async () => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/auth/logout`,
@@ -63,33 +61,14 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-//export const checkAuth = createAsyncThunk(
-  //"/auth/checkauth",
-
- // async () => {
-   // const response = await axios.get(
-     // `${import.meta.env.VITE_API_URL}/api/auth/check-auth`,
-      //{
-       // withCredentials: true,
-       // headers: {
-          //"Cache-Control":
-          //  "no-store, no-cache, must-revalidate, proxy-revalidate",
-        //},
-      //}
-    //);
-
-  //  return response.data;
-  //}
-//);
 export const checkAuth = createAsyncThunk(
   "/auth/checkauth",
-
   async (token) => {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/api/auth/check-auth`,
       {
         headers: {
-          Authorization : `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Cache-Control":
             "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
@@ -100,25 +79,63 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
+// New async thunks for password reset functionality
+export const requestPasswordReset = createAsyncThunk(
+  "auth/requestPasswordReset",
+  async (email, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/email/password-reset-request`,
+        { email }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ token, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/reset-password`,
+        { token, newPassword }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     setUser: (state, action) => {},
-    resetTokenAndCredentials :(state)=>{
-      state.isAuthenticated = false
-      state.user = null
-      state.token = null
+    resetTokenAndCredentials: (state) => {
+      state.isAuthenticated = false;
+      state.user = null;
+      state.token = null;
     },
     setLoadingFalse: (state) => {
       console.log("setLoadingFalse - Setting loading to false");
       state.isLoading = false;
-    }
+    },
+    clearMessage: (state) => {
+      state.message = null;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -132,17 +149,17 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        console.log( action);
-
+        console.log(action);
         state.isLoading = false;
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
         state.token = action.payload.token;
         // Use localStorage for longer persistence
-        localStorage.setItem('token', JSON.stringify(action.payload.token));
-        sessionStorage.setItem('token', JSON.stringify(action.payload.token));
+        localStorage.setItem("token", JSON.stringify(action.payload.token));
+        sessionStorage.setItem("token", JSON.stringify(action.payload.token));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -161,14 +178,16 @@ const authSlice = createSlice({
         state.isAuthenticated = action.payload.success;
       })
       .addCase(checkAuth.rejected, (state, action) => {
-        console.log("checkAuth.rejected - Token expired/invalid, clearing auth state");
+        console.log(
+          "checkAuth.rejected - Token expired/invalid, clearing auth state"
+        );
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;
         // Clear invalid/expired token from both storages
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
       })
       .addCase(logoutUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -176,10 +195,45 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.token = null;
         // Clear token from sessionStorage on logout
-        sessionStorage.removeItem('token');
+        sessionStorage.removeItem("token");
+      })
+      // Password reset request cases
+      .addCase(requestPasswordReset.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(requestPasswordReset.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message = action.payload.message;
+      })
+      .addCase(requestPasswordReset.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload?.error || "Failed to request password reset";
+      })
+      // Reset password cases
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message = action.payload.message;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload?.error || "Failed to reset password";
       });
   },
 });
 
-export const { setUser, resetTokenAndCredentials, setLoadingFalse } = authSlice.actions;
+export const {
+  setUser,
+  resetTokenAndCredentials,
+  setLoadingFalse,
+  clearMessage,
+  clearError,
+} = authSlice.actions;
+
 export default authSlice.reducer;

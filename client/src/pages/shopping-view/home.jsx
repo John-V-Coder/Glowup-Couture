@@ -13,6 +13,7 @@ import { useCartNotification } from "@/hooks/use-cart-notification";
 import { getFeatureImages } from "@/store/common-slice";
 import { BrandLogo } from "@/components/shopping-view/header";
 import PageWrapper from "@/components/common/page-wrapper";
+import NewsletterForm from "@/components/shopping-view/newsletter-subscription";
 
 
 function ShoppingHome() {
@@ -192,7 +193,7 @@ function ShoppingHome() {
             ))}
           </div>
         </div>
-
+     <NewsletterForm />
         {/* Latest Arrivals - Horizontal Scroller */}
         <section className="py-12 sm:py-20 w-full bg-white">
           <div className="w-full px-4 sm:px-6">

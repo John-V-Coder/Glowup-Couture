@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./auth-slice";
+import emailReducer from './email-slice';
 import adminProductsSlice from "./admin/products-slice";
 import adminOrderSlice from "./admin/order-slice";
 
@@ -13,9 +14,11 @@ import commonFeatureSlice from "./common-slice";
 
 
 
+
 const store = configureStore({
     reducer: {
         auth: authReducer,
+        email: emailReducer,
         adminProducts: adminProductsSlice,
         adminOrder: adminOrderSlice,
 
@@ -25,6 +28,7 @@ const store = configureStore({
         shopOrder: shopOrderSlice,
         shopSearch: shopSearchSlice,
         shopReview: shopReviewSlice,
+        
 
 
         commonFeature: commonFeatureSlice,

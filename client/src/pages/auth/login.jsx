@@ -40,31 +40,42 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/home" }) {
 
   return (
     <PageWrapper message="Loading login...">
-    <div className="mx-auto w-full max-w-md space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          LogIn Account
-        </h1>
-        {!embedded && (
-          <p className="mt-2">
-            Don't Have Account
-            <Link
-              className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
-              to="/auth/register"
-            >
-              Register
-            </Link>
-          </p>
-        )}
+      <div className="mx-auto w-full max-w-md space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            LogIn Account
+          </h1>
+          {!embedded && (
+            <p className="mt-2">
+              Don't Have Account
+              <Link
+                className="font-medium ml-2 text-primary hover:underline border border-gray-300 px-3 py-1 rounded"
+                to="/auth/register"
+              >
+                Register
+              </Link>
+            </p>
+          )}
+        </div>
+
+        <CommonForm
+          formControls={loginFormControls}
+          buttonText={"Sign In"}
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={onSubmit}
+        />
+
+        {/* Forgot Password Link */}
+        <div className="text-center text-sm mt-4">
+          <Link
+            to="/auth/forgot-password"
+            className="text-primary hover:underline"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </div>
-      <CommonForm
-        formControls={loginFormControls}
-        buttonText={"Sign In"}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={onSubmit}
-      />
-    </div>
     </PageWrapper>
   );
 }

@@ -8,13 +8,18 @@ function AuthLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("signin");
+  const [showTabs, setShowTabs] = useState(true);
 
-  // Determine active tab based on current route
+  // Determine active tab or forgot-password state
   useEffect(() => {
-    if (location.pathname.includes('/register')) {
+    if (location.pathname.includes("/register")) {
       setActiveTab("register");
-    } else if (location.pathname.includes('/login')) {
+      setShowTabs(true);
+    } else if (location.pathname.includes("/login")) {
       setActiveTab("signin");
+      setShowTabs(true);
+    } else if (location.pathname.includes("/forgot-password")) {
+      setShowTabs(false); // hide tabs for forgot password
     }
   }, [location.pathname]);
 
@@ -35,41 +40,43 @@ function AuthLayout() {
       <ContactBar className="bg-[#EEDFCC] text-[#5C4033]" />
 
       <div className="flex flex-1">
-
         {/* Main Content */}
         <div className="flex flex-1 items-center justify-center bg-[#FFFBEA] px-4 py-12 sm:px-6 lg:px-8">
           <div className="w-full max-w-lg space-y-6">
-            {/* Dialog-style Container with Tabs */}
             <div className="bg-white border border-gray-200 rounded-lg p-0 shadow-lg">
-              {/* Tab Navigation */}
-              <div className="grid w-full grid-cols-2 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-                <button
-                  onClick={() => handleTabChange("signin")}
-                  className={`
-                    py-3 px-4 text-center font-medium transition-colors
-                    ${activeTab === "signin" 
-                      ? "bg-gray-800 text-white" 
-                      : "bg-gray-50 text-gray-600 hover:text-gray-800"
-                    }
-                    rounded-tl-lg
-                  `}
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => handleTabChange("register")}
-                  className={`
-                    py-3 px-4 text-center font-medium transition-colors
-                    ${activeTab === "register" 
-                      ? "bg-gray-800 text-white" 
-                      : "bg-gray-50 text-gray-600 hover:text-gray-800"
-                    }
-                    rounded-tr-lg
-                  `}
-                >
-                  Register
-                </button>
-              </div>
+              {/* Show tabs only for login/register */}
+              {showTabs && (
+                <div className="grid w-full grid-cols-2 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+                  <button
+                    onClick={() => handleTabChange("signin")}
+                    className={`
+                      py-3 px-4 text-center font-medium transition-colors
+                      ${
+                        activeTab === "signin"
+                          ? "bg-gray-800 text-white"
+                          : "bg-gray-50 text-gray-600 hover:text-gray-800"
+                      }
+                      rounded-tl-lg
+                    `}
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => handleTabChange("register")}
+                    className={`
+                      py-3 px-4 text-center font-medium transition-colors
+                      ${
+                        activeTab === "register"
+                          ? "bg-gray-800 text-white"
+                          : "bg-gray-50 text-gray-600 hover:text-gray-800"
+                      }
+                      rounded-tr-lg
+                    `}
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
 
               {/* Content Area */}
               <div className="p-6">

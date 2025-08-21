@@ -2,6 +2,12 @@ import { BadgeCheck, LayoutDashboard,  ShoppingBasket, ChartNoAxesCombined} from
 import { useNavigate } from "react-router-dom"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Fragment } from "react";
+import { Mail } from "lucide-react";
+import { Users } from "lucide-react";
+import { MessageSquare } from "lucide-react";
+import { BarChart3 } from "lucide-react";
+import { Settings } from "lucide-react";
+import { BookTemplate } from "lucide-react";
 
 const adminSidebarMenuItems = [
   {
@@ -28,6 +34,45 @@ const adminSidebarMenuItems = [
     path: "/admin/gallery",
     icon: <LayoutDashboard />,
   },
+  {
+    id: 'customers',
+    label: 'Customers',
+    path: '/admin/customers',
+    icon: <Users />
+  },
+  {
+    id: 'marketing',
+    label: 'M.Campaigns',
+    path: '/admin/marketing-campaign',
+    icon: <Mail />,
+    isSubItem: true
+  },
+  {
+    id: 'email-templates',
+    label: 'E.Templates',
+    path: '/admin/email-templates',
+    icon: <BookTemplate />,
+    isSubItem: true
+  },
+  {
+    id: 'newsletter',
+    label: 'Newsletters',
+    path: '/admin/newsletter',
+    icon: <MessageSquare />,
+    isSubItem: true
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    path: '/admin/analytics',
+    icon: <BarChart3 />
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    path: '/admin/settings',
+    icon: <Settings />
+  }
 ];
 
 function MenuItems({ setOpen }) {

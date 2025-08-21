@@ -8,9 +8,14 @@ const bcrypt = require('bcryptjs');
 const { notifyAdminOfNewOrder } = require('../../utils/emailHelpers');
 
 // Subscribe to newsletter
+// Subscribe to newsletter (supports auto-fill for authenticated users)
 const subscribeToNewsletter = async (req, res) => {
   try {
-    const { email, firstName = '', lastName = '', preferences = {} } = req.body;
+    // Use authenticated user's info if available
+    const email = req.user?.email || req.body.email;
+    const firstName = req.user?.firstName || req.body.firstName || '';
+    const lastName = req.user?.lastName || req.body.lastName || '';
+    const preferences = req.body.preferences || {};
 
     if (!email) {
       return res.status(400).json({
@@ -49,7 +54,7 @@ const subscribeToNewsletter = async (req, res) => {
           sales: true,
           ...preferences
         },
-        source: 'website'
+        source: req.user ? 'account' : 'website'
       });
       await subscription.save();
     }
@@ -74,6 +79,7 @@ const subscribeToNewsletter = async (req, res) => {
     });
   }
 };
+
 
 // Unsubscribe from newsletter
 const unsubscribeFromNewsletter = async (req, res) => {

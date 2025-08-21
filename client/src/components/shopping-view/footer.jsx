@@ -11,24 +11,33 @@ const Footer = () => {
       <div className="container mx-auto px-4 flex flex-row justify-between items-center">
         {/* Left side - Links */}
         <div className="flex flex-col space-y-1">
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {["Terms", "Delivery", "Returns", "Search", "About"].map((item) => (
-              <Link 
-                key={item}
-                to={`/shop/${item.toLowerCase()}`}
-                onClick={handleLinkClick}
-                className="hover:text-amber-800 hover:underline"
-              >
-                {item}
-              </Link>
-            ))}
-          </div>
-          <p className="text-[10px] text-gray-500">
-            © {new Date().getFullYear()} Glowup Couture || All Rights Observed
-          </p>
-        </div>
+  <div className="flex flex-wrap gap-x-4 gap-y-1">
+    {[
+      { label: "Terms", path: "/terms" },
+      { label: "Delivery", path: "/delivery" },
+      { label: "Returns", path: "/returns" },
+      { label: "Search", path: "/search" },
+      { label: "About", path: "/about" },
+      { label: "Support", path: "/support" }
+    ].map(({ label, path }) => (
+      <Link
+        key={label}
+        to={path}
+        onClick={handleLinkClick}
+        className="hover:text-amber-800 hover:underline"
+      >
+        {label}
+      </Link>
+    ))}
+  </div>
+
+  <p className="text-[10px] text-gray-500">
+    © {new Date().getFullYear()} Glowup Couture || All Rights Observed
+  </p>
+</div>
 
 
+        
         {/* Right side - Map */}
         <div className="w-48">
           <iframe
