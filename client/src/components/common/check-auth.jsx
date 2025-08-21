@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 function CheckAuth({ isAuthenticated, user, children }) {
   const location = useLocation();
-  const { pathname } = location;
+  const { pathname, state } = location;
 
   console.log("Current path:", pathname, "Auth status:", isAuthenticated);
 
@@ -35,9 +35,26 @@ function CheckAuth({ isAuthenticated, user, children }) {
 
   // 3. Handle authenticated users
   if (isAuthenticated) {
-    // Redirect away from auth pages if already logged in
+    // Special handling for auth pages when authenticated
     if (pathname.includes("/auth")) {
-      return <Navigate to={user?.role === "admin" ? "/admin/dashboard" : "/shop/home"} replace />;
+      // If coming from password reset, always redirect to login
+      if (pathname.includes("/reset-password") || state?.fromPasswordReset) {
+        return <Navigate to="/auth/login" state={{ passwordResetSuccess: true }} replace />;
+      }
+      
+      // If trying to access login/register while authenticated, redirect based on role
+      if (pathname.includes("/login") || pathname.includes("/register")) {
+        // Check if there's a specific redirect location from previous navigation
+        const redirectTo = state?.from?.pathname;
+        if (redirectTo && !redirectTo.includes("/auth")) {
+          return <Navigate to={redirectTo} replace />;
+        }
+        // Default role-based redirect
+        return <Navigate to={user?.role === "admin" ? "/admin/dashboard" : "/shop/home"} replace />;
+      }
+      
+      // For other auth routes, allow access (like forgot-password)
+      return <>{children}</>;
     }
 
     // Admin-specific rules
@@ -58,7 +75,7 @@ function CheckAuth({ isAuthenticated, user, children }) {
         return <Navigate to="/unauthorized" replace />;
       }
       // Allow access to shop and checkout
-      if (pathname.includes("/shop") || pathname.includes("/checkout")) {
+      if (pathname.includes("/shop") || pathname.includes("/checkout") || pathname.includes("/account")) {
         return <>{children}</>;
       }
     }

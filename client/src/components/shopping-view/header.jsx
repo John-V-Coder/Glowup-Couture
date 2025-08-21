@@ -14,9 +14,10 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart } from "lucide-react";
+import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react"; // Added SlidersHorizontal icon
 import ProductFilter from "@/components/shopping-view/filter";
 import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { useMediaQuery } from 'react-responsive';
 
 const shoppingViewHeaderMenuItems = [
   {
@@ -61,7 +62,6 @@ const shoppingViewHeaderMenuItems = [
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
-
   for (const [key, value] of Object.entries(filterParams)) {
     if (Array.isArray(value) && value.length > 0) {
       const paramValue = value.join(",");
@@ -71,7 +71,7 @@ function createSearchParamsHelper(filterParams) {
   return queryParams.join("&");
 }
 
-const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
+const CollectionDropdown = ({ menuItem, handleNavigate }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -108,8 +108,7 @@ const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
   );
 };
 
-// Single MenuItems component definition
-const MenuItems = ({ onItemClick, isScrolled }) => {
+const MenuItems = ({ onItemClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -129,7 +128,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
       getCurrentMenuItem.id === "search" ||
       getCurrentMenuItem.id === "gallery" ||
       getCurrentMenuItem.id === "about" ||
-      getCurrentMenuItem.id === "sale" 
+      getCurrentMenuItem.id === "sale"
         ? null
         : { category: [getCurrentMenuItem.id] };
 
@@ -155,7 +154,6 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
               <CollectionDropdown
                 menuItem={menuItem}
                 handleNavigate={handleNavigate}
-                isScrolled={isScrolled}
               />
             ) : menuItem.buttonStyle ? (
               <Button
@@ -217,12 +215,10 @@ export const BrandLogo = () => {
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap"
         rel="stylesheet"
       />
-
       <Link
         to="/shop/home"
         className="flex flex-col items-center justify-center text-center cursor-pointer"
       >
-        {/* Brand Text */}
         <div
           className="leading-tight text-center"
           style={{
@@ -236,8 +232,6 @@ export const BrandLogo = () => {
             COUTURE
           </div>
         </div>
-
-        {/* Golden Waves Underline */}
         <div className="relative mt-1 w-20 md:w-28">
           <svg
             viewBox="0 0 300 60"
@@ -245,21 +239,18 @@ export const BrandLogo = () => {
             xmlns="http://www.w3.org/2000/svg"
             className="w-full"
           >
-            {/* Thick wave */}
             <path
               d="M0 40 C80 60, 220 20, 300 40"
               stroke="url(#grad1)"
               strokeWidth="4"
               fill="transparent"
             />
-            {/* Thin wave */}
             <path
               d="M0 50 C80 70, 220 30, 300 50"
               stroke="url(#grad1)"
               strokeWidth="2"
               fill="transparent"
             />
-
             <defs>
               <linearGradient id="grad1" x1="0" x2="300" y1="0" y2="0">
                 <stop offset="0%" stopColor="#fbbf24" />
@@ -274,11 +265,9 @@ export const BrandLogo = () => {
   );
 };
 
-const AuthButton = ({ isScrolled, onAuthSuccess }) => {
+const AuthButton = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
-
   const handleAuthClick = () => {
-    // Redirect to auth page instead of opening dialog
     navigate("/auth");
   };
 
@@ -295,7 +284,7 @@ const AuthButton = ({ isScrolled, onAuthSuccess }) => {
   );
 };
 
-const HeaderRightContent = ({ isScrolled, isMobile = false }) => {
+const HeaderRightContent = ({ isMobile = false }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [openCartSheet, setOpenCartSheet] = useState(false);
@@ -346,15 +335,15 @@ const HeaderRightContent = ({ isScrolled, isMobile = false }) => {
       </Sheet>
 
       {isAuthenticated ? (
-        <UserDropdown user={user} onLogout={handleLogout} isScrolled={isScrolled} />
+        <UserDropdown user={user} onLogout={handleLogout} />
       ) : (
-        <AuthButton isScrolled={isScrolled} onAuthSuccess={handleAuthSuccess} />
+        <AuthButton onAuthSuccess={handleAuthSuccess} />
       )}
     </div>
   );
 };
 
-const UserDropdown = ({ user, onLogout, isScrolled }) => {
+const UserDropdown = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
   return (
@@ -402,7 +391,7 @@ const UserDropdown = ({ user, onLogout, isScrolled }) => {
   );
 };
 
-const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
+const MobileMenu = ({ isSheetOpen, setIsSheetOpen }) => (
   <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
     <SheetTrigger asChild>
       <Button
@@ -417,16 +406,81 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
     <SheetContent side="left" className="w-full max-w-xs bg-white border-r border-gray-200">
       <div className="pt-6">
         <div className="mb-8">
-          <BrandLogo isScrolled={false} />
+          <BrandLogo />
         </div>
-        <MenuItems onItemClick={() => setIsSheetOpen(false)} isScrolled={false} />
+        <MenuItems onItemClick={() => setIsSheetOpen(false)} />
       </div>
     </SheetContent>
   </Sheet>
 );
 
-// Enhanced Filter Section Component - Only shows on listing pages with full functionality
-const HeaderFilterSection = ({ isScrolled }) => {
+// New component for the mobile filter
+const MobileFilterSheet = ({ filters, handleFilter, clearAllFilters, sort, handleSort }) => {
+  const [openFilterSheet, setOpenFilterSheet] = useState(false);
+  const { productList } = useSelector((state) => state.shopProducts);
+  return (
+    <Sheet open={openFilterSheet} onOpenChange={setOpenFilterSheet}>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2 flex items-center gap-2"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="font-medium">Filter</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-full max-w-xs bg-white overflow-y-auto">
+        <div className="p-4">
+          <div className="flex items-center justify-between pb-4 border-b">
+            <h2 className="text-xl font-bold">Filters</h2>
+            <Button
+              variant="ghost"
+              onClick={() => setOpenFilterSheet(false)}
+            >
+              Close
+            </Button>
+          </div>
+          <ProductFilter
+            filters={filters}
+            handleFilter={handleFilter}
+            clearAllFilters={clearAllFilters}
+            sort={sort}
+            handleSort={handleSort}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+// New component for the desktop filter sidebar
+const DesktopFilterSidebar = ({ filters, handleFilter, clearAllFilters, sort, handleSort, productList }) => {
+  return (
+    <aside className="hidden lg:block w-72 shrink-0 border-r border-gray-200 p-6">
+      <div className="sticky top-[150px] space-y-6"> {/* Adjust top value to account for fixed header height */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Filters</h2>
+          <Button variant="link" onClick={clearAllFilters}>
+            Clear All
+          </Button>
+        </div>
+        <ProductFilter
+          filters={filters}
+          handleFilter={handleFilter}
+          clearAllFilters={clearAllFilters}
+          sort={sort}
+          handleSort={handleSort}
+        />
+        <div className="text-sm text-muted-foreground font-medium">
+          {productList?.length || 0} Products
+        </div>
+      </div>
+    </aside>
+  );
+};
+
+const HeaderFilterSection = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { productList } = useSelector((state) => state.shopProducts);
@@ -434,7 +488,6 @@ const HeaderFilterSection = ({ isScrolled }) => {
   const [sort, setSort] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Only show on listing pages
   const showFilter = location.pathname.includes("/shop/listing");
   const categorySearchParam = searchParams.get("category");
 
@@ -444,10 +497,8 @@ const HeaderFilterSection = ({ isScrolled }) => {
     const indexOfCurrentOption = filterSection.indexOf(getCurrentOption);
 
     if (indexOfCurrentOption === -1) {
-      // Add the filter option
       filterSection.push(getCurrentOption);
     } else {
-      // Remove the filter option
       filterSection.splice(indexOfCurrentOption, 1);
     }
 
@@ -480,8 +531,10 @@ const HeaderFilterSection = ({ isScrolled }) => {
     if (filters && Object.keys(filters).length > 0) {
       const createQueryString = createSearchParamsHelper(filters);
       setSearchParams(new URLSearchParams(createQueryString));
+    } else {
+      setSearchParams(new URLSearchParams(categorySearchParam ? `?category=${categorySearchParam}` : ''));
     }
-  }, [filters, setSearchParams]);
+  }, [filters, setSearchParams, categorySearchParam]);
 
   useEffect(() => {
     if (filters !== null && sort !== null)
@@ -492,26 +545,35 @@ const HeaderFilterSection = ({ isScrolled }) => {
 
   if (!showFilter) return null;
 
+  const filterProps = { filters, handleFilter, clearAllFilters, sort, handleSort, productList };
+
   return (
-    <div className="w-full border-t border-gray-200 bg-white/95 backdrop-blur-sm relative z-40">
-      <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 py-4">
-        <div className="flex items-center gap-4 relative">
-          <div className="relative z-50">
-            <ProductFilter
-              filters={filters}
-              handleFilter={handleFilter}
-              clearAllFilters={clearAllFilters}
-              sort={sort}
-              handleSort={handleSort}
-            />
+    <>
+      <div className="hidden lg:flex w-full border-t border-gray-200 bg-white/95 backdrop-blur-sm relative z-40">
+        <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-4 relative">
+            <div className="relative z-50">
+              <ProductFilter
+                filters={filters}
+                handleFilter={handleFilter}
+                clearAllFilters={clearAllFilters}
+                sort={sort}
+                handleSort={handleSort}
+              />
+            </div>
+            <span className="text-sm text-muted-foreground font-medium">
+              {productList?.length || 0} Products
+            </span>
           </div>
-          {/* Product Count - Next to filter */}
-          <span className="text-sm text-muted-foreground font-medium">
-            {productList?.length || 0} Products
-          </span>
         </div>
       </div>
-    </div>
+      <div className="lg:hidden flex justify-start items-center p-4">
+        <MobileFilterSheet {...filterProps} />
+        <span className="text-sm text-muted-foreground ml-4">
+          {productList?.length || 0} Products
+        </span>
+      </div>
+    </>
   );
 };
 
@@ -520,6 +582,9 @@ const ShoppingHeader = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const headerRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isListingPage = location.pathname.includes("/shop/listing");
+  const isDesktop = useMediaQuery({ minWidth: 1024 });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -531,11 +596,13 @@ const ShoppingHeader = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const filterProps = HeaderFilterSection();
+  const showFilterSection = isListingPage && !isDesktop;
+
   return (
     <div className="relative -mx-4 md:-mx-6 lg:-mx-8">
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
         <ScrollingPromoBar />
-
         <header
           ref={headerRef}
           className={`sticky top-0 z-50 w-full ${
@@ -544,13 +611,10 @@ const ShoppingHeader = () => {
               : 'bg-white border-b border-gray-200'
           }`}
         >
-          {/* Main Header */}
           <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 h-20">
             <div className="flex items-center gap-4">
-              <BrandLogo isScrolled={headerScrolled} />
+              <BrandLogo />
             </div>
-
-            {/* Mobile Layout: Search + Account + Cart + Menu */}
             <div className="lg:hidden flex items-center gap-2">
               <Button
                 onClick={() => navigate("/shop/search")}
@@ -561,26 +625,20 @@ const ShoppingHeader = () => {
                 <Search className="w-5 h-5" />
                 <span className="sr-only">Search</span>
               </Button>
-              <HeaderRightContent isScrolled={headerScrolled} isMobile={true} />
+              <HeaderRightContent isMobile={true} />
               <MobileMenu
                 isSheetOpen={isSheetOpen}
                 setIsSheetOpen={setIsSheetOpen}
-                isScrolled={headerScrolled}
               />
             </div>
-
-            {/* Desktop Layout */}
             <div className="hidden lg:block">
-              <MenuItems isScrolled={headerScrolled} />
+              <MenuItems />
             </div>
-
             <div className="hidden lg:block">
-              <HeaderRightContent isScrolled={headerScrolled} />
+              <HeaderRightContent />
             </div>
           </div>
-
-          {/* Filter Section - Only on listing pages with full functionality */}
-          <HeaderFilterSection isScrolled={headerScrolled} />
+          {showFilterSection && filterProps}
         </header>
       </div>
     </div>
