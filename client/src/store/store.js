@@ -11,7 +11,7 @@ import shopOrderSlice from "./shop/order-slice";
 import shopSearchSlice from "./shop/search-slice";
 import shopReviewSlice from "./shop/review-slice";
 import commonFeatureSlice from "./common-slice";
-
+import customerReducer from "./customer-slice";
 
 
 
@@ -28,7 +28,7 @@ const store = configureStore({
         shopOrder: shopOrderSlice,
         shopSearch: shopSearchSlice,
         shopReview: shopReviewSlice,
-        
+        customers: customerReducer,
 
 
         commonFeature: commonFeatureSlice,

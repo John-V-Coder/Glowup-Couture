@@ -40,6 +40,8 @@ import ResetPassword from './pages/auth/rest-password';
 import EmailTemplates from './components/common/email-templates';
 import MarketingCampaigns from './pages/admin-view/marketing-campaign';
 import SupportPage from './pages/shopping-view/customer-support';
+import AdminNewsletterPage from './pages/admin-view/newsletter-page';
+import AdminCustomersPage from './pages/admin-view/customer-page';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -95,8 +97,10 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="gallery" element={<AdminGallery />} />
             <Route path="about" element={<AdminAbout />} />
+            <Route path="customers" element={<AdminCustomersPage/>}/>
             <Route path="email-templates" element={<EmailTemplates />} />
             <Route path="marketing-campaign" element={<MarketingCampaigns />} />
+            <Route path="newsletter" element={<AdminNewsletterPage/>} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="features" element={<AdminFeatures />} />

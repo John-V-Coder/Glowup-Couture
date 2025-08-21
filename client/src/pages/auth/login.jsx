@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/store/auth-slice";
 import { loginFormControls } from "@/config";
-import Preloader from "@/components/common/preloader";
 import PageWrapper from "@/components/common/page-wrapper";
 
 const initialState = {
@@ -13,7 +12,7 @@ const initialState = {
   password: "",
 };
 
-function AuthLogin({ embedded = false, redirectTo = "/shop/home" }) {
+function AuthLogin({ embedded = false, redirectTo = "/shop/home", onSuccess }) {
   const [formData, setFormData] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -28,7 +27,16 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/home" }) {
         toast({
           title: data?.payload?.message,
         });
-        navigate(redirectTo || "/shop/home");
+        const user = data?.payload?.user;
+        if (onSuccess) {
+          onSuccess(user);
+        } else {
+          if (user?.role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate(redirectTo || "/shop/home");
+          }
+        }
       } else {
         toast({
           title: data?.payload?.message,

@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useDispatch, useSelector } from "react-redux";
 import { resetTokenAndCredentials } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
@@ -16,9 +15,8 @@ import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
 import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart } from "lucide-react";
-import AuthLogin from "@/pages/auth/login";
-import AuthRegister from "@/pages/auth/register";
 import ProductFilter from "@/components/shopping-view/filter";
+import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 
 const shoppingViewHeaderMenuItems = [
   {
@@ -35,11 +33,11 @@ const shoppingViewHeaderMenuItems = [
       { id: "men", label: "Men's Collection", path: "/shop/listing?category=men" },
       { id: "kids", label: "Kids Wear", path: "/shop/listing?category=kids" },
       { id: "custom", label: "Modern Custom", path: "/shop/listing?category=custom" },
-        {
-    id: "sale",
-    path: "/shop/listing?category=sale",
-    label: "Sale",
-  },
+      {
+        id: "sale",
+        path: "/shop/listing?category=sale",
+        label: "Sale",
+      },
     ],
   },
   {
@@ -60,6 +58,18 @@ const shoppingViewHeaderMenuItems = [
     iconOnly: true,
   },
 ];
+
+function createSearchParamsHelper(filterParams) {
+  const queryParams = [];
+
+  for (const [key, value] of Object.entries(filterParams)) {
+    if (Array.isArray(value) && value.length > 0) {
+      const paramValue = value.join(",");
+      queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
+    }
+  }
+  return queryParams.join("&");
+}
 
 const CollectionDropdown = ({ menuItem, handleNavigate, isScrolled }) => {
   return (
@@ -111,12 +121,6 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
       return;
     }
 
-    if (getCurrentMenuItem.id === "gift-card") {
-      navigate("/shop/gift-card");
-      onItemClick?.();
-      return;
-    }
-
     sessionStorage.removeItem("filters");
 
     const currentFilter =
@@ -125,8 +129,7 @@ const MenuItems = ({ onItemClick, isScrolled }) => {
       getCurrentMenuItem.id === "search" ||
       getCurrentMenuItem.id === "gallery" ||
       getCurrentMenuItem.id === "about" ||
-      getCurrentMenuItem.id === "sale" ||
-      getCurrentMenuItem.id === "gift-card"
+      getCurrentMenuItem.id === "sale" 
         ? null
         : { category: [getCurrentMenuItem.id] };
 
@@ -271,52 +274,24 @@ export const BrandLogo = () => {
   );
 };
 
-const UnifiedAuthDialog = ({ isScrolled, onAuthSuccess }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("signin");
+const AuthButton = ({ isScrolled, onAuthSuccess }) => {
+  const navigate = useNavigate();
 
-  const handleAuthSuccess = (user) => {
-    setIsOpen(false);
-    onAuthSuccess(user);
+  const handleAuthClick = () => {
+    // Redirect to auth page instead of opening dialog
+    navigate("/auth");
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="default"
-          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 p-2"
-        >
-          <User className="w-5 h-5" />
-          <span className="sr-only">Account</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-full max-w-lg bg-white border border-gray-200 rounded-lg p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-50 border-b border-gray-200 rounded-none rounded-t-lg">
-            <TabsTrigger
-              value="signin"
-              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white rounded-none"
-            >
-              Sign In
-            </TabsTrigger>
-            <TabsTrigger
-              value="register"
-              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white rounded-none"
-            >
-              Register
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="mt-0">
-            <AuthLogin embedded={true} onSuccess={handleAuthSuccess} />
-          </TabsContent>
-          <TabsContent value="register" className="mt-0">
-            <AuthRegister embedded={true} onSuccess={handleAuthSuccess} />
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+    <Button
+      onClick={handleAuthClick}
+      variant="outline"
+      size="default"
+      className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 p-2"
+    >
+      <User className="w-5 h-5" />
+      <span className="sr-only">Account</span>
+    </Button>
   );
 };
 
@@ -373,7 +348,7 @@ const HeaderRightContent = ({ isScrolled, isMobile = false }) => {
       {isAuthenticated ? (
         <UserDropdown user={user} onLogout={handleLogout} isScrolled={isScrolled} />
       ) : (
-        <UnifiedAuthDialog isScrolled={isScrolled} onAuthSuccess={handleAuthSuccess} />
+        <AuthButton isScrolled={isScrolled} onAuthSuccess={handleAuthSuccess} />
       )}
     </div>
   );
@@ -450,63 +425,86 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen, isScrolled }) => (
   </Sheet>
 );
 
-// Filter Section Component - Only shows on listing pages
+// Enhanced Filter Section Component - Only shows on listing pages with full functionality
 const HeaderFilterSection = ({ isScrolled }) => {
+  const dispatch = useDispatch();
   const location = useLocation();
   const { productList } = useSelector((state) => state.shopProducts);
   const [filters, setFilters] = useState({});
-  const [sort, setSort] = useState("price-lowtohigh");
+  const [sort, setSort] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Only show on listing pages
   const showFilter = location.pathname.includes("/shop/listing");
+  const categorySearchParam = searchParams.get("category");
 
-  useEffect(() => {
-    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
-  }, [location.pathname]);
+  function handleFilter(getSectionId, getCurrentOption) {
+    const cpyFilters = { ...filters };
+    const filterSection = cpyFilters[getSectionId] ? [...cpyFilters[getSectionId]] : [];
+    const indexOfCurrentOption = filterSection.indexOf(getCurrentOption);
 
-  const handleFilter = (getSectionId, getCurrentOption) => {
-    let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
-
-    if (indexOfCurrentSection === -1) {
-      cpyFilters = {
-        ...cpyFilters,
-        [getSectionId]: [getCurrentOption],
-      };
+    if (indexOfCurrentOption === -1) {
+      // Add the filter option
+      filterSection.push(getCurrentOption);
     } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
-      if (indexOfCurrentOption === -1)
-        cpyFilters[getSectionId].push(getCurrentOption);
-      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+      // Remove the filter option
+      filterSection.splice(indexOfCurrentOption, 1);
     }
+
+    if (filterSection.length === 0) {
+      delete cpyFilters[getSectionId];
+    } else {
+      cpyFilters[getSectionId] = filterSection;
+    }
+
     setFilters(cpyFilters);
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
-  };
+  }
 
-  const clearAllFilters = () => {
+  function clearAllFilters() {
     setFilters({});
     sessionStorage.removeItem("filters");
     setSearchParams(new URLSearchParams());
-  };
+  }
 
-  const handleSort = (value) => {
+  function handleSort(value) {
     setSort(value);
-  };
+  }
+
+  useEffect(() => {
+    setSort("price-lowtohigh");
+    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
+  }, [categorySearchParam]);
+
+  useEffect(() => {
+    if (filters && Object.keys(filters).length > 0) {
+      const createQueryString = createSearchParamsHelper(filters);
+      setSearchParams(new URLSearchParams(createQueryString));
+    }
+  }, [filters, setSearchParams]);
+
+  useEffect(() => {
+    if (filters !== null && sort !== null)
+      dispatch(
+        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort })
+      );
+  }, [dispatch, sort, filters]);
 
   if (!showFilter) return null;
 
   return (
-    <div className="w-full border-t border-gray-200 bg-white">
-      <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 py-3">
-        <div className="flex items-center gap-4 relative z-50">
-          <ProductFilter
-            filters={filters}
-            handleFilter={handleFilter}
-            clearAllFilters={clearAllFilters}
-            sort={sort}
-            handleSort={handleSort}
-          />
+    <div className="w-full border-t border-gray-200 bg-white/95 backdrop-blur-sm relative z-40">
+      <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 py-4">
+        <div className="flex items-center gap-4 relative">
+          <div className="relative z-50">
+            <ProductFilter
+              filters={filters}
+              handleFilter={handleFilter}
+              clearAllFilters={clearAllFilters}
+              sort={sort}
+              handleSort={handleSort}
+            />
+          </div>
           {/* Product Count - Next to filter */}
           <span className="text-sm text-muted-foreground font-medium">
             {productList?.length || 0} Products
@@ -581,7 +579,7 @@ const ShoppingHeader = () => {
             </div>
           </div>
 
-          {/* Filter Section - Only on listing pages */}
+          {/* Filter Section - Only on listing pages with full functionality */}
           <HeaderFilterSection isScrolled={headerScrolled} />
         </header>
       </div>

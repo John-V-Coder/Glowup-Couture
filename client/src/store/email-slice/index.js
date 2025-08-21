@@ -74,7 +74,7 @@ export const getEmailTemplates = createAsyncThunk(
     try {
       const { token } = getState().auth;
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/email/template`,
+        `${import.meta.env.VITE_API_URL}/api/email/templates`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
@@ -84,14 +84,14 @@ export const getEmailTemplates = createAsyncThunk(
   }
 );
 
-// Create/Update email template (admin only)
+// Save email template
 export const saveEmailTemplate = createAsyncThunk(
   'email/saveEmailTemplate',
   async (templateData, { rejectWithValue, getState }) => {
     try {
       const { token } = getState().auth;
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/email/template`,
+        `${import.meta.env.VITE_API_URL}/api/email/templates`,
         templateData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -102,16 +102,15 @@ export const saveEmailTemplate = createAsyncThunk(
   }
 );
 
-
 const emailSlice = createSlice({
   name: 'email',
   initialState: {
     isLoading: false,
     subscriptionStatus: null,
-    resetRequestStatus: null, // Note: This state property does not seem to be used by any of the async thunks. Consider if it's needed.
+    resetRequestStatus: null,
     supportTicketStatus: null,
     campaignStatus: null,
-    templates: null, // Changed from [null] to [] for better initial state of an array
+    templates: [], // Correct initial state for an array
     error: null,
     successMessage: null
   },
@@ -195,12 +194,12 @@ const emailSlice = createSlice({
       // Email templates - Get
       .addCase(getEmailTemplates.pending, (state) => {
         state.isLoading = true;
-        state.error = null; // Ensure error is cleared on pending
+        state.error = null;
       })
       .addCase(getEmailTemplates.fulfilled, (state, action) => {
         state.isLoading = false;
         state.templates = action.payload.templates;
-        state.error = null; // Ensure no lingering error if successful
+        state.error = null;
       })
       .addCase(getEmailTemplates.rejected, (state, action) => {
         state.isLoading = false;
@@ -208,22 +207,28 @@ const emailSlice = createSlice({
       })
 
       // Email templates - Save/Update
-      .addCase(saveEmailTemplate.pending, (state) => { // Added pending case for saveEmailTemplate
+      .addCase(saveEmailTemplate.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(saveEmailTemplate.fulfilled, (state, action) => {
-        state.isLoading = false; // Set loading to false on fulfillment
+        state.isLoading = false;
         state.successMessage = action.payload.message;
+        
+        // Ensure templates is an array before using findIndex
+        if (!Array.isArray(state.templates)) {
+            state.templates = [];
+        }
+
         const index = state.templates.findIndex(t => t._id === action.payload.template._id);
         if (index >= 0) {
           state.templates[index] = action.payload.template;
         } else {
           state.templates.push(action.payload.template);
         }
-        state.error = null; // Ensure no lingering error if successful
+        state.error = null;
       })
-      .addCase(saveEmailTemplate.rejected, (state, action) => { // Added rejected case for saveEmailTemplate
+      .addCase(saveEmailTemplate.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

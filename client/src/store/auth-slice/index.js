@@ -13,43 +13,56 @@ const initialState = {
 
 export const registerUser = createAsyncThunk(
   "/auth/register",
-  async (formData) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/auth/register`,
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
-
-    return response.data;
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Registration failed";
+      return rejectWithValue({ message });
+    }
   }
 );
 
 export const loginUser = createAsyncThunk(
   "/auth/login",
-  async (formData, { dispatch }) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/auth/login`,
-      formData,
-      {
-        withCredentials: true,
+  async (formData, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      // If login successful, merge guest cart with user cart
+      if (response.data.success && response.data.user?.id) {
+        dispatch(mergeGuestCart(response.data.user.id));
       }
-    );
 
-    // If login successful, merge guest cart with user cart
-    if (response.data.success && response.data.user?.id) {
-      dispatch(mergeGuestCart(response.data.user.id));
+      return response.data;
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please check your connection.";
+      return rejectWithValue({ message });
     }
-
-    return response.data;
   }
 );
 
 export const logoutUser = createAsyncThunk(
   "/auth/logout",
-  async () => {
-    const response = await axios.post(
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/auth/logout`,
       {},
       {
@@ -57,25 +70,37 @@ export const logoutUser = createAsyncThunk(
       }
     );
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Logout failed";
+      return rejectWithValue({ message });
+    }
   }
 );
 
 export const checkAuth = createAsyncThunk(
   "/auth/checkauth",
-  async (token) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/auth/check-auth`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Cache-Control":
-            "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-      }
-    );
+  async (token, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/auth/check-auth`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        }
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Authentication check failed.";
+      return rejectWithValue({ message });
+    }
   }
 );
 
@@ -90,22 +115,30 @@ export const requestPasswordReset = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Could not connect to the server. Please try again later.";
+      return rejectWithValue({ message });
     }
   }
 );
 
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
-  async ({ token, newPassword }, { rejectWithValue }) => {
+  async ({ token, password }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/reset-password`,
-        { token, newPassword }
+        { token, password }
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Could not connect to the server. Please try again later.";
+      return rejectWithValue({ message });
     }
   }
 );
@@ -195,7 +228,18 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.token = null;
         // Clear token from sessionStorage on logout
+        localStorage.removeItem("token");
         sessionStorage.removeItem("token");
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        // Even if server logout fails, clear client state to prevent being stuck logged in
+        state.isLoading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.token = null;
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        state.error = action.payload?.message || "Server logout failed, but you have been logged out locally.";
       })
       // Password reset request cases
       .addCase(requestPasswordReset.pending, (state) => {
@@ -209,7 +253,7 @@ const authSlice = createSlice({
       })
       .addCase(requestPasswordReset.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload?.error || "Failed to request password reset";
+        state.error = action.payload?.message || "Failed to request password reset";
       })
       // Reset password cases
       .addCase(resetPassword.pending, (state) => {
@@ -223,7 +267,7 @@ const authSlice = createSlice({
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload?.error || "Failed to reset password";
+        state.error = action.payload?.message || "Failed to reset password";
       });
   },
 });
