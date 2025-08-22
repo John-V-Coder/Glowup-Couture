@@ -15,6 +15,7 @@ import ProductFilter from "@/components/shopping-view/filter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SlidersHorizontal } from "lucide-react";
 
+
 // The BrandLogo component needs to be imported here
 import { BrandLogo } from "@/components/shopping-view/header";
 
@@ -182,7 +183,11 @@ function ShoppingListing() {
               
               {/* Added BrandLogo here */}
               <div className="pt-8 flex justify-center">
-                <BrandLogo />
+                <img 
+        src="/brandlogo.svg" 
+        alt="GC Couture Logo" 
+        className="brandlogo"
+      />
               </div>
               
             </div>

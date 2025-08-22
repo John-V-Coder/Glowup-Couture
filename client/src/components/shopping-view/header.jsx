@@ -14,7 +14,7 @@ import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { ScrollingPromoBar, ContactBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react"; // Added SlidersHorizontal icon
+import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import ProductFilter from "@/components/shopping-view/filter";
 import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { useMediaQuery } from 'react-responsive';
@@ -311,7 +311,13 @@ const HeaderRightContent = ({ isMobile = false }) => {
   };
 
   return (
-    <div className={`flex items-center gap-2 ${isMobile ? 'flex-row' : 'lg:items-center lg:flex-row flex-col gap-4'}`}>
+    <div className="flex items-center gap-2">
+      {isAuthenticated ? (
+        <UserDropdown user={user} onLogout={handleLogout} />
+      ) : (
+        <AuthButton onAuthSuccess={handleAuthSuccess} />
+      )}
+      
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <Button
           onClick={() => setOpenCartSheet(true)}
@@ -327,12 +333,6 @@ const HeaderRightContent = ({ isMobile = false }) => {
           cartItems={cartItems?.items || []}
         />
       </Sheet>
-
-      {isAuthenticated ? (
-        <UserDropdown user={user} onLogout={handleLogout} />
-      ) : (
-        <AuthButton onAuthSuccess={handleAuthSuccess} />
-      )}
     </div>
   );
 };
@@ -408,7 +408,6 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen }) => (
   </Sheet>
 );
 
-// New component for the mobile filter
 const MobileFilterSheet = ({ filters, handleFilter, clearAllFilters, sort, handleSort }) => {
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const { productList } = useSelector((state) => state.shopProducts);
@@ -448,11 +447,10 @@ const MobileFilterSheet = ({ filters, handleFilter, clearAllFilters, sort, handl
   );
 };
 
-// New component for the desktop filter sidebar
 const DesktopFilterSidebar = ({ filters, handleFilter, clearAllFilters, sort, handleSort, productList }) => {
   return (
     <aside className="hidden lg:block w-72 shrink-0 border-r border-gray-200 p-6">
-      <div className="sticky top-[150px] space-y-6"> {/* Adjust top value to account for fixed header height */}
+      <div className="sticky top-[150px] space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">Filters</h2>
           <Button variant="link" onClick={clearAllFilters}>
@@ -596,42 +594,59 @@ const ShoppingHeader = () => {
   return (
     <div className="relative -mx-4 md:-mx-6 lg:-mx-8">
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        {/* Scrolling Promo Bar - Always on top */}
         <ScrollingPromoBar />
+        
         <header
-          ref={headerRef}
-          className={`sticky top-0 z-50 w-full ${
-            headerScrolled
-              ? 'bg-white border-b border-gray-300 shadow-sm'
-              : 'bg-white border-b border-gray-200'
-          }`}
-        >
+  ref={headerRef}
+  className={`sticky top-0 z-50 w-full ${
+    headerScrolled
+      ? 'bg-white shadow-sm'
+      : 'bg-white border-b border-gray-200'
+  }`}
+>
+          {/* First row: Logo left, Account & Cart right */}
           <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 h-20">
-            <div className="flex items-center gap-4">
+            {/* Left side - Brand Logo */}
+            <div className="flex items-center">
               <BrandLogo />
             </div>
-            <div className="lg:hidden flex items-center gap-2">
-              <Button
-                onClick={() => navigate("/shop/search")}
-                variant="ghost"
-                size="default"
-                className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
-              >
-                <Search className="w-5 h-5" />
-                <span className="sr-only">Search</span>
-              </Button>
-              <HeaderRightContent isMobile={true} />
-              <MobileMenu
-                isSheetOpen={isSheetOpen}
-                setIsSheetOpen={setIsSheetOpen}
-              />
-            </div>
-            <div className="hidden lg:block">
-              <MenuItems />
-            </div>
-            <div className="hidden lg:block">
-              <HeaderRightContent />
+            
+            {/* Right side - Account & Cart (Desktop and Mobile) */}
+            <div className="flex items-center gap-2">
+              {/* Mobile: Search + Account/Cart + Menu */}
+              <div className="lg:hidden flex items-center gap-2">
+                <Button
+                  onClick={() => navigate("/shop/search")}
+                  variant="ghost"
+                  size="default"
+                  className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
+                >
+                  <Search className="w-5 h-5" />
+                  <span className="sr-only">Search</span>
+                </Button>
+                <HeaderRightContent isMobile={true} />
+                <MobileMenu
+                  isSheetOpen={isSheetOpen}
+                  setIsSheetOpen={setIsSheetOpen}
+                />
+              </div>
+              
+              {/* Desktop: Account & Cart only */}
+              <div className="hidden lg:block">
+                <HeaderRightContent />
+              </div>
             </div>
           </div>
+          
+          {/* Second row: Navigation Menu (Desktop only) */}
+          <div className="hidden lg:block w-full border-t border-gray-200">
+            <div className="w-full max-w-full flex items-center justify-center px-4 md:px-6 lg:px-8 py-4">
+              <MenuItems />
+            </div>
+          </div>
+          
+          {/* Filter section for mobile */}
           {showFilterSection && filterProps}
         </header>
       </div>
