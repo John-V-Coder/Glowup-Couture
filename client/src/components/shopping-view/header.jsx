@@ -48,7 +48,7 @@ const shoppingViewHeaderMenuItems = [
   },
   {
     id: "about",
-    path: "/shop/about",
+    path: "/about",
     label: "ABOUT US",
   },
   {
@@ -271,6 +271,7 @@ const AuthButton = ({ onAuthSuccess }) => {
   };
 
   return (
+ 
     <Button
       onClick={handleAuthClick}
       variant="ghost"
@@ -371,7 +372,7 @@ const UserDropdown = ({ user, onLogout }) => {
         >
           <div className="font-medium text-black">My Account</div>
         </DropdownMenuItem>
-
+          
         <DropdownMenuSeparator className="my-2" />
 
         <DropdownMenuItem
