@@ -172,12 +172,12 @@ const requestPasswordReset = async (req, res) => {
 // Reset password
 const resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { token, password } = req.body;
 
-    if (!token || !newPassword) {
+    if (!token || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Token and new password are required'
+        message: 'Token and password are required'
       });
     }
 
@@ -205,7 +205,7 @@ const resetPassword = async (req, res) => {
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
     user.password = hashedPassword;
     await user.save();
 

@@ -36,7 +36,7 @@ import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exch
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
 import ForgotPassword from './pages/auth/forgot-password';
-import ResetPassword from './pages/auth/rest-password';
+import ResetPassword from './pages/auth/reset-password';
 import EmailTemplates from './components/common/email-templates';
 import MarketingCampaigns from './pages/admin-view/marketing-campaign';
 import SupportPage from './pages/shopping-view/customer-support';

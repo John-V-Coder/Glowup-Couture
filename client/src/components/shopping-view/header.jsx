@@ -247,7 +247,6 @@ export const BrandLogo = () => {
             />
             <path
               d="M0 50 C80 70, 220 30, 300 50"
-              stroke="url(#grad1)"
               strokeWidth="2"
               fill="transparent"
             />
@@ -274,9 +273,9 @@ const AuthButton = ({ onAuthSuccess }) => {
   return (
     <Button
       onClick={handleAuthClick}
-      variant="outline"
+      variant="ghost"
       size="default"
-      className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black hover:text-gray-800 p-2"
+      className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
     >
       <User className="w-5 h-5" />
       <span className="sr-only">Account</span>
@@ -316,17 +315,12 @@ const HeaderRightContent = ({ isMobile = false }) => {
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <Button
           onClick={() => setOpenCartSheet(true)}
-          variant="outline"
+          variant="ghost"
           size="default"
-          className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2 relative"
+          className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
         >
           <ShoppingCart className="w-5 h-5" />
           <span className="sr-only">Cart</span>
-          {cartItems?.items?.length > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-              {cartItems?.items?.length || 0}
-            </Badge>
-          )}
         </Button>
         <UserCartWrapper
           setOpenCartSheet={setOpenCartSheet}
@@ -395,9 +389,9 @@ const MobileMenu = ({ isSheetOpen, setIsSheetOpen }) => (
   <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
     <SheetTrigger asChild>
       <Button
-        variant="outline"
+        variant="ghost"
         size="default"
-        className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2"
+        className="lg:hidden p-2 hover:bg-gray-100 text-black hover:text-gray-800"
       >
         <Menu className="w-5 h-5" />
         <span className="sr-only">Open menu</span>
@@ -422,9 +416,9 @@ const MobileFilterSheet = ({ filters, handleFilter, clearAllFilters, sort, handl
     <Sheet open={openFilterSheet} onOpenChange={setOpenFilterSheet}>
       <SheetTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="lg:hidden border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2 flex items-center gap-2"
+          className="lg:hidden p-2 hover:bg-gray-100 text-black hover:text-gray-800 flex items-center gap-2"
         >
           <SlidersHorizontal className="w-4 h-4" />
           <span className="font-medium">Filter</span>
@@ -618,9 +612,9 @@ const ShoppingHeader = () => {
             <div className="lg:hidden flex items-center gap-2">
               <Button
                 onClick={() => navigate("/shop/search")}
-                variant="outline"
+                variant="ghost"
                 size="default"
-                className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-black p-2"
+                className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
               >
                 <Search className="w-5 h-5" />
                 <span className="sr-only">Search</span>

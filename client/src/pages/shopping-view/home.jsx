@@ -198,8 +198,8 @@ function ShoppingHome() {
         <section className="py-12 sm:py-20 w-full bg-white">
           <div className="w-full px-4 sm:px-6">
             <div className="text-center mb-8 sm:mb-10">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-                Latest <span className="text-amber-600">Arrivals</span>
+              <h2 className="relative">
+                LATEST <span className="text-amber-600">ARRIVALS</span>
               </h2>
               <p className="text-gray-600 text-sm sm:text-lg"></p>
             </div>
@@ -228,8 +228,8 @@ function ShoppingHome() {
           <section className="py-12 sm:py-20 w-full bg-gradient-to-br from-gray-50 to-white">
             <div className="w-full px-4 sm:px-6">
               <div className="text-center mb-8 sm:mb-10">
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-                  Popular <span className="text-amber-700">Items</span>
+                <h2 className="relative">
+                  POPULAR <span className="text-amber-700">ITEMS</span>
                 </h2>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
@@ -250,8 +250,8 @@ function ShoppingHome() {
         <section className="py-12 sm:py-20 w-full bg-white">
           <div className="w-full px-4 sm:px-6">
             <div className="text-center mb-8 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-                Featured <span className="text-amber-600">Pieces</span>
+              <h2 className="relative">
+                FEATURED <span className="text-amber-600">PIECES</span>
               </h2>
             </div>
 

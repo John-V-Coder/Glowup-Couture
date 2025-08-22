@@ -68,11 +68,11 @@ function ShoppingProductTile({ product, handleGetProductDetails }) {
 
         {/* Status badges */}
         {product?.totalStock === 0 ? (
-          <Badge className="absolute top-3 left-3 bg-red-500/90 text-white text-xs px-2 py-1">
+          <Badge className="relative">
             Out Of Stock
           </Badge>
         ) : product?.totalStock < 2 ? (
-          <Badge className="absolute top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
+          <Badge className="relative top-3 left-3 bg-orange-500/90 text-white text-xs px-2 py-1">
             {`${product?.totalStock} left`}
           </Badge>
         ) : null}

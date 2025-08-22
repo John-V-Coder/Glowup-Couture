@@ -12,7 +12,7 @@ const initialState = {
   password: "",
 };
 
-function AuthLogin({ embedded = false, redirectTo = "/shop/home", onSuccess }) {
+function AuthLogin({ embedded = false, redirectTo, onSuccess }) {
   const [formData, setFormData] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -31,10 +31,12 @@ function AuthLogin({ embedded = false, redirectTo = "/shop/home", onSuccess }) {
         if (onSuccess) {
           onSuccess(user);
         } else {
-          if (user?.role === "admin") {
+          if (redirectTo) {
+            navigate(redirectTo);
+          } else if (user?.role === "admin") {
             navigate("/admin/dashboard");
           } else {
-            navigate(redirectTo || "/shop/home");
+            navigate("/shop/home");
           }
         }
       } else {
