@@ -11,8 +11,6 @@ import { createNewOrder } from "@/store/shop/order-slice";
 import { ArrowDown, Smartphone, CreditCard, MapPin, User } from "lucide-react";
 import AuthLogin from "@/pages/auth/login";
 import AuthRegister from "@/pages/auth/register";
-import { MessageSquare } from "lucide-react";
-import WhatsAppButton from "@/components/common/whatsApp";
 import PageWrapper from "@/components/common/page-wrapper";
 
 function ShoppingCheckout() {

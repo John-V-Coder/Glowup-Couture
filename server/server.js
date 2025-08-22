@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRouter = require("./routes/auth/auth-routes");
+const emailRouter = require("./routes/email/email-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
 const customerRoutes = require("./routes/admin/customer-routes");
@@ -16,7 +17,6 @@ const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
-const emailRouter = require("./routes/email/email-routes");
 const { verifyTransporter } = require("./config/email");
 const { seedEmailTemplates } = require("./utils/seedEmailTemplates");
 

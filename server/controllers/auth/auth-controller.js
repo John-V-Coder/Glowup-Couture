@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs"); // Add bcrypt import
 const User = require("../../models/User"); 
 const emailService = require("../../services/emailService"); 
-
-// Helper to hash password before saving if not handled by pre-save hook, though our model handles it.
-// We keep bcrypt import as the model uses it, and for clarity if direct hashing is needed.
 
 // Register User
 const registerUser = async (req, res) => {
@@ -72,8 +71,14 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Use the User model's method to compare password
-    const isMatch = await user.matchPassword(password);
+    // Use the User model's method to compare password, or fallback to bcrypt
+    let isMatch;
+    if (user.matchPassword && typeof user.matchPassword === 'function') {
+      isMatch = await user.matchPassword(password);
+    } else {
+      // Fallback to direct bcrypt comparison if model method doesn't exist
+      isMatch = await bcrypt.compare(password, user.password);
+    }
 
     if (!isMatch) {
       return res.status(401).json({
@@ -150,8 +155,21 @@ const requestPasswordReset = async (req, res) => {
       });
     }
 
-    // Generate reset token using the User model method
-    const resetToken = user.getAndSavePasswordResetToken(); // This returns the plain token
+    // Generate reset token using the User model method or create one manually
+    let resetToken;
+    if (user.getAndSavePasswordResetToken && typeof user.getAndSavePasswordResetToken === 'function') {
+      resetToken = user.getAndSavePasswordResetToken();
+    } else {
+      // Fallback: generate token manually
+      resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+      
+      user.passwordResetToken = {
+        token: hashedToken,
+        expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
+      };
+    }
+    
     await user.save(); // Save the user with the hashed token and expiry
 
     // Send password reset email using the plain token
@@ -170,6 +188,7 @@ const requestPasswordReset = async (req, res) => {
     });
   }
 };
+
 // Reset Password
 const resetPassword = async (req, res) => {
   try {
@@ -183,20 +202,39 @@ const resetPassword = async (req, res) => {
     }
 
     // Find the user by the hashed version of the token and check validity
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await User.findOne({
-      'passwordResetToken.token': require('crypto').createHash('sha256').update(token).digest('hex'),
+      'passwordResetToken.token': hashedToken,
       'passwordResetToken.expiresAt': { $gt: Date.now() }
     }).select('+password'); // Select password explicitly to update it
 
-    if (!user || !user.isPasswordResetTokenValid(token)) {
+    if (!user) {
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired password reset token.',
       });
     }
 
-    // Update user's password using the model's pre-save hook for hashing
-    user.password = password; // The pre-save hook will hash this new password
+    // Additional validation using model method if available
+    if (user.isPasswordResetTokenValid && typeof user.isPasswordResetTokenValid === 'function') {
+      if (!user.isPasswordResetTokenValid(token)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or expired password reset token.',
+        });
+      }
+    }
+
+    // Update user's password - either let the model handle hashing or do it manually
+    if (user.schema && user.schema.pre && user.schema.pre.length > 0) {
+      // If pre-save hooks exist, let them handle password hashing
+      user.password = password;
+    } else {
+      // Fallback: hash password manually
+      const saltRounds = 12;
+      user.password = await bcrypt.hash(password, saltRounds);
+    }
+    
     user.passwordResetToken = undefined; // Clear the token after successful reset
     await user.save();
 

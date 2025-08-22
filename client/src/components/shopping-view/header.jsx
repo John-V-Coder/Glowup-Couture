@@ -5,9 +5,6 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDispatch, useSelector } from "react-redux";
 import { resetTokenAndCredentials } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
@@ -264,35 +261,22 @@ export const BrandLogo = () => {
   );
 };
 
-const AuthButton = ({ onAuthSuccess }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  const handleAuthClick = () => {
-    console.log('Auth button clicked, current location:', location.pathname);
-    console.log('Navigating to /auth/login...');
-    
-    // Try navigating to a specific auth route instead of index
-    navigate("/auth/login");
-    
-    // Add a small delay to check if navigation happened
-    setTimeout(() => {
-      console.log('Current location after navigation:', window.location.pathname);
-    }, 100);
-  };
-
+// Simplified Auth Link Component
+const AuthLink = () => {
   return (
-    <Button
-      onClick={handleAuthClick}
-      variant="ghost"
-      size="default"
-      className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
-    >
-      <User className="w-5 h-5" />
-      <span className="sr-only">Account</span>
-    </Button>
+    <Link to="/auth/login">
+      <Button
+        variant="ghost"
+        size="default"
+        className="p-2 hover:bg-gray-100 text-black hover:text-gray-800"
+      >
+        <User className="w-5 h-5" />
+        <span className="sr-only">Login</span>
+      </Button>
+    </Link>
   );
 };
+
 const HeaderRightContent = ({ isMobile = false }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -312,20 +296,12 @@ const HeaderRightContent = ({ isMobile = false }) => {
     navigate("/shop/home");
   };
 
-  const handleAuthSuccess = (user) => {
-    if (user?.role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/shop/home");
-    }
-  };
-
   return (
     <div className="flex items-center gap-2">
       {isAuthenticated ? (
         <UserDropdown user={user} onLogout={handleLogout} />
       ) : (
-        <AuthButton onAuthSuccess={handleAuthSuccess} />
+        <AuthLink />
       )}
       
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
@@ -608,13 +584,13 @@ const ShoppingHeader = () => {
         <ScrollingPromoBar />
         
         <header
-  ref={headerRef}
-  className={`sticky top-0 z-50 w-full ${
-    headerScrolled
-      ? 'bg-white shadow-sm'
-      : 'bg-white border-b border-gray-200'
-  }`}
->
+          ref={headerRef}
+          className={`sticky top-0 z-50 w-full ${
+            headerScrolled
+              ? 'bg-white shadow-sm'
+              : 'bg-white border-b border-gray-200'
+          }`}
+        >
           {/* First row: Logo left, Account & Cart right */}
           <div className="w-full max-w-full flex items-center justify-between px-4 md:px-6 lg:px-8 h-20">
             {/* Left side - Brand Logo */}

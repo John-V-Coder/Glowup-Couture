@@ -110,7 +110,7 @@ export const requestPasswordReset = createAsyncThunk(
   async (email, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/email/password-reset-request`,
+        `${import.meta.env.VITE_API_URL}/api/auth/password-reset-request`,
         { email }
       );
       return response.data;
@@ -129,7 +129,7 @@ export const resetPassword = createAsyncThunk(
   async ({ token, password }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/email/reset-password`,
+        `${import.meta.env.VITE_API_URL}/api/auth/reset-password`,
         { token, password }
       );
       return response.data;
