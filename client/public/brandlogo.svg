@@ -1,0 +1,77 @@
+<svg 
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 240 180"
+  fill="none"
+>
+  <defs>
+    <linearGradient id="g-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+    
+    <linearGradient id="c-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- White overlay background -->
+  <rect x="10" y="5" width="220" height="170" fill="white" opacity="0.9" rx="15"/>
+  
+  <!-- Large stylized G -->
+  <text 
+    x="70"
+    y="75"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="Playfair Display, serif"
+    font-weight="900"
+    font-size="150"
+    fill="url(#g-grad)"
+    filter="url(#glow-filter)"
+    transform="rotate(-10 70 75)"
+  >
+    G
+  </text>
+  
+  <!-- Large stylized C -->
+  <text
+    x="170"
+    y="75"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="Playfair Display, serif"
+    font-weight="900"
+    font-size="150"
+    fill="url(#c-grad)"
+    filter="url(#glow-filter)"
+    transform="rotate(10 170 75)"
+  >
+    C
+  </text>
+  
+  <!-- COUTURE text -->
+  <text
+    x="120"
+    y="140"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="Playfair Display, serif"
+    font-weight="700"
+    font-size="18"
+    fill="url(#g-grad)"
+    letter-spacing="4px"
+  >
+    COUTURE
+  </text>
+</svg>
