@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
 function Badge({ children, className = "" }) {
   return (
     <span
@@ -82,6 +83,29 @@ function ShoppingProductTile({ product, handleGetProductDetails }) {
             {discountPercent}% OFF
           </Badge>
         )}
+           {/* SHOP NOW Button */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 md:block">
+                  {product?.totalStock === 0 ? (
+                    <Button
+                      size="sm"
+                      className="bg-gray-400 hover:bg-gray-400 cursor-not-allowed text-xs px-3 py-1 h-8 rounded-none"
+                      disabled
+                    >
+                      Out Of Stock
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProductClick(product?._id);
+                      }}
+                      className="bg-white hover:bg-gray-50 text-black border border-gray-200 text-xs font-semibold px-4 py-1 h-8 rounded-none shadow-md hover:shadow-lg transition-all duration-200"
+                    >
+                      SHOP NOW
+                    </Button>
+                  )}
+                </div>
       </div>
 
       {/* Product details */}
