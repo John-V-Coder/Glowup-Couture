@@ -11,7 +11,7 @@ const notifyAdminOfNewOrder = async (order) => {
   try {
     // Ensure essential order details are present
     if (!order || !order._id || !order.customerEmail || !order.totalAmount) {
-      console.error('❌ Admin notification failed: Missing essential order details.');
+      console.error('Admin notification failed: Missing essential order details.');
       return;
     }
 
@@ -23,7 +23,7 @@ const notifyAdminOfNewOrder = async (order) => {
     const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A';
 
     // Construct the email content for the admin
-    const emailSubject = `🚨 New Order Received! Order ID: ${orderId}`;
+    const emailSubject = `New Order Received! Order ID: ${orderId}`;
     const emailHtml = `
       <h2>New Order Alert!</h2>
       <p>A new order has been placed on your website.</p>
@@ -50,9 +50,9 @@ const notifyAdminOfNewOrder = async (order) => {
       text: emailText
     });
 
-    console.log(`✅ Admin notified of new order: ${orderId}`);
+    console.log(`Admin notified of new order: ${orderId}`);
   } catch (error) {
-    console.error(`❌ Error notifying admin of new order ${order ? order._id : 'N/A'}:`, error);
+    console.error(`Error notifying admin of new order ${order ? order._id : 'N/A'}:`, error);
   }
 };
 

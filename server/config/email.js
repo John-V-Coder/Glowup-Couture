@@ -19,10 +19,10 @@ const verifyTransporter = async () => {
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    console.log('✅ Email transporter is ready');
+    console.log('Email transporter is ready');
     return true;
   } catch (error) {
-    console.error('❌ Email transporter verification failed:', error.message);
+    console.error('Email transporter verification failed:', error.message);
     return false;
   }
 };

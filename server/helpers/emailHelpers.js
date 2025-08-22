@@ -6,7 +6,7 @@ const notifyAdminOfNewOrder = async (orderData) => {
     const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : [];
     
     if (adminEmails.length === 0) {
-      console.log('⚠️ No admin emails configured for order notifications');
+      console.log('No admin emails configured for order notifications');
       return;
     }
 
@@ -44,9 +44,9 @@ const notifyAdminOfNewOrder = async (orderData) => {
       });
     }
 
-    console.log(`✅ Admin notification emails sent for order ${orderData.orderId}`);
+    console.log(`Admin notification emails sent for order ${orderData.orderId}`);
   } catch (error) {
-    console.error('❌ Failed to send admin notification emails:', error.message);
+    console.error('Failed to send admin notification emails:', error.message);
   }
 };
 
@@ -58,7 +58,7 @@ const notifyAdminOfLowStock = async (productData) => {
     if (adminEmails.length === 0) return;
 
     const emailContent = `
-      <h2>⚠️ Low Stock Alert!</h2>
+      <h2>Low Stock Alert!</h2>
       <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
         <p><strong>Product:</strong> ${productData.title}</p>
         <p><strong>Current Stock:</strong> ${productData.currentStock} units</p>
@@ -78,9 +78,9 @@ const notifyAdminOfLowStock = async (productData) => {
       });
     }
 
-    console.log(`✅ Low stock alert sent for product ${productData.title}`);
+    console.log(`Low stock alert sent for product ${productData.title}`);
   } catch (error) {
-    console.error('❌ Failed to send low stock alert:', error.message);
+    console.error('Failed to send low stock alert:', error.message);
   }
 };
 
@@ -113,9 +113,9 @@ const sendCustomerFollowUp = async (customerData) => {
       text: `Dear ${customerData.userName}, we hope you're loving your recent purchase! Please consider leaving a review at ${process.env.CLIENT_URL}/shop/product/${customerData.productId}`
     });
 
-    console.log(`✅ Follow-up email sent to ${customerData.email}`);
+    console.log(`Follow-up email sent to ${customerData.email}`);
   } catch (error) {
-    console.error('❌ Failed to send follow-up email:', error.message);
+    console.error('Failed to send follow-up email:', error.message);
   }
 };
 

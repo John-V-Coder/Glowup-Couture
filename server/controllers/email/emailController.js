@@ -1,10 +1,6 @@
 const emailService = require('../../services/emailService');
 const EmailSubscription = require('../../models/EmailSubscription');
 const EmailTemplate = require('../../models/EmailTemplate');
-const PasswordReset = require('../../models/PasswordReset');
-const User = require('../../models/User');
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const { notifyAdminOfNewOrder } = require('../../utils/emailHelpers');
 
 // Subscribe to newsletter
@@ -119,113 +115,7 @@ const unsubscribeFromNewsletter = async (req, res) => {
   }
 };
 
-// Request password reset
-const requestPasswordReset = async (req, res) => {
-  try {
-    const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is required'
-      });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User with this email does not exist'
-      });
-    }
-
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-
-    // Save reset token to database
-    const passwordReset = new PasswordReset({
-      userId: user._id,
-      email: user.email,
-      token: resetToken,
-    });
-
-    await passwordReset.save();
-
-    // Send password reset email
-    await emailService.sendPasswordResetEmail(user.email, user.userName, resetToken);
-
-    res.status(200).json({
-      success: true,
-      message: 'Password reset email sent successfully'
-    });
-
-  } catch (error) {
-    console.error('Password reset request error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to send password reset email'
-    });
-  }
-};
-
-// Reset password
-const resetPassword = async (req, res) => {
-  try {
-    const { token, password } = req.body;
-
-    if (!token || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Token and password are required'
-      });
-    }
-
-    // Find valid reset token
-    const passwordReset = await PasswordReset.findOne({
-      token,
-      used: false,
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (!passwordReset) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired reset token'
-      });
-    }
-
-    // Find user and update password
-    const user = await User.findById(passwordReset.userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(password, 12);
-    user.password = hashedPassword;
-    await user.save();
-
-    // Mark token as used
-    passwordReset.used = true;
-    await passwordReset.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Password reset successfully'
-    });
-
-  } catch (error) {
-    console.error('Password reset error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to reset password'
-    });
-  }
-};
 
 // Send customer support email
 const sendSupportEmail = async (req, res) => {
@@ -404,7 +294,7 @@ const saveEmailTemplate = async (req, res) => {
 const sendOrderNotification = async (order) => {
   try {
     if (!order || !order.customerEmail || !order._id) {
-      console.error('❌ Order notification failed: Missing order details');
+      console.error('Order notification failed: Missing order details');
       return;
     }
 
@@ -414,9 +304,9 @@ const sendOrderNotification = async (order) => {
     // Notify admin of new order
     await notifyAdminOfNewOrder(order);
 
-    console.log(`✅ Order notification sent for order: ${order._id}`);
+    console.log(`Order notification sent for order: ${order._id}`);
   } catch (error) {
-    console.error('❌ Order notification error:', error);
+    console.error('Order notification error:', error);
   }
 };
 
@@ -445,8 +335,6 @@ const getNewsletterSubscribers = async (req, res) => {
 module.exports = {
   subscribeToNewsletter,
   unsubscribeFromNewsletter,
-  requestPasswordReset,
-  resetPassword,
   sendSupportEmail,
   sendMarketingCampaign,
   getEmailTemplates,

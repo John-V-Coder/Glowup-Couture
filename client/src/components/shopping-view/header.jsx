@@ -266,12 +266,22 @@ export const BrandLogo = () => {
 
 const AuthButton = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const handleAuthClick = () => {
-    navigate("/auth");
+    console.log('Auth button clicked, current location:', location.pathname);
+    console.log('Navigating to /auth/login...');
+    
+    // Try navigating to a specific auth route instead of index
+    navigate("/auth/login");
+    
+    // Add a small delay to check if navigation happened
+    setTimeout(() => {
+      console.log('Current location after navigation:', window.location.pathname);
+    }, 100);
   };
 
   return (
- 
     <Button
       onClick={handleAuthClick}
       variant="ghost"
@@ -283,7 +293,6 @@ const AuthButton = ({ onAuthSuccess }) => {
     </Button>
   );
 };
-
 const HeaderRightContent = ({ isMobile = false }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);

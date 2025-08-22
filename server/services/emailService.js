@@ -55,11 +55,11 @@ class EmailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Email sent successfully to ${to}:`, result.messageId);
+      console.log(`Email sent successfully to ${to}:`, result.messageId);
       return { success: true, messageId: result.messageId };
 
     } catch (error) {
-      console.error(`❌ Failed to send email to ${to}:`, error.message);
+      console.error(`Failed to send email to ${to}:`, error.message);
       throw error;
     }
   }
@@ -77,11 +77,11 @@ class EmailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Custom email sent successfully to ${to}:`, result.messageId);
+      console.log(`Custom email sent successfully to ${to}:`, result.messageId);
       return { success: true, messageId: result.messageId };
 
     } catch (error) {
-      console.error(`❌ Failed to send custom email to ${to}:`, error.message);
+      console.error(`Failed to send custom email to ${to}:`, error.message);
       throw error;
     }
   }
