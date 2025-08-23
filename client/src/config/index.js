@@ -39,6 +39,51 @@ export const loginFormControls = [
   },
 ];
 
+export const requestResetFormControls = [
+  {
+    name: "email",
+    label: "Email",
+    placeholder: "Enter your email address",
+    componentType: "input",
+    type: "email",
+  },
+]
+
+export const verifyCodeFormControls = [
+  {
+    name: "email",
+    label: "Email",
+    placeholder: "Enter your email address",
+    componentType: "input",
+    type: "email",
+  },
+  {
+    name: "code",
+    label: "Verification Code",
+    placeholder: "Enter 6-digit code",
+    componentType: "input",
+    type: "text",
+  },
+]
+
+export const resetPasswordFormControls = [
+  {
+    name: "newPassword",
+    label: "New Password",
+    placeholder: "Enter your new password",
+    componentType: "input",
+    type: "password",
+  },
+  {
+    name: "confirmPassword",
+    label: "Confirm Password",
+    placeholder: "Confirm your new password",
+    componentType: "input",
+    type: "password",
+  },
+]
+
+
 export const addProductFormElements = [
   {
     label: "Title",

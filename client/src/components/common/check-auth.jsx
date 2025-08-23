@@ -1,88 +1,99 @@
-import { Navigate, useLocation } from "react-router-dom";
+import RequestPasswordReset from "@/pages/auth/request-reset-password"
+import ResetPassword from "@/pages/auth/reset-password"
+import VerifyCode from "@/pages/auth/verification"
+import { useState } from "react"
+import { useNavigate, useLocation, Navigate } from "react-router-dom"
+export function CheckAuth({ isAuthenticated, user, children }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const pathname = location.pathname
 
-function CheckAuth({ isAuthenticated, user, children }) {
-  const location = useLocation();
-  const { pathname, state } = location;
+  console.log(pathname, isAuthenticated)
 
-  console.log("Current path:", pathname, "Auth status:", isAuthenticated);
-
-  // 1. Handle root path redirects
   if (pathname === "/") {
-    return isAuthenticated
-      ? <Navigate to={user?.role === "admin" ? "/admin/dashboard" : "/shop/home"} />
-      : <Navigate to="/shop/home" />;
+    if (!isAuthenticated) {
+      return <Navigate to="/shop/home" replace />
+    } else {
+      if (user?.role === "admin") {
+        return <Navigate to="/admin/dashboard" replace />
+      } else {
+        return <Navigate to="/shop/home" replace />
+      }
+    }
   }
 
-  // 2. Handle unauthenticated users
-  if (!isAuthenticated) {
-    // Block access to protected routes
-    if (pathname.includes("/checkout") || 
-        pathname.includes("/account") || 
-        pathname.includes("/admin")) {
-      return <Navigate to="/auth/login" state={{ from: location }} replace />;
-    }
-    // Allow access to public shop pages
-    if (pathname.includes("/shop")) {
-      return <>{children}</>;
-    }
-    // Allow access to auth pages
-    if (pathname.includes("/auth")) {
-      return <>{children}</>;
-    }
-    // Redirect any other paths to shop home
-    return <Navigate to="/shop/home" replace />;
+  // Allow unauthenticated users to access shopping pages (except checkout)
+  if (
+    !isAuthenticated &&
+    pathname.includes("/shop") &&
+    !pathname.includes("/checkout") &&
+    !pathname.includes("/account")
+  ) {
+    return <>{children}</>
   }
 
-  // 3. Handle authenticated users
-  if (isAuthenticated) {
-    // Special handling for auth pages when authenticated
-    if (pathname.includes("/auth")) {
-      // If coming from password reset, always redirect to login
-      if (pathname.includes("/reset-password") || state?.fromPasswordReset) {
-        return <Navigate to="/auth/login" state={{ passwordResetSuccess: true }} replace />;
-      }
-      
-      // If trying to access login/register while authenticated, redirect based on role
-      if (pathname.includes("/login") || pathname.includes("/register")) {
-        // Check if there's a specific redirect location from previous navigation
-        const redirectTo = state?.from?.pathname;
-        if (redirectTo && !redirectTo.includes("/auth")) {
-          return <Navigate to={redirectTo} replace />;
-        }
-        // Default role-based redirect
-        return <Navigate to={user?.role === "admin" ? "/admin/dashboard" : "/shop/home"} replace />;
-      }
-      
-      // For other auth routes, allow access (like forgot-password)
-      return <>{children}</>;
-    }
+  // Redirect unauthenticated users to login for checkout and account pages
+  if (!isAuthenticated && (pathname.includes("/checkout") || pathname.includes("/account"))) {
+    return <Navigate to="/auth/login" replace />
+  }
 
-    // Admin-specific rules
+  // Redirect unauthenticated users to login for admin pages
+  if (!isAuthenticated && pathname.includes("/admin")) {
+    return <Navigate to="/auth/login" replace />
+  }
+
+  // Redirect authenticated users away from login/register pages
+  if (isAuthenticated && (pathname.includes("/login") || pathname.includes("/register"))) {
     if (user?.role === "admin") {
-      // Block admin from accessing customer routes
-      if (pathname.includes("/shop") || pathname.includes("/checkout")) {
-        return <Navigate to="/admin/dashboard" replace />;
-      }
-      // Allow access to admin routes
-      if (pathname.includes("/admin")) {
-        return <>{children}</>;
-      }
-    } 
-    // Customer-specific rules
-    else {
-      // Block customers from admin routes
-      if (pathname.includes("/admin")) {
-        return <Navigate to="/unauthorized" replace />;
-      }
-      // Allow access to shop and checkout
-      if (pathname.includes("/shop") || pathname.includes("/checkout") || pathname.includes("/account")) {
-        return <>{children}</>;
-      }
+      return <Navigate to="/admin/dashboard" replace />
+    } else {
+      return <Navigate to="/shop/home" replace />
     }
   }
 
-  // 4. Fallback for any unhandled routes
-  return <Navigate to={isAuthenticated ? (user?.role === "admin" ? "/admin/dashboard" : "/shop/home") : "/shop/home"} replace />;
+  // Protect admin routes from non-admin users
+  if (isAuthenticated && user?.role !== "admin" && pathname.includes("admin")) {
+    return <Navigate to="/unauth-page" replace />
+  }
+
+  // Redirect admin users away from shop pages
+  if (isAuthenticated && user?.role === "admin" && pathname.includes("shop")) {
+    return <Navigate to="/admin/dashboard" replace />
+  }
+
+  return <>{children}</>
 }
 
-export default CheckAuth;
+export function PasswordResetFlow() {
+  const [step, setStep] = useState(1)
+  const [email, setEmail] = useState("")
+  const navigate = useNavigate()
+
+  const handleRequestSuccess = (userEmail) => {
+    setEmail(userEmail)
+    setStep(2)
+  }
+
+  const handleVerifySuccess = () => {
+    setStep(3)
+  }
+
+  const handleResetSuccess = () => {
+    navigate(
+      "/auth/login?message=" + encodeURIComponent("Password reset successful! Please log in with your new password."),
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {step === 1 && <RequestPasswordReset onSuccess={handleRequestSuccess} />}
+        {step === 2 && <VerifyCode email={email} onSuccess={handleVerifySuccess} />}
+        {step === 3 && <ResetPassword onSuccess={handleResetSuccess} />}
+      </div>
+    </div>
+  )
+}
+
+export default CheckAuth
+

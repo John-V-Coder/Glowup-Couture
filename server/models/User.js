@@ -10,6 +10,15 @@ const passwordResetTokenSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  // New fields to match the auth controller's logic
+  attempts: {
+    type: Number,
+    default: 0,
+  },
+  isUsed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const UserSchema = new mongoose.Schema({
@@ -27,13 +36,14 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: false, // Prevents the password from being returned in queries by default
+    select: false,
   },
   role: {
     type: String,
     default: "user",
   },
-  passwordResetCode: passwordResetTokenSchema, // Embeds the reset token as a subdocument
+  // The passwordResetCode subdocument now includes attempts and isUsed fields
+  passwordResetCode: passwordResetTokenSchema,
 });
 
 // Add timestamps for created and updated dates

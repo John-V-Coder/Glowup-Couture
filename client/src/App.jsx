@@ -35,7 +35,6 @@ import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
-import ForgotPassword from './pages/auth/forgot-password';
 import ResetPassword from './pages/auth/reset-password';
 import EmailTemplates from './components/common/email-templates';
 import MarketingCampaigns from './pages/admin-view/marketing-campaign';
@@ -43,6 +42,7 @@ import SupportPage from './pages/shopping-view/customer-support';
 import AdminNewsletterPage from './pages/admin-view/newsletter-page';
 import AdminCustomersPage from './pages/admin-view/customer-page';
 import VerifyCode from './pages/auth/verification';
+import RequestPasswordReset from './pages/auth/request-reset-password';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -93,7 +93,7 @@ function App() {
           <Route path="/auth" element={<CheckAuth isAuthenticated={isAuthenticated} user={user}><AuthLayout /></CheckAuth>}>
             <Route path="login" element={<AuthLogin />} />
             <Route path="register" element={<AuthRegister />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="request-reset-password" element={<RequestPasswordReset/>} />
             <Route path="verify-code" element={<VerifyCode />} />
             <Route path="reset-password" element={<ResetPassword />} />
           </Route>
