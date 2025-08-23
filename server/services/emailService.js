@@ -95,17 +95,13 @@ class EmailService {
   }
 
   // Password reset email
-  async sendPasswordResetEmail(userEmail, userName, resetToken) {
-    const resetCode = `${process.env.CLIENT_URL}/auth/reset-password?token=${resetToken}`;
-    
-    return this.sendTemplateEmail('password-reset', userEmail, {
-      subject: 'Password Reset Request',
-      userName,
-      resetCode,
-      resetToken
-    });
-  }
-
+ async sendPasswordResetEmail(userEmail, userName, resetCode) {
+  return this.sendTemplateEmail('password-reset', userEmail, {
+    subject: 'Password Reset Request',
+    userName,
+    resetCode // only the numeric code, no link
+  });
+}
   // Order confirmation email
   async sendOrderConfirmationEmail(userEmail, orderData) {
     return this.sendTemplateEmail('order-confirmation', userEmail, {
