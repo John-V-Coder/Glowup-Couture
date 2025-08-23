@@ -6,12 +6,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { useDispatch, useSelector } from "react-redux";
-import { resetTokenAndCredentials } from "@/store/auth-slice";
+import { resetAuthState } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
-import { ScrollingPromoBar, ContactBar } from "./adds";
+import { ScrollingPromoBar } from "./adds";
 import ErrorBoundary from "./error-boundary";
-import { Flame, User, LogIn, Search, Gift, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react";
+import {User, Search, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import ProductFilter from "@/components/shopping-view/filter";
 import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { useMediaQuery } from 'react-responsive';
@@ -291,7 +291,7 @@ const HeaderRightContent = ({ isMobile = false }) => {
   }, [dispatch, user?.id]);
 
   const handleLogout = () => {
-    dispatch(resetTokenAndCredentials());
+    dispatch(resetAuthState());
     sessionStorage.clear();
     navigate("/shop/home");
   };

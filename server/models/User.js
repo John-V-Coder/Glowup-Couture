@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
-  passwordResetToken: passwordResetTokenSchema, // Embeds the reset token as a subdocument
+  passwordResetCode: passwordResetTokenSchema, // Embeds the reset token as a subdocument
 });
 
 // Add timestamps for created and updated dates

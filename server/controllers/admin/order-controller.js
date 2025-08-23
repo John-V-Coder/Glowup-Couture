@@ -87,10 +87,10 @@ const updateOrderStatus = async (req, res) => {
           };
 
           await emailService.sendOrderStatusEmail(user.email, orderData);
-          console.log(`✅ Order status email sent for order ${id}`);
+          console.log(`Order status email sent for order ${id}`);
         }
       } catch (error) {
-        console.error(`❌ Failed to send order status email:`, error.message);
+        console.error(`Failed to send order status email:`, error.message);
       }
     }
 

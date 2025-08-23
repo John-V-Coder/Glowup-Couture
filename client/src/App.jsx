@@ -23,7 +23,7 @@ import { useEffect } from 'react';
 import CheckAuth from './components/common/check-auth';
 import Preloader from './components/common/preloader';
 import RoutePreloader from './components/common/route-preloader.jsx';
-import { checkAuth, setLoadingFalse } from './store/auth-slice';
+import { checkAuth } from './store/auth-slice'; // Removed setLoadingFalse import
 import { loadGuestCart } from './store/shop/cart-slice';
 import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
 import AdminGallery from './pages/admin-view/gallery';
@@ -42,6 +42,7 @@ import MarketingCampaigns from './pages/admin-view/marketing-campaign';
 import SupportPage from './pages/shopping-view/customer-support';
 import AdminNewsletterPage from './pages/admin-view/newsletter-page';
 import AdminCustomersPage from './pages/admin-view/customer-page';
+import VerifyCode from './pages/auth/verification';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -63,13 +64,17 @@ function App() {
           }
         }
       } catch (error) {
+        console.error("Token parsing error:", error);
         sessionStorage.removeItem("token");
         localStorage.removeItem("token");
       }
+      
       if (token) {
-        dispatch(checkAuth(token));
+        // checkAuth will handle setting loading to false in its fulfilled/rejected cases
+        dispatch(checkAuth());
       } else {
-        dispatch(setLoadingFalse());
+        // Load guest cart when no token is found
+        // The auth slice will set isLoading to false in checkAuth.rejected
         dispatch(loadGuestCart());
       }
     };
@@ -89,6 +94,7 @@ function App() {
             <Route path="login" element={<AuthLogin />} />
             <Route path="register" element={<AuthRegister />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="verify-code" element={<VerifyCode />} />
             <Route path="reset-password" element={<ResetPassword />} />
           </Route>
 

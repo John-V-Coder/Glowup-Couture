@@ -74,7 +74,7 @@ const defaultTemplates = [
   },
   {
     name: 'password-reset',
-    subject: 'Reset Your {{companyName}} Password 🔐',
+    subject: 'Reset Your {{companyName}} Password ',
     category: 'auth',
     htmlContent: `
       <!DOCTYPE html>
@@ -85,38 +85,27 @@ const defaultTemplates = [
         <title>Password Reset</title>
       </head>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #DAA520, #F5DEB3); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-          <h1 style="color: #8B4513; margin: 0; font-size: 28px;">Password Reset Request</h1>
+       <div style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+    <div style="background-color: #FFFBEA; padding: 30px; border-bottom: 1px solid #eee; text-align: center;">
+        <h1 style="color: #5C4033; font-size: 28px; margin: 0; font-weight: 700;">Glowup Couture</h1>
+    </div>
+    <div style="padding: 30px;">
+        <h2 style="color: #5C4033; font-size: 22px; margin-top: 0; margin-bottom: 20px;">Hello {{userName}},</h2>
+        <p style="margin-bottom: 15px; font-size: 16px;">You recently requested to reset your password for your {{companyName}} account.</p>
+        <p style="margin-bottom: 20px; font-size: 16px;">Please use the following **6-digit verification code** to complete the process:</p>
+        <div style="background-color: #F7E7CE; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0; border: 1px solid #EEDFCC;">
+            <strong style="font-size: 36px; color: #5C4033; letter-spacing: 5px; display: block;">{{resetCode}}</strong>
         </div>
-        
-        <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-          <h2 style="color: #DAA520;">Hello {{userName}}!</h2>
-          
-          <p>We received a request to reset your password for your {{companyName}} account.</p>
-          
-          <div style="background: #FFF8DC; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #DAA520;">
-            <p style="margin: 0;"><strong>Important:</strong> This link will expire in 1 hour for security reasons.</p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{resetUrl}}" style="background: linear-gradient(135deg, #DAA520, #B8860B); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
-              Reset My Password
-            </a>
-          </div>
-          
-          <p style="color: #666; font-size: 14px;">
-            If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
-          </p>
-          
-          <p style="color: #666; font-size: 14px;">
-            For security reasons, this link will expire in 1 hour. If you need help, contact us at {{supportEmail}}.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #999; font-size: 12px; text-align: center;">
-            © {{currentYear}} {{companyName}}. All rights reserved.
-          </p>
-        </div>
+        <p style="margin-bottom: 15px; font-size: 16px;">This code is valid for **15 minutes**. For your security, do not share this code with anyone.</p>
+        <p style="margin-bottom: 15px; font-size: 16px;">If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+    </div>
+    <div style="background-color: #F7E7CE; padding: 25px; border-top: 1px solid #EEDFCC; text-align: center; font-size: 14px; color: #5C4033;">
+        <p style="margin: 0;">Thank you,</p>
+        <p style="margin: 5px 0 0;">The {{companyName}} Team</p>
+        <p style="margin-top: 20px; font-size: 12px; color: #777;">If you have any questions, feel free to contact us at <a href="mailto:{{supportEmail}}" style="color: #5C4033; text-decoration: underline;">{{supportEmail}}</a> or visit our website: <a href="{{websiteUrl}}" style="color: #5C4033; text-decoration: underline;">{{websiteUrl}}</a></p>
+        <p style="margin: 10px 0 0; font-size: 12px; color: #777;">&copy; {{currentYear}} {{companyName}}. All rights reserved.</p>
+    </div>
+</div>
       </body>
       </html>
     `,
@@ -127,7 +116,7 @@ const defaultTemplates = [
       
       We received a request to reset your password for your {{companyName}} account.
       
-      Click this link to reset your password: {{resetUrl}}
+      Click this link to reset your password: {{resetCode}}
       
       This link will expire in 1 hour for security reasons.
       
@@ -139,7 +128,7 @@ const defaultTemplates = [
     `,
     variables: [
       { name: 'userName', description: 'User\'s name', required: true },
-      { name: 'resetUrl', description: 'Password reset URL', required: true },
+      { name: 'resetCode', description: 'Password reset Code', required: true },
       { name: 'resetToken', description: 'Reset token', required: true }
     ]
   },

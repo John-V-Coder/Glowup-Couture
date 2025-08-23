@@ -96,11 +96,12 @@ class EmailService {
 
   // Password reset email
   async sendPasswordResetEmail(userEmail, userName, resetToken) {
-    const resetUrl = `${process.env.CLIENT_URL}/auth/reset-password?token=${resetToken}`;
+    const resetCode = `${process.env.CLIENT_URL}/auth/reset-password?token=${resetToken}`;
     
     return this.sendTemplateEmail('password-reset', userEmail, {
+      subject: 'Password Reset Request',
       userName,
-      resetUrl,
+      resetCode,
       resetToken
     });
   }

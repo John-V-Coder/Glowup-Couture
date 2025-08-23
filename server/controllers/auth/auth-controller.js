@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const bcrypt = require("bcryptjs"); // Add bcrypt import
+const bcrypt = require("bcryptjs");
 const User = require("../../models/User"); 
 const emailService = require("../../services/emailService"); 
 
@@ -17,11 +16,14 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // The User model's pre-save hook will handle password hashing.
+    // Hash password before saving
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const newUser = new User({
       userName,
       email,
-      password, // Plain password will be hashed by the User model's pre('save') hook
+      password: hashedPassword,
     });
 
     await newUser.save();
@@ -71,14 +73,8 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Use the User model's method to compare password, or fallback to bcrypt
-    let isMatch;
-    if (user.matchPassword && typeof user.matchPassword === 'function') {
-      isMatch = await user.matchPassword(password);
-    } else {
-      // Fallback to direct bcrypt comparison if model method doesn't exist
-      isMatch = await bcrypt.compare(password, user.password);
-    }
+    // Compare password using bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -121,16 +117,18 @@ const loginUser = async (req, res) => {
 
 // Logout User
 const logoutUser = (req, res) => {
-  // If using cookies, clear them. If only sending JWT in response, client handles removal.
-  // Assuming client-side token management for this example, but adding cookie clearing as an option.
-  // res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
   res.status(200).json({
     success: true,
     message: "Logged out successfully!",
   });
 };
 
-// Request Password Reset
+// Generate random 6-digit code
+const generateResetCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // Generates 6-digit code
+};
+
+// Request Password Reset - Send Code to Email
 const requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
@@ -146,102 +144,204 @@ const requestPasswordReset = async (req, res) => {
 
     if (!user) {
       // For security, don't reveal if the email exists or not.
-      // Just tell the user an email has been sent if the user *might* exist.
-      // This prevents enumeration attacks.
       console.log(`Password reset requested for non-existent email: ${email}`);
       return res.status(200).json({
         success: true,
-        message: 'If an account with that email exists, a password reset email has been sent.',
+        message: 'If an account with that email exists, a password reset code has been sent.',
       });
     }
 
-    // Generate reset token using the User model method or create one manually
-    let resetToken;
-    if (user.getAndSavePasswordResetToken && typeof user.getAndSavePasswordResetToken === 'function') {
-      resetToken = user.getAndSavePasswordResetToken();
-    } else {
-      // Fallback: generate token manually
-      resetToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-      
-      user.passwordResetToken = {
-        token: hashedToken,
-        expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
-      };
-    }
-    
-    await user.save(); // Save the user with the hashed token and expiry
+    // Generate 6-digit reset code
+    const resetCode = generateResetCode();
 
-    // Send password reset email using the plain token
-    await emailService.sendPasswordResetEmail(user.email, user.userName, resetToken);
+    // Save the reset code with expiration (15 minutes)
+    user.passwordResetCode = {
+      token: resetCode,
+      expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes
+      attempts: 0,
+      isUsed: false
+    };
+    
+    await user.save();
+
+    // Send password reset email with the code
+    await emailService.sendPasswordResetEmail(user.email, user.userName, resetCode);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset email sent successfully. Please check your inbox.',
+      message: 'Password reset code sent to your email. Please check your inbox.',
     });
   } catch (error) {
     console.error('Password reset request error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to send password reset email. Please try again.',
+      message: 'Failed to send password reset code. Please try again.',
       error: error.message,
     });
   }
 };
 
-// Reset Password
-const resetPassword = async (req, res) => {
+// Verify Reset Code
+const verifyResetCode = async (req, res) => {
   try {
-    const { token, password } = req.body; // 'token' here is the plain token from the email link
+    const { email, code } = req.body;
 
-    if (!token || !password) {
+    if (!email || !code) {
       return res.status(400).json({
         success: false,
-        message: 'Token and new password are required.',
+        message: 'Email and verification code are required.',
       });
     }
 
-    // Find the user by the hashed version of the token and check validity
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    const user = await User.findOne({
-      'passwordResetToken.token': hashedToken,
-      'passwordResetToken.expiresAt': { $gt: Date.now() }
-    }).select('+password'); // Select password explicitly to update it
+    const user = await User.findOne({ email });
+
+    if (!user || !user.passwordResetCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'No password reset request found for this email.',
+      });
+    }
+
+    const resetCode = user.passwordResetCode;
+
+    // Check if code has expired
+    if (resetCode.expiresAt < Date.now()) {
+      user.passwordResetCode = undefined;
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: 'Reset code has expired. Please request a new one.',
+      });
+    }
+
+    // Check if code has been used
+    if (resetCode.isUsed) {
+      return res.status(400).json({
+        success: false,
+        message: 'This reset code has already been used.',
+      });
+    }
+
+    // Check if too many attempts
+    if (resetCode.attempts >= 5) {
+      user.passwordResetCode = undefined;
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: 'Too many failed attempts. Please request a new reset code.',
+      });
+    }
+
+    // Check if code matches
+    if (resetCode.token !== code) {
+      user.passwordResetCode.attempts += 1;
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: `Invalid code. ${5 - user.passwordResetCode.attempts} attempts remaining.`,
+      });
+    }
+
+    // ✅ Code is valid - generate temporary token
+    const resetToken = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        purpose: 'password_reset'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Code verified successfully. You can now reset your password.',
+      resetToken
+    });
+
+  } catch (error) {
+    console.error('Code verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify code. Please try again.',
+      error: error.message,
+    });
+  }
+};
+
+// Reset Password with New Password
+const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token and new password are required.',
+      });
+    }
+
+    // Verify the reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token.',
+      });
+    }
+
+    // Check if token is for password reset
+    if (decoded.purpose !== 'password_reset') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reset token.',
+      });
+    }
+
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired password reset token.',
+        message: 'User not found.',
       });
     }
 
-    // Additional validation using model method if available
-    if (user.isPasswordResetTokenValid && typeof user.isPasswordResetTokenValid === 'function') {
-      if (!user.isPasswordResetTokenValid(token)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid or expired password reset token.',
-        });
-      }
+    // Check if reset code is still valid and not used
+    if (!user.passwordResetCode || user.passwordResetCode.isUsed) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset session is invalid or has expired.',
+      });
     }
 
-    // Update user's password - either let the model handle hashing or do it manually
-    if (user.schema && user.schema.pre && user.schema.pre.length > 0) {
-      // If pre-save hooks exist, let them handle password hashing
-      user.password = password;
-    } else {
-      // Fallback: hash password manually
-      const saltRounds = 12;
-      user.password = await bcrypt.hash(password, saltRounds);
-    }
-    
-    user.passwordResetToken = undefined; // Clear the token after successful reset
+    // Hash the new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update user's password and mark code as used
+    user.password = hashedPassword;
+    user.passwordResetCode.isUsed = true; // Mark as used but don't delete yet for audit trail
     await user.save();
+
+    // Clear the reset code after successful password change (optional)
+    setTimeout(async () => {
+      try {
+        await User.findByIdAndUpdate(user._id, { 
+          $unset: { passwordResetCode: 1 } 
+        });
+      } catch (err) {
+        console.error('Error clearing reset code:', err);
+      }
+    }, 5000); // Clear after 5 seconds
 
     res.status(200).json({
       success: true,
-      message: 'Your password has been reset successfully.',
+      message: 'Your password has been reset successfully. You can now log in with your new password.',
     });
+
   } catch (error) {
     console.error('Password reset error:', error);
     res.status(500).json({
@@ -266,6 +366,7 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
     // Fetch the user to ensure they still exist and are active
     const user = await User.findById(decoded.id);
 
@@ -322,6 +423,7 @@ module.exports = {
   loginUser,
   logoutUser,
   requestPasswordReset,
+  verifyResetCode,
   resetPassword,
   authMiddleware,
   checkAuth,
