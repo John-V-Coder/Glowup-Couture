@@ -164,7 +164,7 @@ export const verifyResetCode = createAsyncThunk(
   }
 );
 
-// Async thunk to finalize password reset using the temporary resetToken
+// Updated Redux thunk to match your backend API
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async ({ resetToken, newPassword }, { getState, rejectWithValue }) => {
@@ -173,18 +173,17 @@ export const resetPassword = createAsyncThunk(
       if (!resetToken) {
         resetToken = getState().auth.resetToken;
       }
-
+      
       if (!resetToken) {
         return rejectWithValue({ message: "No valid reset token found. Please verify your code again." });
       }
 
+      // Send resetToken in the request body to match your backend
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/reset-password`,
-        { newPassword },
-        {
-          headers: {
-            Authorization: `Bearer ${resetToken}`,
-          },
+        { 
+          resetToken: resetToken,  // Send in body, not header
+          newPassword: newPassword 
         }
       );
 
@@ -198,7 +197,6 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
-
 const authSlice = createSlice({
   name: "auth",
   initialState,
