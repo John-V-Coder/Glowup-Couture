@@ -6,7 +6,6 @@ const {
   sendMarketingCampaign,
   getEmailTemplates,
   saveEmailTemplate,
-  sendOrderNotification,
   getNewsletterSubscribers
 } = require("../../controllers/email/emailController");
 const { authMiddleware } = require("../../controllers/auth/auth-controller");
@@ -20,8 +19,7 @@ router.get("/unsubscribe", unsubscribeFromNewsletter);
 // Support routes
 router.post("/support", sendSupportEmail);
 
-// Order notification routes
-router.post("/order-notification", sendOrderNotification);
+
 
 // Marketing routes (admin only - you may want to add auth middleware)
 router.post("/marketing-campaign", authMiddleware, sendMarketingCampaign);

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { fetchFilteredProducts } from "@/store/shop/products-slice";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { ProductCard } from "@/components/shopping-view/product-card";
 import { useNavigate } from "react-router-dom";
@@ -123,7 +123,7 @@ function ShoppingHome() {
   }, [featureImageList]);
 
   useEffect(() => {
-    dispatch(fetchAllFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
+    dispatch(fetchFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
     dispatch(getFeatureImages());
     dispatch(fetchCartItems(user?.id));
   }, [dispatch, user?.id]);

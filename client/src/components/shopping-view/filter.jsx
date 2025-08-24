@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { 
-  Filter, 
-  X, 
-  ChevronDown, 
-  ChevronUp, 
-  Sliders, 
+import {
+  Filter,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Sliders,
   Check,
-  ArrowUpDown,
-  Trash2,
   ChevronRight,
   ChevronLeft,
   Home
@@ -15,21 +13,19 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
-  SheetTitle,
-  SheetTrigger,
   SheetFooter,
+  SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { filterOptions, sortOptions } from "@/config";
 
-const NavigationHeader = ({ currentView, onBack, onHome, title }) => {
-  return (
-    <div className="flex items-center gap-3 pb-4 border-b">
-      {currentView !== 'main' && (
+const NavigationHeader = ({ currentView, onBack, onHome, title }) => (
+  <div className="flex items-center gap-3 pb-4 border-b">
+    {currentView !== "main" && (
+      <>
         <Button
           variant="ghost"
           size="sm"
@@ -38,8 +34,6 @@ const NavigationHeader = ({ currentView, onBack, onHome, title }) => {
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-      )}
-      {currentView !== 'main' && (
         <Button
           variant="ghost"
           size="sm"
@@ -48,32 +42,35 @@ const NavigationHeader = ({ currentView, onBack, onHome, title }) => {
         >
           <Home className="w-4 h-4" />
         </Button>
-      )}
-      <div className="flex items-center gap-2">
-        <div className="p-2 bg-primary rounded-lg">
-          <Sliders className="w-4 h-4 text-primary-foreground" />
-        </div>
-        <div>
-          <h3 className="font-semibold">{title}</h3>
-          <div className="text-xs text-muted-foreground">
-            {currentView === 'main' ? 'Filters & Sort' : `Filter by ${title}`}
-          </div>
+      </>
+    )}
+    <div className="flex items-center gap-2">
+      <div className="p-2 bg-primary rounded-lg">
+        <Sliders className="w-4 h-4 text-primary-foreground" />
+      </div>
+      <div>
+        <h3 className="font-semibold">{title}</h3>
+        <div className="text-xs text-muted-foreground">
+          {currentView === "main" ? "Filters & Sort" : `Filter by ${title}`}
         </div>
       </div>
     </div>
-  );
-};
-const MainView = ({ 
-  filters, 
-  sort, 
-  handleSort, 
-  clearAllFilters, 
-  handleFilter, 
-  onNavigate 
+  </div>
+);
+
+const MainView = ({
+  filters,
+  sort,
+  handleSort,
+  clearAllFilters,
+  handleFilter,
+  onNavigate
 }) => {
   const activeFiltersCount = Object.values(filters || {}).reduce(
-    (count, filterArray) => count + (filterArray?.length || 0), 0
+    (count, filterArray) => count + (filterArray?.length || 0),
+    0
   );
+
   const ActiveFilters = () => {
     if (activeFiltersCount === 0) return null;
     return (
@@ -90,9 +87,11 @@ const MainView = ({
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {Object.keys(filters || {}).map(key => 
-            filters[key]?.map(filterId => {
-              const option = filterOptions[key]?.find(opt => opt.id === filterId);
+          {Object.keys(filters || {}).map((key) =>
+            filters[key]?.map((filterId) => {
+              const option = filterOptions[key]?.find(
+                (opt) => opt.id === filterId
+              );
               return option ? (
                 <Badge
                   key={`${key}-${filterId}`}
@@ -160,12 +159,7 @@ const MainView = ({
   );
 };
 
-const FilterDetailView = ({ 
-  filterKey, 
-  filters, 
-  handleFilter, 
-  onBack 
-}) => {
+const FilterDetailView = ({ filterKey, filters, handleFilter, onBack }) => {
   const options = filterOptions[filterKey] || [];
   const selectedValues = filters[filterKey] || [];
 
@@ -174,7 +168,7 @@ const FilterDetailView = ({
       <div className="text-sm text-muted-foreground">
         Select one or more {filterKey} options
       </div>
-      
+
       <div className="space-y-3">
         {options.map((option) => (
           <label
@@ -198,11 +192,7 @@ const FilterDetailView = ({
       </div>
 
       <div className="pt-4 border-t">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="w-full"
-        >
+        <Button variant="outline" onClick={onBack} className="w-full">
           <ChevronLeft className="w-4 h-4 mr-2" />
           Back to Filters
         </Button>
@@ -211,23 +201,24 @@ const FilterDetailView = ({
   );
 };
 
-export const ProductFilter = ({ 
-  filters = {}, 
-  handleFilter = () => {}, 
-  clearAllFilters = () => {}, 
-  sort = "price-lowtohigh", 
-  handleSort = () => {} 
+export const ProductFilter = ({
+  filters = {},
+  handleFilter = () => {},
+  clearAllFilters = () => {},
+  sort = "price-lowtohigh",
+  handleSort = () => {}
 }) => {
-  const [currentView, setCurrentView] = useState('main');
-  const [navigationHistory, setNavigationHistory] = useState(['main']);
+  const [currentView, setCurrentView] = useState("main");
+  const [navigationHistory, setNavigationHistory] = useState(["main"]);
 
   const activeFiltersCount = Object.values(filters || {}).reduce(
-    (count, filterArray) => count + (filterArray?.length || 0), 0
+    (count, filterArray) => count + (filterArray?.length || 0),
+    0
   );
 
   const handleNavigate = (view) => {
     setCurrentView(view);
-    setNavigationHistory(prev => [...prev, view]);
+    setNavigationHistory((prev) => [...prev, view]);
   };
 
   const handleBack = () => {
@@ -239,17 +230,17 @@ export const ProductFilter = ({
   };
 
   const handleHome = () => {
-    setCurrentView('main');
-    setNavigationHistory(['main']);
+    setCurrentView("main");
+    setNavigationHistory(["main"]);
   };
 
   const resetNavigation = () => {
-    setCurrentView('main');
-    setNavigationHistory(['main']);
+    setCurrentView("main");
+    setNavigationHistory(["main"]);
   };
 
   const getCurrentTitle = () => {
-    if (currentView === 'main') return 'Filters & Sort';
+    if (currentView === "main") return "Filters & Sort";
     return currentView.charAt(0).toUpperCase() + currentView.slice(1);
   };
 
@@ -266,7 +257,7 @@ export const ProductFilter = ({
           )}
         </Button>
       </SheetTrigger>
-      
+
       <SheetContent side="left" className="w-full sm:max-w-md">
         <SheetHeader>
           <NavigationHeader
@@ -276,9 +267,9 @@ export const ProductFilter = ({
             title={getCurrentTitle()}
           />
         </SheetHeader>
-        
+
         <div className="flex-1 overflow-y-auto py-6">
-          {currentView === 'main' ? (
+          {currentView === "main" ? (
             <MainView
               filters={filters}
               sort={sort}
@@ -298,7 +289,7 @@ export const ProductFilter = ({
         </div>
 
         <SheetFooter className="flex-col sm:flex-row gap-2 border-t pt-4">
-          {currentView === 'main' && (
+          {currentView === "main" && (
             <Button
               variant="outline"
               onClick={clearAllFilters}
@@ -309,7 +300,7 @@ export const ProductFilter = ({
           )}
           <SheetClose asChild>
             <Button className="w-full sm:w-auto">
-              {currentView === 'main' ? 'Apply Filters' : 'Done'}
+              {currentView === "main" ? "Apply Filters" : "Done"}
             </Button>
           </SheetClose>
         </SheetFooter>

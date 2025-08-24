@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
-import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { fetchFilteredProducts } from "@/store/shop/products-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { useCartNotification } from "@/hooks/use-cart-notification";
@@ -19,7 +19,7 @@ function SalePage() {
 
   useEffect(() => {
     // Ensure products and cart are available
-    dispatch(fetchAllFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
+    dispatch(fetchFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
     if (user?.id) dispatch(fetchCartItems(user.id));
   }, [dispatch, user?.id]);
 

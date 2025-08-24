@@ -1,7 +1,7 @@
 const emailService = require('../../services/emailService');
 const EmailSubscription = require('../../models/EmailSubscription');
 const EmailTemplate = require('../../models/EmailTemplate');
-const { notifyAdminOfNewOrder } = require('../../utils/emailHelpers');
+const { notifyAdminOfNewOrder } = require('../../utils/emailNewOrderAdminHelpers');
 
 // Subscribe to newsletter
 // Subscribe to newsletter (supports auto-fill for authenticated users)

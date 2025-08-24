@@ -9,11 +9,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { resetAuthState } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
 import { fetchCartItems } from "@/store/shop/cart-slice";
-import { ScrollingPromoBar } from "./adds";
+import { ScrollingPromoBar } from "../common/adds";
 import ErrorBoundary from "./error-boundary";
 import {User, Search, Menu, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import ProductFilter from "@/components/shopping-view/filter";
-import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { fetchFilteredProducts } from "@/store/shop/products-slice";
 import { useMediaQuery } from 'react-responsive';
 
 const shoppingViewHeaderMenuItems = [
@@ -517,7 +517,7 @@ const HeaderFilterSection = () => {
   useEffect(() => {
     if (filters !== null && sort !== null)
       dispatch(
-        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort })
+        fetchFilteredProducts({ filterParams: filters, sortParams: sort })
       );
   }, [dispatch, sort, filters]);
 

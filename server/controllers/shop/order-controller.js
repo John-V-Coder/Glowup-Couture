@@ -94,10 +94,10 @@ const createOrder = async (req, res) => {
               }
             })
             .then(() => {
-              console.log(`✅ Order confirmation email sent for order ${newlyCreatedOrder._id}`);
+              console.log(`Order confirmation email sent for order ${newlyCreatedOrder._id}`);
             })
             .catch((error) => {
-              console.error(`❌ Failed to send order confirmation email:`, error.message);
+              console.error(`Failed to send order confirmation email:`, error.message);
             });
         }
 

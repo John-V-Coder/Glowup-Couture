@@ -7,7 +7,8 @@ const authRouter = require("./routes/auth/auth-routes");
 const emailRouter = require("./routes/email/email-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
-const customerRoutes = require("./routes/admin/customer-routes");
+const customerAnalysisRouter = require("./routes/admin/customer-analysis-routes");
+
 
 const shopProductsRouter = require("./routes/shop/products-routes");
 const shopCartRouter = require("./routes/shop/cart-routes");
@@ -40,7 +41,7 @@ mongoose.connect(process.env.MONGO_URL)
 // Middlewares
 app.use(cors({
     origin: process.env.CLIENT_URL,
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT','PATCH', 'OPTIONS'],
     allowedHeaders: [
         "Content-Type",
         "Authorization",
@@ -56,7 +57,7 @@ app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
-app.use("/api/admin", customerRoutes);
+app.use("/api/admin/customer-analysis", customerAnalysisRouter);
 
 app.use("/api/shop/products", shopProductsRouter);
 app.use("/api/shop/cart", shopCartRouter);

@@ -16,12 +16,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SlidersHorizontal } from "lucide-react";
 
 
-// The BrandLogo component needs to be imported here
-import { BrandLogo } from "@/components/shopping-view/header";
-
 // State management
 import { fetchCartItems, addToCart } from "@/store/shop/cart-slice";
-import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { fetchFilteredProducts } from "@/store/shop/products-slice";
 import { useCartNotification } from "@/hooks/use-cart-notification";
 
 // Helper function from Header component
@@ -101,13 +98,13 @@ function ShoppingListing() {
   useEffect(() => {
     if (filters !== null && sort !== null) {
       dispatch(
-        fetchAllFilteredProducts({ filterParams: filters, sortParams: sort })
+        fetchFilteredProducts({ filterParams: filters, sortParams: sort })
       );
     }
   }, [dispatch, sort, filters]);
 
   function handleGetProductDetails(getCurrentProductId) {
-    navigate(`/shop/product/${getCurrentProductId}`);
+    navigate(`/shop/product/${getCurrentProductId}`); // Corrected
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
@@ -165,6 +162,7 @@ function ShoppingListing() {
 
   return (
     <PageWrapper message="Loading products...">
+      {/*  {JSON.stringify(productList)}  */}
       <div className="flex flex-col lg:flex-row min-h-[80vh]">
         {/* Desktop Sidebar Filter */}
         {isDesktop && (

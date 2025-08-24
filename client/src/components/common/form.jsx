@@ -3,7 +3,7 @@ import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-
+import { Switch } from "../ui/switch"; // Import the Switch component
 
 function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText, isBtnDisabled }) {
   function renderInputsByComponentType(getControlItem) {
@@ -72,6 +72,26 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
           />
         )
         break
+      case "switch":
+      case "toggle": // Handle both "switch" and "toggle" for flexibility
+        element = (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id={fieldId}
+              checked={!!value} // Convert to boolean
+              onCheckedChange={(checked) =>
+                setFormData({
+                  ...formData,
+                  [fieldName]: checked,
+                })
+              }
+            />
+            <Label htmlFor={fieldId} className="cursor-pointer">
+              {getControlItem.label}
+            </Label>
+          </div>
+        )
+        break
       default:
         element = (
           <Input
@@ -99,7 +119,10 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
       <div className="flex flex-col gap-3">
         {formControls.map((controlItem) => (
           <div className="grid w-full gap-1.5" key={controlItem.name}>
-            <Label className="mb-1">{controlItem.label}</Label>
+            {/* Only show label for non-switch components (switch has built-in label) */}
+            {controlItem.componentType !== "switch" && controlItem.componentType !== "toggle" && (
+              <Label className="mb-1">{controlItem.label}</Label>
+            )}
             {renderInputsByComponentType(controlItem)}
           </div>
         ))}
@@ -112,4 +135,3 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
 }
 
 export default CommonForm
-

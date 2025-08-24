@@ -43,6 +43,7 @@ import AdminNewsletterPage from './pages/admin-view/newsletter-page';
 import AdminCustomersPage from './pages/admin-view/customer-page';
 import VerifyCode from './pages/auth/verification';
 import RequestPasswordReset from './pages/auth/request-reset-password';
+import ProductStatsAdmin from './pages/admin-view/analysis';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -110,6 +111,7 @@ function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="features" element={<AdminFeatures />} />
+            <Route path="analysis" element={<ProductStatsAdmin />} />
           </Route>
 
           {/* Shopping */}

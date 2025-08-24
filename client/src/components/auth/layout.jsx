@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { ScrollingPromoBar, ContactBar } from "../shopping-view/adds";
+import { ScrollingPromoBar, ContactBar } from "../common/adds";
 import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "../shopping-view/header";

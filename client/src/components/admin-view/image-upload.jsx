@@ -5,6 +5,7 @@ import { Skeleton } from "../ui/skeleton";
 import axios from "axios";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useToast } from "../ui/use-toast";
 
 /*
   ProductImageUpload (multi-image)
@@ -34,6 +35,7 @@ function ProductImageUpload({
 }) {
   const inputRef = useRef(null);
   const [uploadingIndex, setUploadingIndex] = useState(null);
+  const { toast } = useToast();
 
   const MAX_IMAGES = 10;
 
@@ -59,10 +61,8 @@ function ProductImageUpload({
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/admin/products/upload-image`,
         data,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000,
-        }
+        // Let axios set the Content-Type header automatically for FormData
+        { timeout: 30000 }
       );
 
       if (response?.data?.success && response.data.result?.url) {
@@ -99,12 +99,19 @@ function ProductImageUpload({
           const url = await uploadSingle(toUpload[i]);
           setUploadedImages((prev) => [...prev, url]);
         }
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast({
+          title: "Upload Error",
+          description: error.message || "An image failed to upload. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setUploadingIndex(null);
         setImagesLoading(false);
       }
     },
-    [uploadedImages.length, setImagesLoading, setUploadedImages]
+    [uploadedImages.length, setImagesLoading, setUploadedImages, toast]
   );
 
   const handleImageFileChange = (event) => {
