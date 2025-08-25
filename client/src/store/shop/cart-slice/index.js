@@ -29,14 +29,15 @@ const saveGuestCart = (cart) => {
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity, productDetails }, { getState }) => {
+  async ({ userId, productId, quantity, size, productDetails }, { getState }) => { // LABLE 1: Added 'size' to parameters
     const state = getState();
     
     // If no user ID (guest user), handle locally
     if (!userId) {
       const guestCart = getGuestCart();
+      // LABLE 2: Modified findIndex to include 'size' for guest cart
       const existingItemIndex = guestCart.items.findIndex(
-        item => item.productId === productId
+        item => item.productId === productId && item.size === size 
       );
       
       if (existingItemIndex !== -1) {
@@ -46,9 +47,10 @@ export const addToCart = createAsyncThunk(
         const cartItem = {
           productId,
           quantity,
+          size, // LABLE 3: Added 'size' to the cart item object for guest cart
           title: productDetails?.title || 'Product',
           image: productDetails?.image || '',
-                    price: productDetails?.price || 0,
+          price: productDetails?.price || 0,
           salePrice: productDetails?.salePrice || 0,
           category: productDetails?.category || 'General Product'
         };
@@ -66,6 +68,7 @@ export const addToCart = createAsyncThunk(
         userId,
         productId,
         quantity,
+        size, // LABLE 4: Added 'size' to the API request body for authenticated users
       }
     );
 
@@ -95,22 +98,24 @@ export const fetchCartItems = createAsyncThunk(
 
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
-  async ({ userId, productId }, { getState }) => {
+  async ({ userId, productId, size }, { getState }) => { // LABLE 5: Added 'size' to parameters
     const state = getState();
     
     // If no user ID (guest user), handle locally
     if (!userId) {
       const guestCart = getGuestCart();
+      // LABLE 6: Modified filter condition to include 'size' for guest cart
       guestCart.items = guestCart.items.filter(
-        item => item.productId !== productId
+        item => item.productId !== productId || item.size !== size 
       );
       saveGuestCart(guestCart);
       return { success: true, data: guestCart };
     }
 
     // Authenticated user - use API
+    // LABLE 7: Added 'size' to the API delete URL parameters for authenticated users
     const response = await axios.delete(
-      `${import.meta.env.VITE_API_URL}/api/shop/cart/${userId}/${productId}`
+      `${import.meta.env.VITE_API_URL}/api/shop/cart/${userId}/${productId}/${size}`
     );
 
     return response.data;
@@ -119,14 +124,15 @@ export const deleteCartItem = createAsyncThunk(
 
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ userId, productId, quantity }, { getState }) => {
+  async ({ userId, productId, quantity, size }, { getState }) => { // LABLE 8: Added 'size' to parameters
     const state = getState();
     
     // If no user ID (guest user), handle locally
     if (!userId) {
       const guestCart = getGuestCart();
+      // LABLE 9: Modified findIndex to include 'size' for guest cart
       const itemIndex = guestCart.items.findIndex(
-        item => item.productId === productId
+        item => item.productId === productId && item.size === size
       );
       
       if (itemIndex !== -1) {
@@ -147,6 +153,7 @@ export const updateCartQuantity = createAsyncThunk(
         userId,
         productId,
         quantity,
+        size, // LABLE 10: Added 'size' to the API request body for authenticated users
       }
     );
 
@@ -181,6 +188,7 @@ export const mergeGuestCart = createAsyncThunk(
           userId,
           productId: item.productId,
           quantity: item.quantity,
+          size: item.size, // LABLE 11: Added 'size' when merging guest cart items to user cart
         }
       );
     }

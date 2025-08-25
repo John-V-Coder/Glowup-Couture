@@ -3,9 +3,9 @@ const Product = require("../../models/Product");
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, size } = req.body;
 
-    if (!userId || !productId || quantity <= 0) {
+    if (!userId || !productId || !quantity || !size || quantity <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid data provided!",
@@ -28,11 +28,11 @@ const addToCart = async (req, res) => {
     }
 
     const findCurrentProductIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) => item.productId.toString() === productId && item.size === size
     );
 
     if (findCurrentProductIndex === -1) {
-      cart.items.push({ productId, quantity });
+      cart.items.push({ productId, quantity,size });
     } else {
       cart.items[findCurrentProductIndex].quantity += quantity;
     }
@@ -52,6 +52,7 @@ const addToCart = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      size: item.size,
     }));
 
     res.status(200).json({
@@ -110,6 +111,7 @@ const fetchCartItems = async (req, res) => {
       price: item.productId.price,
       salePrice: item.productId.salePrice,
       quantity: item.quantity,
+      size: item.size,
     }));
 
     res.status(200).json({
@@ -130,9 +132,9 @@ const fetchCartItems = async (req, res) => {
 
 const updateCartItemQty = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, size } = req.body;
 
-    if (!userId || !productId || quantity <= 0) {
+    if (!userId || !productId || quantity || size <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid data provided!",
@@ -147,8 +149,9 @@ const updateCartItemQty = async (req, res) => {
       });
     }
 
+    // LABLE 1: Update find logic to include size
     const findCurrentProductIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) => item.productId.toString() === productId && item.size === size
     );
 
     if (findCurrentProductIndex === -1) {
@@ -161,11 +164,13 @@ const updateCartItemQty = async (req, res) => {
     cart.items[findCurrentProductIndex].quantity = quantity;
     await cart.save();
 
+    // LABLE 2: Include size in the populate select fields
     await cart.populate({
       path: "items.productId",
       select: "image images title price salePrice",
     });
 
+    // LABLE 3: Add size to the mapped response
     const populateCartItems = cart.items.map((item) => ({
       productId: item.productId ? item.productId._id : null,
       image: item.productId ? item.productId.image : null,
@@ -174,6 +179,7 @@ const updateCartItemQty = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      size: item.size,
     }));
 
     res.status(200).json({
@@ -194,17 +200,19 @@ const updateCartItemQty = async (req, res) => {
 
 const deleteCartItem = async (req, res) => {
   try {
-    const { userId, productId } = req.params;
-    if (!userId || !productId) {
+    // 1. LABLE: Add `size` to the request parameters
+    const { userId, productId, size } = req.params; 
+    if (!userId || !productId || !size) { // 2. LABLE: Add `size` to validation check
       return res.status(400).json({
         success: false,
         message: "Invalid data provided!",
       });
     }
 
+    // LABLE: Include size in the first populate call
     const cart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
-      select: "image images title price salePrice",
+      select: "image images title price salePrice size", // 3. LABLE: Add `size` to select
     });
 
     if (!cart) {
@@ -214,15 +222,17 @@ const deleteCartItem = async (req, res) => {
       });
     }
 
+    // 4. LABLE: Update filter logic to check both productId and size
     cart.items = cart.items.filter(
-      (item) => item.productId._id.toString() !== productId
+      (item) => item.productId._id.toString() !== productId || item.size !== size
     );
 
     await cart.save();
 
+    // LABLE: The second populate call is also updated to include size
     await cart.populate({
       path: "items.productId",
-      select: "image images title price salePrice",
+      select: "image images title price salePrice size", // 5. LABLE: Add `size` to select
     });
 
     const populateCartItems = cart.items.map((item) => ({
@@ -233,6 +243,7 @@ const deleteCartItem = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      size: item.size, // 6. LABLE: Add `size` to the final response
     }));
 
     res.status(200).json({

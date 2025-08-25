@@ -7,15 +7,17 @@ const initialState = {
   orderId: null,
   orderList: [],
   orderDetails: null,
+  // 📍 Change 1: Added a new field to the initial state to store shipment method.
+  shipmentMethod: null,
 };
 
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
   async (orderData) => {
-    console.log("Sending order data:", orderData); 
+    console.log("Sending order data:", orderData);
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/shop/order/create`,
-      orderData,
+      orderData
     );
 
     return response.data;
@@ -77,6 +79,8 @@ const shoppingOrderSlice = createSlice({
         state.isLoading = false;
         state.approvalURL = action.payload.approvalURL;
         state.orderId = action.payload.orderId;
+        // 📍 Change 2: Extract and store the shipment method from the response.
+        state.shipmentMethod = action.payload.shipmentMethod;
         sessionStorage.setItem(
           "currentOrderId",
           JSON.stringify(action.payload.orderId)
@@ -86,6 +90,7 @@ const shoppingOrderSlice = createSlice({
         state.isLoading = false;
         state.approvalURL = null;
         state.orderId = null;
+        state.shipmentMethod = null;
       })
       .addCase(getAllOrdersByUserId.pending, (state) => {
         state.isLoading = true;

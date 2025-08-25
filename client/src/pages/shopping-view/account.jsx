@@ -3,7 +3,6 @@ import Address from "@/components/shopping-view/address";
 import ShoppingOrders from "@/components/shopping-view/orders";
 import accImg from "../../assets/account.jpg";
 import PageWrapper from "@/components/common/page-wrapper";
-import WhatsAppButton from "@/components/common/whatsApp";
 
 function ShoppingAccount() {
   return (

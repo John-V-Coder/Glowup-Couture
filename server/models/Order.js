@@ -9,6 +9,7 @@ const OrderSchema = new mongoose.Schema({
       title: String,
       image: String,
       price: String,
+      size: String,
       quantity: Number,
     },
   ],
@@ -20,14 +21,25 @@ const OrderSchema = new mongoose.Schema({
     phone: String,
     notes: String,
   },
+  shipmentMethod: {
+    type: String,
+    enum: ["Standard", "Express", "Next-Day", "In-Store Pickup"],
+    required: true,
+  },
+  billing: {
+    paymentMethod: String,
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Success", "Failed", "Abandoned"],
+      default: "Pending",
+    },
+    totalAmount: Number,
+    paypalReference: String, 
+    authorizationCode: String, 
+  },
   orderStatus: String,
-  paymentMethod: String,
-  paymentStatus: String,
-  totalAmount: Number,
   orderDate: Date,
   orderUpdateDate: Date,
-  paymentId: String,
-  payerId: String,
 });
 
 module.exports = mongoose.model("Order", OrderSchema);

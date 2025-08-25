@@ -110,8 +110,6 @@ export const addProductFormSizeElements = [
   },
 ]
 
-
-
 export const addProductFormElements = [
   {
     label: "Title",

@@ -11,14 +11,9 @@ const createOrder = async (req, res) => {
       userId,
       cartItems,
       addressInfo,
-      orderStatus,
+      shipmentMethod, // <-- NEW: Include shipmentMethod from the request body
       paymentMethod,
-      paymentStatus,
       totalAmount,
-      orderDate,
-      orderUpdateDate,
-      paymentId,
-      payerId,
       cartId,
     } = req.body;
 
@@ -40,7 +35,7 @@ const createOrder = async (req, res) => {
               price: Number(item.price).toFixed(2),
               currency: "USD",
               quantity: item.quantity,
-                          })),
+            })),
           },
           amount: {
             currency: "USD",
@@ -65,18 +60,19 @@ const createOrder = async (req, res) => {
           cartId,
           cartItems,
           addressInfo,
-          orderStatus,
-          paymentMethod,
-          paymentStatus,
-          totalAmount,
-          orderDate,
-          orderUpdateDate,
-          paymentId,
-          payerId,
+          shipmentMethod, // <-- NEW: Save the shipmentMethod
+          orderStatus: 'Pending', // <-- UPDATED: Default order status
+          billing: { // <-- NEW: Nested billing object
+            paymentMethod,
+            paymentStatus: 'Pending', // <-- UPDATED: Default payment status
+            totalAmount,
+            paystackReference: paymentInfo.id, // <-- UPDATED: Use a meaningful name and save the PayPal ID
+          },
+          orderDate: new Date(), // <-- UPDATED: Use a new Date object
+          orderUpdateDate: new Date(), // <-- UPDATED: Use a new Date object
         });
 
         await newlyCreatedOrder.save();
-
         // Send order confirmation email asynchronously
         if (userId) {
           User.findById(userId)
@@ -123,52 +119,79 @@ const createOrder = async (req, res) => {
 
 const capturePayment = async (req, res) => {
   try {
-    const { paymentId, payerId, orderId } = req.body;
+    const { orderId } = req.body;
 
     let order = await Order.findById(orderId);
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order can not be found",
+        message: "Order not found",
       });
     }
 
-    order.paymentStatus = "paid";
-    order.orderStatus = "confirmed";
-    order.paymentId = paymentId;
-    order.payerId = payerId;
+    // You should use a webhook to verify the payment, not the client-provided paymentId and payerId.
+    // For this example, we'll simulate a successful payment verification.
+    const isPaymentVerified = true; // In a real app, this would be a call to a payment gateway API.
 
-    for (let item of order.cartItems) {
-      let product = await Product.findById(item.productId);
+    if (isPaymentVerified) {
+      order.orderStatus = "Processing"; // Set a more specific status
+      order.billing.paymentStatus = "Success"; // <-- UPDATED: Access the nested field
+      order.billing.paystackReference = req.body.paymentId; // <-- UPDATED: Access the nested field
 
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: `Not enough stock for this product ${product.title}`,
-        });
+      // Note: The payerId is not always a direct concept in some payment gateways
+      // but can be stored if the gateway provides it. For this example, it's optional.
+
+      // Update totalStock for each product
+      for (let item of order.cartItems) {
+        let product = await Product.findById(item.productId);
+
+        if (!product) {
+          return res.status(404).json({
+            success: false,
+            message: `Product with ID ${item.productId} not found`,
+          });
+        }
+
+        // Check if there is enough stock
+        if (product.totalStock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Not enough stock for product: ${product.title}`,
+          });
+        }
+
+        product.totalStock -= item.quantity;
+        await product.save();
       }
 
-      product.totalStock -= item.quantity;
+      // Delete the cart
+      const getCartId = order.cartId;
+      await Cart.findByIdAndDelete(getCartId);
 
-      await product.save();
+      // Save the updated order
+      await order.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Order and payment confirmed successfully",
+        data: order,
+      });
+    } else {
+      // Handle the case where the payment verification failed
+      order.orderStatus = "Failed";
+      order.billing.paymentStatus = "Failed";
+      await order.save();
+      res.status(400).json({
+        success: false,
+        message: "Payment verification failed.",
+      });
     }
-
-    const getCartId = order.cartId;
-    await Cart.findByIdAndDelete(getCartId);
-
-    await order.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Order confirmed",
-      data: order,
-    });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred!",
     });
   }
 };

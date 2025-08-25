@@ -25,7 +25,7 @@ import { ProductQA } from "@/components/shopping-view/productQA";
 import ProductImageGallery from "@/components/shopping-view/product-image-gallery";
 import ProductReviews from "@/components/shopping-view/product-reviews-page";
 import PageWrapper from "@/components/common/page-wrapper";
-import { SizeSelector } from "@/components/shopping-view/product-size";
+import ProductSizeSelector from "@/components/shopping-view/product-size"; // LABEL 1: Import the new component
 
 // Get related products from the same category
 const getRelatedProducts = (productDetails, productList) => {
@@ -48,7 +48,7 @@ function ProductDetailsPage() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [showQA, setShowQA] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null); // Existing state for size
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -90,8 +90,8 @@ function ProductDetailsPage() {
       : 0;
 
   const handleAddToCart = async (productId, totalStock) => {
-    // Check if a size is selected when sizes are available
-    if (productDetails?.sizes?.length > 0 && !selectedSize) {
+    // LABEL 2: Add validation for size selection
+    if (!selectedSize) {
       toast({
         title: "Please select a size",
         variant: "destructive",
@@ -114,7 +114,7 @@ function ProductDetailsPage() {
           userId: user?.id,
           productId,
           quantity,
-          selectedSize: selectedSize, // Correctly pass the selected size
+          size: selectedSize, // LABEL 2: Pass the selected size to the action
           productDetails: {
             title: productDetails.title,
             image: productDetails.image,
@@ -246,16 +246,7 @@ function ProductDetailsPage() {
     };
   }, [dispatch, id]);
 
-  // Set the initial size when productDetails data is fetched
-  useEffect(() => {
-    if (
-      productDetails &&
-      productDetails.sizes &&
-      productDetails.sizes.length > 0
-    ) {
-      setSelectedSize(productDetails.sizes[0]);
-    }
-  }, [productDetails]);
+
 
   // Fetch reviews + update recently viewed (store IDs in localStorage)
   useEffect(() => {
@@ -469,13 +460,12 @@ function ProductDetailsPage() {
                     reviewCount={reviews?.length || 0}
                   />
                   <div className="flex flex-col gap-4">
-                    {productDetails?.sizes?.length > 0 && (
-                      <SizeSelector
-                        availableSizes={productDetails.sizes}
-                        selectedSize={selectedSize}
-                        onSelectSize={setSelectedSize}
-                      />
-                    )}
+                    {/* LABEL 3: Add the size selector component here */}
+                    <ProductSizeSelector
+                      onSizeSelect={setSelectedSize}
+                      selectedSize={selectedSize}
+                    />
+                    
                     <QuantitySelector
                       quantity={quantity}
                       onQuantityChange={(change) => {

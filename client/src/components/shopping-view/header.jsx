@@ -50,7 +50,7 @@ const shoppingViewHeaderMenuItems = [
   },
   {
     id: "search",
-    path: "/shop/search",
+    path: "/search",
     label: "SEARCH",
     icon: <Search className="w-4 h-4" />,
     iconOnly: true,
@@ -588,7 +588,7 @@ const ShoppingHeader = () => {
           className={`sticky top-0 z-50 w-full ${
             headerScrolled
               ? 'bg-white shadow-sm'
-              : 'bg-white border-b border-gray-200'
+              : 'bg-white border-b border-gray-100' // Reduced border size
           }`}
         >
           {/* First row: Logo left, Account & Cart right */}
@@ -625,8 +625,8 @@ const ShoppingHeader = () => {
             </div>
           </div>
           
-          {/* Second row: Navigation Menu (Desktop only) */}
-          <div className="hidden lg:block w-full border-t border-gray-200">
+          {/* Second row: Navigation Menu (Desktop only) - Removed border line */}
+          <div className="hidden lg:block w-full">
             <div className="w-full max-w-full flex items-center justify-center px-4 md:px-6 lg:px-8 py-4">
               <MenuItems />
             </div>

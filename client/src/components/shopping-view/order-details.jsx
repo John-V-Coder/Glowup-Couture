@@ -1,8 +1,26 @@
 import { useSelector } from "react-redux";
 import { Badge } from "../ui/badge";
-import { DialogContent } from "../ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+
+// Helper function to get status details (color, icon, label)
+function getStatusColor(status) {
+  switch (status?.toLowerCase()) {
+    case "confirmed":
+      return "bg-green-600";
+    case "rejected":
+      return "bg-red-600";
+    case "inprocess":
+      return "bg-blue-600";
+    case "shipped":
+      return "bg-purple-600";
+    case "delivered":
+      return "bg-emerald-600";
+    default:
+      return "bg-gray-500";
+  }
+}
 
 function ShoppingOrderDetailsView({ orderDetails }) {
   const { user } = useSelector((state) => state.auth || {});
@@ -18,60 +36,56 @@ function ShoppingOrderDetailsView({ orderDetails }) {
     });
   };
 
-  // Format currency
+  // Format currency with proper currency code (KES)
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-KE", {
       style: "currency",
-      currency: "USD",
+      currency: "KES",
     }).format(amount);
-  };
-
-  // Get badge color based on status
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "confirmed":
-        return "bg-green-500";
-      case "rejected":
-        return "bg-red-600";
-      case "shipped":
-        return "bg-blue-500";
-      case "delivered":
-        return "bg-purple-500";
-      default:
-        return "bg-gray-600";
-    }
   };
 
   return (
     <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Order Details</DialogTitle>
+      </DialogHeader>
+
       <div className="space-y-6 p-1">
         {/* Order Summary Section */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-800">Order Summary</h2>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">Order ID</p>
-                <p className="font-medium text-gray-800 break-all">{orderDetails?._id || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Order Date</p>
-                <p className="font-medium text-gray-800">{formatDate(orderDetails?.orderDate)}</p>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Order ID</p>
+              <p className="font-semibold text-gray-800 break-all">
+                {orderDetails?._id || "N/A"}
+              </p>
             </div>
-            
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">Total Amount</p>
-                <p className="font-medium text-gray-800">{formatCurrency(orderDetails?.totalAmount)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Payment Method</p>
-                <p className="font-medium text-gray-800 capitalize">
-                  {orderDetails?.paymentMethod?.replace(/_/g, " ") || "N/A"}
-                </p>
-              </div>
+            <div>
+              <p className="text-sm text-gray-500">Order Date</p>
+              <p className="font-semibold text-gray-800">
+                {formatDate(orderDetails?.orderDate)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total Amount</p>
+              <p className="font-semibold text-gray-800">
+                {formatCurrency(orderDetails?.totalAmount)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Payment Method</p>
+              <p className="font-semibold text-gray-800 capitalize">
+                {orderDetails?.paymentMethod?.replace(/_/g, " ") || "N/A"}
+              </p>
+            </div>
+            {/* 📍 New: Shipment Method */}
+            <div>
+              <p className="text-sm text-gray-500">Shipment Method</p>
+              <p className="font-semibold text-gray-800 capitalize">
+                {orderDetails?.shipmentMethod?.replace(/_/g, " ") || "N/A"}
+              </p>
             </div>
           </div>
           
@@ -116,11 +130,6 @@ function ShoppingOrderDetailsView({ orderDetails }) {
                         e.target.src = '/placeholder-image.jpg';
                       }}
                     />
-                    {item.images?.length > 0 && (
-                      <div className="absolute -top-2 -right-2 bg-gray-100 text-gray-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        +{item.images.length}
-                      </div>
-                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-800 truncate">{item.title}</h3>
@@ -152,20 +161,20 @@ function ShoppingOrderDetailsView({ orderDetails }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Recipient</p>
-              <p className="font-medium text-gray-800">{user?.userName || "N/A"}</p>
+              <p className="font-semibold text-gray-800">{user?.userName || "N/A"}</p>
             </div>
             
             <div>
               <p className="text-sm text-gray-500">Contact Number</p>
-              <p className="font-medium text-gray-800">
+              <p className="font-semibold text-gray-800">
                 {orderDetails?.addressInfo?.phone || "N/A"}
               </p>
             </div>
           </div>
           
-          <div>
+          <div className="mt-4">
             <p className="text-sm text-gray-500">Shipping Address</p>
-            <p className="font-medium text-gray-800">
+            <p className="font-semibold text-gray-800">
               {[
                 orderDetails?.addressInfo?.address,
                 orderDetails?.addressInfo?.city,
@@ -177,9 +186,9 @@ function ShoppingOrderDetailsView({ orderDetails }) {
           </div>
           
           {orderDetails?.addressInfo?.notes && (
-            <div>
+            <div className="mt-4">
               <p className="text-sm text-gray-500">Delivery Notes</p>
-              <p className="font-medium text-gray-800">
+              <p className="font-semibold text-gray-800">
                 {orderDetails.addressInfo.notes}
               </p>
             </div>

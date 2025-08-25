@@ -169,21 +169,24 @@ const sendAdminOrderNotification = async (req, res) => {
 // New function to get order statistics for admin dashboard
 const getOrderStatistics = async (req, res) => {
   try {
+    // 1. Updated status queries to match the new enum values
     const totalOrders = await Order.countDocuments();
-    const pendingOrders = await Order.countDocuments({ orderStatus: 'pending' });
-    const processingOrders = await Order.countDocuments({ orderStatus: 'inProcess' });
-    const shippedOrders = await Order.countDocuments({ orderStatus: 'inShipping' });
-    const deliveredOrders = await Order.countDocuments({ orderStatus: 'delivered' });
-    const cancelledOrders = await Order.countDocuments({ orderStatus: 'cancelled' });
+    const pendingOrders = await Order.countDocuments({ orderStatus: 'Pending' });
+    const processingOrders = await Order.countDocuments({ orderStatus: 'Processing' });
+    const shippedOrders = await Order.countDocuments({ orderStatus: 'Shipped' });
+    const deliveredOrders = await Order.countDocuments({ orderStatus: 'Delivered' });
+    const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
 
-    // Calculate total revenue
+    // 2. Updated revenue calculation to use the billing object and 'Success' status
     const revenueResult = await Order.aggregate([
-      { $match: { orderStatus: { $ne: 'cancelled' } } },
-      { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
+      // Match orders where the payment was a success
+      { $match: { 'billing.paymentStatus': 'Success' } }, 
+      // Group them and sum the totalAmount from the billing object
+      { $group: { _id: null, totalRevenue: { $sum: '$billing.totalAmount' } } }
     ]);
     const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
 
-    // Get recent orders (last 10)
+    // Get recent orders (last 10) - no changes here as the query still works
     const recentOrders = await Order.find({})
       .populate('userId', 'userName email')
       .sort({ createdAt: -1 })

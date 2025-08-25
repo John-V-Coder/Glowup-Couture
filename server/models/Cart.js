@@ -19,6 +19,10 @@ const CartSchema = new mongoose.Schema(
           required: true,
           min: 1,
         },
+        size: { // <-- NEW: Add the specific size chosen for this item
+          type: String,
+          required: true,
+        },
       },
     ],
   },

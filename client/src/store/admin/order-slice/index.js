@@ -4,7 +4,9 @@ import axios from "axios";
 const initialState = {
   orderList: [],
   orderDetails: null,
-  isLoading: false, // It's good practice to have isLoading in the initial state
+  isLoading: false,
+  // 📍 Change 1: Add new state property for order statistics.
+  orderStats: null, 
 };
 
 export const getAllOrdersForAdmin = createAsyncThunk(
@@ -55,8 +57,6 @@ export const updateOrderForAdmin = createAsyncThunk(
   "/order/updateOrderForAdmin",
   async ({ id, data }, { rejectWithValue }) => {
     try {
-      // NOTE: This assumes your `/update/:id` endpoint can handle other fields besides status.
-      // If you have a different endpoint for updating shipping info, change the URL here.
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/admin/orders/update/${id}`,
         data
@@ -83,6 +83,20 @@ export const deleteOrderForAdmin = createAsyncThunk(
   }
 );
 
+// 📍 Change 2: Add a new async thunk to fetch order statistics from the backend.
+export const getOrderStatisticsForAdmin = createAsyncThunk(
+  "/order/getOrderStatisticsForAdmin",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/admin/orders/statistics`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const adminOrderSlice = createSlice({
   name: "adminOrderSlice",
@@ -137,40 +151,40 @@ const adminOrderSlice = createSlice({
       .addCase(updateOrderStatus.rejected, (state) => {
         state.isLoading = false;
       })
-      // --- NEW: Reducers for updating order info ---
       .addCase(updateOrderForAdmin.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(updateOrderForAdmin.fulfilled, (state, action) => {
         state.isLoading = false;
         if (action.payload.success) {
-            // Update both the main list and the detailed view for consistency
-            const updatedOrder = action.payload.data;
-            const orderIndex = state.orderList.findIndex(order => order._id === updatedOrder._id);
-            if (orderIndex !== -1) {
-                state.orderList[orderIndex] = { ...state.orderList[orderIndex], ...updatedOrder };
-            }
-            if (state.orderDetails?._id === updatedOrder._id) {
-                state.orderDetails = { ...state.orderDetails, ...updatedOrder };
-            }
+          const updatedOrder = action.payload.data;
+          const orderIndex = state.orderList.findIndex(
+            (order) => order._id === updatedOrder._id
+          );
+          if (orderIndex !== -1) {
+            state.orderList[orderIndex] = {
+              ...state.orderList[orderIndex],
+              ...updatedOrder,
+            };
+          }
+          if (state.orderDetails?._id === updatedOrder._id) {
+            state.orderDetails = { ...state.orderDetails, ...updatedOrder };
+          }
         }
       })
       .addCase(updateOrderForAdmin.rejected, (state) => {
         state.isLoading = false;
       })
-      // --- NEW: Reducers for deleting an order ---
       .addCase(deleteOrderForAdmin.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(deleteOrderForAdmin.fulfilled, (state, action) => {
         state.isLoading = false;
         if (action.payload.success) {
-          // Remove the deleted order from the list
           const deletedOrderId = action.meta.arg;
           state.orderList = state.orderList.filter(
             (order) => order._id !== deletedOrderId
           );
-          // If the deleted order was being viewed, reset the details
           if (state.orderDetails?._id === deletedOrderId) {
             state.orderDetails = null;
           }
@@ -178,6 +192,19 @@ const adminOrderSlice = createSlice({
       })
       .addCase(deleteOrderForAdmin.rejected, (state) => {
         state.isLoading = false;
+      })
+      // 📍 Change 3: Add new reducer cases to handle the order statistics data.
+      .addCase(getOrderStatisticsForAdmin.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getOrderStatisticsForAdmin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.orderStats = action.payload.data.statistics;
+        state.orderList = action.payload.data.recentOrders;
+      })
+      .addCase(getOrderStatisticsForAdmin.rejected, (state) => {
+        state.isLoading = false;
+        state.orderStats = null;
       });
   },
 });

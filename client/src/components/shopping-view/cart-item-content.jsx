@@ -1,4 +1,3 @@
-
 import { Plus, Trash, Minus } from "lucide-react";
 import { Button } from "../ui/button";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
@@ -60,6 +59,7 @@ function UserCartItemsContent({ cartItem }) {
       }
     }
 
+    // LABLE 1: Add size to the update quantity dispatch
     dispatch(
       updateCartQuantity({
         userId: user?.id,
@@ -68,6 +68,7 @@ function UserCartItemsContent({ cartItem }) {
           typeOfAction === "plus"
             ? getCartItem?.quantity + 1
             : getCartItem?.quantity - 1,
+        size: getCartItem?.size,
       })
     ).then((data) => {
       if (data?.payload?.success) {
@@ -79,8 +80,13 @@ function UserCartItemsContent({ cartItem }) {
   }
 
   function handleCartItemDelete(getCartItem) {
+    // LABLE 2: Add size to the delete item dispatch
     dispatch(
-      deleteCartItem({ userId: user?.id, productId: getCartItem?.productId })
+      deleteCartItem({ 
+        userId: user?.id, 
+        productId: getCartItem?.productId, 
+        size: getCartItem?.size,
+      })
     ).then((data) => {
       if (data?.payload?.success) {
         toast({
@@ -95,8 +101,8 @@ function UserCartItemsContent({ cartItem }) {
       {/* Image */}
       <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
         <div className="relative overflow-hidden rounded-2xl group"
-             onMouseEnter={() => hasHoverAlt && setShowHover(true)}
-             onMouseLeave={() => setShowHover(false)}
+              onMouseEnter={() => hasHoverAlt && setShowHover(true)}
+              onMouseLeave={() => setShowHover(false)}
         >
           <img
             src={primaryImage}
@@ -121,6 +127,10 @@ function UserCartItemsContent({ cartItem }) {
           <h3 className="font-semibold text-base md:text-lg text-gray-900 line-clamp-1">{cartItem?.title}</h3>
           <p className="text-gray-500 text-sm mt-1 font-medium">
             {cartItem?.category || "General Product"}
+          </p>
+          {/* LABLE 3: Add the size to display in the UI */}
+          <p className="text-gray-500 text-sm mt-1 font-medium">
+            Size: {cartItem?.size}
           </p>
         </div>
 

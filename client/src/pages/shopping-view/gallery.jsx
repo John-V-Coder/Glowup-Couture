@@ -155,7 +155,7 @@ function Gallery() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen h-screen overflow-hidden">
       {/* Instagram-style Header */}
       <div className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto px-4 py-4">
