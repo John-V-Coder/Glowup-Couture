@@ -95,13 +95,21 @@ class EmailService {
   }
 
   // Password reset email
- async sendPasswordResetEmail(userEmail, userName, resetCode) {
-  return this.sendTemplateEmail('password-reset', userEmail, {
-    subject: 'Password Reset Request',
-    userName,
-    resetCode // only the numeric code, no link
-  });
-}
+  async sendPasswordResetEmail(userEmail, userName, resetCode) {
+    return this.sendTemplateEmail('password-reset', userEmail, {
+      userName,
+      resetCode // only the numeric code, no link
+    });
+  }
+
+  // New method for passwordless login
+  async sendLoginCode(userEmail, userName, loginCode) {
+    return this.sendTemplateEmail('login-code', userEmail, {
+      userName,
+      loginCode
+    });
+  }
+
   // Order confirmation email
   async sendOrderConfirmationEmail(userEmail, orderData) {
     return this.sendTemplateEmail('order-confirmation', userEmail, {

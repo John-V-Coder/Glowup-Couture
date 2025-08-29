@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-// Define a schema for the password reset tokens, as a subdocument
-const passwordResetTokenSchema = new mongoose.Schema({
-  token: {
+// Schema for storing the email verification code
+const verificationCodeSchema = new mongoose.Schema({
+  code: {
     type: String,
     required: true,
   },
@@ -10,14 +10,13 @@ const passwordResetTokenSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  // New fields to match the auth controller's logic
-  attempts: {
-    type: Number,
-    default: 0,
-  },
   isUsed: {
     type: Boolean,
     default: false,
+  },
+  attempts: {
+    type: Number,
+    default: 0,
   },
 });
 
@@ -33,17 +32,12 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
   },
-  password: {
-    type: String,
-    required: true,
-    select: false,
-  },
   role: {
     type: String,
     default: "user",
   },
-  // The passwordResetCode subdocument now includes attempts and isUsed fields
-  passwordResetCode: passwordResetTokenSchema,
+  // The verification code subdocument replaces the password field
+  verificationCode: verificationCodeSchema,
 });
 
 // Add timestamps for created and updated dates

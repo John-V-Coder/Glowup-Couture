@@ -1,8 +1,7 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from './components/auth/layout';
 import AuthLogin from './pages/auth/login';
-import AuthRegister from './pages/auth/register';
 import AdminLayout from './components/admin-view/layout';
 import AdminDashboard from './pages/admin-view/dashboard';
 import AdminProducts from './pages/admin-view/products';
@@ -23,7 +22,6 @@ import { useEffect } from 'react';
 import CheckAuth from './components/common/check-auth';
 import Preloader from './components/common/preloader';
 import RoutePreloader from './components/common/route-preloader.jsx';
-import { checkAuth } from './store/auth-slice'; // Removed setLoadingFalse import
 import { loadGuestCart } from './store/shop/cart-slice';
 import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
 import AdminGallery from './pages/admin-view/gallery';
@@ -35,15 +33,14 @@ import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
-import ResetPassword from './pages/auth/reset-password';
 import EmailTemplates from './components/common/email-templates';
 import MarketingCampaigns from './pages/admin-view/marketing-campaign';
 import SupportPage from './pages/shopping-view/customer-support';
 import AdminNewsletterPage from './pages/admin-view/newsletter-page';
 import AdminCustomersPage from './pages/admin-view/customer-page';
-import VerifyCode from './pages/auth/verification';
-import RequestPasswordReset from './pages/auth/request-reset-password';
 import ProductStatsAdmin from './pages/admin-view/analysis';
+import VerifyLoginCode from './pages/auth/verification';
+import { checkAuth } from './store/auth-slice'; 
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -52,37 +49,16 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      let token = null;
-      try {
-        const sessionToken = sessionStorage.getItem("token");
-        const localToken = localStorage.getItem("token");
-        const storedToken = sessionToken || localToken;
-        if (storedToken && storedToken !== "null" && storedToken !== "undefined") {
-          token = JSON.parse(storedToken);
-          if (localToken && !sessionToken) {
-            sessionStorage.setItem("token", localToken);
-          }
-        }
-      } catch (error) {
-        console.error("Token parsing error:", error);
-        sessionStorage.removeItem("token");
-        localStorage.removeItem("token");
-      }
-      
-      if (token) {
-        // checkAuth will handle setting loading to false in its fulfilled/rejected cases
-        dispatch(checkAuth());
-      } else {
-        // Load guest cart when no token is found
-        // The auth slice will set isLoading to false in checkAuth.rejected
-        dispatch(loadGuestCart());
-      }
-    };
-    initializeAuth();
-  }, [dispatch]);
+    // Dispatch checkAuth on component mount to verify stored token
+    dispatch(checkAuth());
+    
+    // Load guest cart if not authenticated
+    if (!isAuthenticated) {
+      dispatch(loadGuestCart());
+    }
+  }, [dispatch, isAuthenticated]); 
 
-  if (isLoading) return <Preloader message="Authenticating..." />;
+  // if (isLoading) return <Preloader message="Authenticating..." />;
 
   return (
     <RoutePreloader>
@@ -90,13 +66,10 @@ function App() {
         <div className="sticky top-0 z-50"></div>
         <Routes>
           {/* Auth */}
-          <Route path="/" element={<CheckAuth isAuthenticated={isAuthenticated} user={user} />} />
+          <Route path="/" element={<Navigate to="/shop/home" replace />} />
           <Route path="/auth" element={<CheckAuth isAuthenticated={isAuthenticated} user={user}><AuthLayout /></CheckAuth>}>
-            <Route path="login" element={<AuthLogin />} />
-            <Route path="register" element={<AuthRegister />} />
-            <Route path="request-reset-password" element={<RequestPasswordReset/>} />
-            <Route path="verify-code" element={<VerifyCode />} />
-            <Route path="reset-password" element={<ResetPassword />} />
+            <Route path="login" element={<AuthLogin />} /> 
+            <Route path="verify-code" element={<VerifyLoginCode />} />
           </Route>
 
           {/* Admin */}
@@ -114,38 +87,24 @@ function App() {
             <Route path="analysis" element={<ProductStatsAdmin />} />
           </Route>
 
-          {/* Shopping */}
-          <Route path="/shop" element={<ShoppingLayout />}>
-            <Route path="home" element={<ShoppingHome />} />
-            <Route path="listing" element={<ShoppingListing />} />
-            <Route path="listing?category/sale" element={<SalePage />} />
-            <Route path="gallery" element={<ShoppingGallery />} />
-            <Route path="product/:id" element={<ProductDetailsPage />} />
-            <Route path="checkout" element={<ShoppingCheckout />} />
-            <Route path="account" element={<ShoppingAccount />} />
-            <Route path="paypal-return" element={<PaypalReturnPage />} />
-            <Route path="payment-success" element={<PaymentSuccessPage />} />
-            <Route path="paypal-cancel" element={<PaypalCancelPage />} />
-          </Route>
-
-          {/* Standalone Pages (direct routes) */}
-          <Route path="/support" element={<ShoppingLayout />}>
-            <Route index element={<SupportPage />} />
-          </Route>
-          <Route path="/terms" element={<ShoppingLayout />}>
-            <Route index element={<TermsAndConditions />} />
-          </Route>
-          <Route path="/delivery" element={<ShoppingLayout />}>
-            <Route index element={<DeliveryPolicy />} />
-          </Route>
-          <Route path="/returns" element={<ShoppingLayout />}>
-            <Route index element={<ReturnRefundExchangePolicy />} />
-          </Route>
-          <Route path="/about" element={<ShoppingLayout />}>
-            <Route index element={<ShoppingAbout />} />
-          </Route>
-          <Route path="/search" element={<ShoppingLayout />}>
-            <Route index element={<SearchProducts />} />
+          {/* Shopping and Public Routes */}
+          <Route element={<CheckAuth isAuthenticated={isAuthenticated} user={user}><ShoppingLayout /></CheckAuth>}>
+            <Route path="/shop/home" element={<ShoppingHome />} />
+            <Route path="/shop/listing" element={<ShoppingListing />} />
+            <Route path="/shop/sale" element={<SalePage />} />
+            <Route path="/shop/gallery" element={<ShoppingGallery />} />
+            <Route path="/shop/product/:id" element={<ProductDetailsPage />} />
+            <Route path="/shop/checkout" element={<ShoppingCheckout />} />
+            <Route path="/shop/account" element={<ShoppingAccount />} />
+            <Route path="/shop/paypal-return" element={<PaypalReturnPage />} />
+            <Route path="/shop/payment-success" element={<PaymentSuccessPage />} />
+            <Route path="/shop/paypal-cancel" element={<PaypalCancelPage />} />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/delivery" element={<DeliveryPolicy />} />
+            <Route path="/returns" element={<ReturnRefundExchangePolicy />} />
+            <Route path="/about" element={<ShoppingAbout />} />
+            <Route path="/search" element={<SearchProducts />} />
           </Route>
 
           {/* Others */}

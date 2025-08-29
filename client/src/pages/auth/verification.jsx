@@ -1,114 +1,106 @@
-"use client"
+// components/auth/VerifyLoginCode.jsx
+"use client";
 
-import CommonForm from "@/components/common/form"
-import { useToast } from "@/components/ui/use-toast"
-import { useState, useEffect, useMemo } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { verifyCodeFormControls } from "@/config"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { Link } from "react-router-dom"
-import { verifyResetCode, clearAllMessages } from "@/store/auth-slice"
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast"; // Changed to relative path
+import { verifyLoginCode, requestLoginCode } from "@/store/auth-slice"; // Changed to relative path
+import { verifyLoginCodeFormControls } from "@/config"; // Changed to relative path
+import CommonForm from "@/components/common/form"; // Changed to relative path
 
-function VerifyCode({ email: propEmail, onSuccess }) {
-  const [searchParams] = useSearchParams()
-  const emailFromUrl = searchParams.get("email")
-  const codeFromUrl = searchParams.get("code")
+const VerifyLoginCode = () => {
+  const location = useLocation();
+  const initialEmail = location.state?.email || ""; // Get email from navigation state
 
   const [formData, setFormData] = useState({
-    email: propEmail || emailFromUrl || "",
-    code: codeFromUrl || "",
-  })
+    email: initialEmail,
+    code: "",
+  });
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const { toast } = useToast()
-  const { isLoading } = useSelector((state) => state.auth)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isLoading } = useSelector((state) => state.auth);
 
-  // Clear previous errors/messages on mount
+  // Redirect if no email is provided (e.g., direct access)
   useEffect(() => {
-    dispatch(clearAllMessages())
-  }, [dispatch])
-
-  // If code is in the URL, try to submit automatically
-  useEffect(() => {
-    if (emailFromUrl && codeFromUrl) {
-      dispatch(verifyResetCode({ email: emailFromUrl, code: codeFromUrl })).then((data) => {
-        if (data?.payload?.success) {
-          toast({
-            title: data?.payload?.message || "Code verified successfully",
-          })
-          if (onSuccess) {
-            onSuccess()
-          } else {
-            navigate("/auth/reset-password")
-          }
-        } else {
-          toast({
-            title: data?.payload?.message || "Invalid or expired code",
-            variant: "destructive",
-          })
-          // If auto-submit fails, user can still correct the code in the form.
-        }
-      })
+    if (!initialEmail) {
+      toast({
+        title: "Please request a login code first.",
+        variant: "destructive",
+      });
+      navigate("/auth/login"); // Redirect back to the request page
     }
-  }, [emailFromUrl, codeFromUrl, dispatch, navigate, onSuccess, toast])
+  }, [initialEmail, navigate, toast]);
 
-  useEffect(() => {
-    if (propEmail) {
-      setFormData((prev) => ({ ...prev, email: propEmail }))
+  const handleVerifyCode = async (event) => {
+    event.preventDefault();
+    if (!formData.email || !formData.code) {
+      toast({
+        title: "Please enter both email and code.",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [propEmail])
 
-  function onSubmit(event) {
-    event.preventDefault()
-    dispatch(verifyResetCode({ email: formData.email, code: formData.code })).then((data) => {
-      if (data?.payload?.success) {
-        toast({
-          title: data?.payload?.message || "Code verified successfully",
-        })
-        if (onSuccess) {
-          onSuccess()
-        } else {
-          navigate("/auth/reset-password")
-        }
+    try {
+      const data = await dispatch(verifyLoginCode(formData)).unwrap();
+      toast({
+        title: data.message || "Login successful!",
+      });
+
+      // Navigate based on user role
+      if (data.user?.role === "admin") {
+        navigate("/admin/dashboard");
       } else {
-        toast({
-          title: data?.payload?.message || "Invalid or expired code",
-          variant: "destructive",
-        })
+        navigate("/shop/home");
       }
-    })
-  }
+    } catch (err) {
+      toast({
+        title: err.message || "Invalid or expired code.",
+        variant: "destructive",
+      });
+    }
+  };
 
-  // Disable form fields if auto-submitting from URL params
-  const formControls = useMemo(() => verifyCodeFormControls.map((control) => ({
-    ...control,
-    disabled: !!(emailFromUrl && codeFromUrl && isLoading),
-  })), [emailFromUrl, codeFromUrl, isLoading]);
+  const handleFormChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-6">
+    <div className="mx-auto w-full max-w-md space-y-6 p-8 rounded-lg shadow-md bg-white">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Verify reset code</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Verify Login
+        </h1>
         <p className="mt-2 text-sm text-gray-600">
-          {codeFromUrl ? "Verifying code from URL..." : "Enter the 6-digit code sent to your email"}
+          A code has been sent to{" "}
+          <span className="font-semibold">{formData.email}</span>.
         </p>
       </div>
+
       <CommonForm
-        formControls={formControls}
-        buttonText={isLoading ? "Verifying..." : "Verify Code"}
+        formControls={verifyLoginCodeFormControls}
+        buttonText={isLoading ? "Verifying..." : "Verify & Log In"}
         formData={formData}
         setFormData={setFormData}
-        onSubmit={onSubmit}
+        onSubmit={handleVerifyCode}
         disabled={isLoading}
       />
-      <div className="text-center">
-        <Link className="text-sm text-primary hover:underline" to="/auth/request-reset-password">
-          Didn't receive code? Request new one
+      
+      <div className="flex flex-col space-y-2 text-center mt-4">
+        {/* Link to go back to the initial login page (absolute path) */}
+        <Link
+          className="text-sm text-gray-500 hover:underline"
+          to="/auth/login" // Changed to absolute path
+        >
+          Didn't receive a code? Resend
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default VerifyCode;
+export default VerifyLoginCode;

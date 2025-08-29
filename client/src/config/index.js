@@ -1,12 +1,7 @@
-// Authentication Form Controls
-export const registerFormControls = [
-  {
-    name: "userName",
-    label: "User Name",
-    placeholder: "Enter your user name",
-    componentType: "input",
-    type: "text",
-  },
+// Authentication Form Controls for Passwordless Login
+
+// Step 1: Request a login code
+export const requestLoginCodeFormControls = [
   {
     name: "email",
     label: "Email",
@@ -14,75 +9,25 @@ export const registerFormControls = [
     componentType: "input",
     type: "email",
   },
-  {
-    name: "password",
-    label: "Password",
-    placeholder: "Enter your password",
-    componentType: "input",
-    type: "password",
-  },
-]
+];
 
-export const loginFormControls = [
+// Step 2: Verify the code to log in
+export const verifyLoginCodeFormControls = [
   {
     name: "email",
     label: "Email",
     placeholder: "Enter your email",
-    componentType: "input",
-    type: "email",
-  },
-  {
-    name: "password",
-    label: "Password",
-    placeholder: "Enter your password",
-    componentType: "input",
-    type: "password",
-  },
-]
-
-export const requestResetFormControls = [
-  {
-    name: "email",
-    label: "Email",
-    placeholder: "Enter your email address",
-    componentType: "input",
-    type: "email",
-  },
-]
-
-export const verifyCodeFormControls = [
-  {
-    name: "email",
-    label: "Email",
-    placeholder: "Enter your email address",
     componentType: "input",
     type: "email",
   },
   {
     name: "code",
-    label: "Verification Code",
+    label: "Login Code",
     placeholder: "Enter 6-digit code",
     componentType: "input",
     type: "text",
   },
-]
-
-export const resetPasswordFormControls = [
-  {
-    name: "newPassword",
-    label: "New Password",
-    placeholder: "Enter your new password",
-    componentType: "input",
-    type: "password",
-  },
-  {
-    name: "confirmPassword",
-    label: "Confirm Password",
-    placeholder: "Confirm your new password",
-    componentType: "input",
-    type: "password",
-  },
-]
+];
 
 // Enhanced Product Form Elements - Updated to match backend schema exactly
 
