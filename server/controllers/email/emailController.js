@@ -4,14 +4,11 @@ const EmailTemplate = require('../../models/EmailTemplate');
 const { notifyAdminOfNewOrder } = require('../../utils/emailNewOrderAdminHelpers');
 
 // Subscribe to newsletter
-// Subscribe to newsletter (supports auto-fill for authenticated users)
+// Subscribe to newsletter (email only)
 const subscribeToNewsletter = async (req, res) => {
+  console.log('Subscribe request body:', req.body);
   try {
-    // Use authenticated user's info if available
     const email = req.user?.email || req.body.email;
-    const firstName = req.user?.firstName || req.body.firstName || '';
-    const lastName = req.user?.lastName || req.body.lastName || '';
-    const preferences = req.body.preferences || {};
 
     if (!email) {
       return res.status(400).json({
@@ -24,41 +21,19 @@ const subscribeToNewsletter = async (req, res) => {
     let subscription = await EmailSubscription.findOne({ email });
 
     if (subscription) {
-      if (subscription.isActive) {
-        return res.status(400).json({
-          success: false,
-          message: 'Email is already subscribed'
-        });
-      } else {
-        // Reactivate subscription
-        subscription.isActive = true;
-        subscription.firstName = firstName || subscription.firstName;
-        subscription.lastName = lastName || subscription.lastName;
-        subscription.preferences = { ...subscription.preferences, ...preferences };
-        await subscription.save();
-      }
-    } else {
-      // Create new subscription
-      subscription = new EmailSubscription({
-        email,
-        firstName,
-        lastName,
-        preferences: {
-          marketing: true,
-          orderUpdates: true,
-          newProducts: true,
-          sales: true,
-          ...preferences
-        },
-        source: req.user ? 'account' : 'website'
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already subscribed'
       });
-      await subscription.save();
     }
+
+    // Create new subscription
+    subscription = new EmailSubscription({ email });
+    await subscription.save();
 
     // Send confirmation email
     await emailService.sendSubscriptionConfirmationEmail(
       email,
-      firstName || 'Valued Customer',
       subscription.unsubscribeToken
     );
 
@@ -76,8 +51,7 @@ const subscribeToNewsletter = async (req, res) => {
   }
 };
 
-
-// Unsubscribe from newsletter
+// Unsubscribe from newsletter (email only)
 const unsubscribeFromNewsletter = async (req, res) => {
   try {
     const { token } = req.query;
@@ -98,8 +72,8 @@ const unsubscribeFromNewsletter = async (req, res) => {
       });
     }
 
-    subscription.isActive = false;
-    await subscription.save();
+    // Delete subscription completely
+    await EmailSubscription.deleteOne({ _id: subscription._id });
 
     res.status(200).json({
       success: true,
@@ -114,8 +88,6 @@ const unsubscribeFromNewsletter = async (req, res) => {
     });
   }
 };
-
-
 
 // Send customer support email
 const sendSupportEmail = async (req, res) => {
@@ -310,11 +282,11 @@ const sendOrderNotification = async (order) => {
   }
 };
 
-// New: Get all newsletter subscribers
+// Get all newsletter subscribers (email only)
 const getNewsletterSubscribers = async (req, res) => {
   try {
-    // Find all active subscribers
-    const subscribers = await EmailSubscription.find({ isActive: true }).select('email firstName lastName preferences createdAt');
+    // Find all subscribers and only return email + createdAt
+    const subscribers = await EmailSubscription.find().select('email createdAt');
 
     res.status(200).json({
       success: true,
@@ -330,7 +302,6 @@ const getNewsletterSubscribers = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   subscribeToNewsletter,

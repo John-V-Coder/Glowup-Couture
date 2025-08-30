@@ -33,7 +33,7 @@ export function CheckAuth({ isAuthenticated, user, children }) {
   }
 
   // Rule 4: Protect specific user routes
-  const protectedUserRoutes = ["/shop/checkout", "/shop/account"];
+  const protectedUserRoutes = ["/shop/account"];
   if (!isAuthenticated && protectedUserRoutes.some(route => pathname.startsWith(route))) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }

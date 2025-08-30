@@ -332,6 +332,14 @@ export const sortOptions = [
 // Address Form Controls
 export const addressFormControls = [
   {
+    label: "User Name",  // ADDED: User Name Field
+    name: "userName",
+    componentType: "input",
+    type: "text",
+    placeholder: "Enter your user name",
+    required: true,
+  },
+  {
     label: "Address",
     name: "address",
     componentType: "input",

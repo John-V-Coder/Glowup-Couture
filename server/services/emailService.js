@@ -162,58 +162,61 @@ class EmailService {
     });
   }
 
-  // Bulk email sending for marketing campaigns
-  async sendBulkMarketingEmails(campaignData) {
-    try {
-      const subscribers = await EmailSubscription.find({
-        isActive: true,
-        'preferences.marketing': true
+// Bulk email sending for marketing campaigns
+async sendBulkMarketingEmails(campaignData) {
+  try {
+    const subscribers = await EmailSubscription.find({
+      isActive: true,
+      // This query now includes both true and false preferences for marketing
+      'preferences.marketing': { $in: [true, false] } 
+    });
+
+    const results = {
+      sent: 0,
+      failed: 0,
+      errors: []
+    };
+
+    // Send emails in batches to avoid overwhelming the email service
+    const batchSize = 10;
+    for (let i = 0; i < subscribers.length; i += batchSize) {
+      const batch = subscribers.slice(i, i + batchSize);
+      
+      const promises = batch.map(async (subscriber) => {
+        try {
+          await this.sendMarketingEmail(subscriber.email, {
+            ...campaignData,
+            userName: subscriber.firstName || 'Valued Customer',
+            unsubscribeToken: subscriber.unsubscribeToken
+          });
+          results.sent++;
+        } catch (error) {
+          results.failed++;
+          results.errors.push({
+            email: subscriber.email,
+            error: error.message
+          });
+        }
       });
 
-      const results = {
-        sent: 0,
-        failed: 0,
-        errors: []
-      };
-
-      // Send emails in batches to avoid overwhelming the email service
-      const batchSize = 10;
-      for (let i = 0; i < subscribers.length; i += batchSize) {
-        const batch = subscribers.slice(i, i + batchSize);
-        
-        const promises = batch.map(async (subscriber) => {
-          try {
-            await this.sendMarketingEmail(subscriber.email, {
-              ...campaignData,
-              userName: subscriber.firstName || 'Valued Customer',
-              unsubscribeToken: subscriber.unsubscribeToken
-            });
-            results.sent++;
-          } catch (error) {
-            results.failed++;
-            results.errors.push({
-              email: subscriber.email,
-              error: error.message
-            });
-          }
-        });
-
-        await Promise.all(promises);
-        
-        // Add delay between batches to respect rate limits
-        if (i + batchSize < subscribers.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+      await Promise.all(promises);
+      
+      // Add delay between batches to respect rate limits
+      if (i + batchSize < subscribers.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-
-      console.log(`📧 Bulk email campaign completed: ${results.sent} sent, ${results.failed} failed`);
-      return results;
-
-    } catch (error) {
-      console.error('❌ Bulk email campaign failed:', error.message);
-      throw error;
     }
+
+    console.log(`📧 Bulk email campaign completed: ${results.sent} sent, ${results.failed} failed`);
+    return results;
+
+  } catch (error) {
+    console.error('❌ Bulk email campaign failed:', error.message);
+    throw error;
   }
 }
+
+}
+
 
 module.exports = new EmailService();

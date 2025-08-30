@@ -54,7 +54,7 @@ function ShoppingOrderDetailsView({ orderDetails }) {
         {/* Order Summary Section */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-800">Order Summary</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Order ID</p>
@@ -69,6 +69,25 @@ function ShoppingOrderDetailsView({ orderDetails }) {
               </p>
             </div>
             <div>
+              <p className="text-sm text-gray-500">Subtotal</p>
+              <p className="font-semibold text-gray-800">
+                {/* Calculate subtotal from cart items */}
+                {formatCurrency(
+                  orderDetails?.cartItems?.reduce(
+                    (sum, item) => sum + item.price * item.quantity,
+                    0
+                  ) || 0
+                )}
+              </p>
+            </div>
+            {/* 📍 New: Shipping Fee */}
+            <div>
+              <p className="text-sm text-gray-500">Shipping Fee</p>
+              <p className="font-semibold text-gray-800">
+                {formatCurrency(orderDetails?.shipmentMethod?.cost || 0)}
+              </p>
+            </div>
+            <div>
               <p className="text-sm text-gray-500">Total Amount</p>
               <p className="font-semibold text-gray-800">
                 {formatCurrency(orderDetails?.totalAmount)}
@@ -80,11 +99,13 @@ function ShoppingOrderDetailsView({ orderDetails }) {
                 {orderDetails?.paymentMethod?.replace(/_/g, " ") || "N/A"}
               </p>
             </div>
-            {/* 📍 New: Shipment Method */}
+            {/* 📍 New: Shipment Location */}
             <div>
-              <p className="text-sm text-gray-500">Shipment Method</p>
+              <p className="text-sm text-gray-500">Shipment Location</p>
               <p className="font-semibold text-gray-800 capitalize">
-                {orderDetails?.shipmentMethod?.replace(/_/g, " ") || "N/A"}
+                {orderDetails?.shipmentMethod?.subLocation && orderDetails?.shipmentMethod?.city
+                  ? `${orderDetails.shipmentMethod.subLocation}, ${orderDetails.shipmentMethod.city}`
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -113,6 +134,23 @@ function ShoppingOrderDetailsView({ orderDetails }) {
 
         <Separator className="my-4" />
 
+        {/* 📍 New: Billing Information Section */}
+        <div className="space-y-4">
+            <h2 className="text-xl font-bold text-gray-800">Billing Information</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <p className="text-sm text-gray-500">Name</p>
+                    <p className="font-semibold text-gray-800">{orderDetails?.billingInfo?.firstName || "N/A"}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-semibold text-gray-800">{orderDetails?.billingInfo?.email || "N/A"}</p>
+                </div>
+            </div>
+        </div>
+
+        <Separator className="my-4" />
+
         {/* Order Items Section */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-800">Order Items</h2>
@@ -123,11 +161,11 @@ function ShoppingOrderDetailsView({ orderDetails }) {
                 <div key={index} className="flex gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                   <div className="flex-shrink-0 relative">
                     <img
-                      src={item.image || '/placeholder-image.jpg'}
+                      src={item.image || 'https://placehold.co/64x64/E2E8F0/1A202C?text=No+Image'}
                       alt={item.title}
                       className="w-16 h-16 object-cover rounded-md"
                       onError={(e) => {
-                        e.target.src = '/placeholder-image.jpg';
+                        e.target.src = 'https://placehold.co/64x64/E2E8F0/1A202C?text=No+Image';
                       }}
                     />
                   </div>
@@ -161,7 +199,7 @@ function ShoppingOrderDetailsView({ orderDetails }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Recipient</p>
-              <p className="font-semibold text-gray-800">{user?.userName || "N/A"}</p>
+              <p className="font-semibold text-gray-800">{orderDetails?.billingInfo?.firstName || "N/A"}</p>
             </div>
             
             <div>

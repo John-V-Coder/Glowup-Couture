@@ -193,7 +193,6 @@ function ShoppingHome() {
             ))}
           </div>
         </div>
-     <NewsletterForm />
         {/* Latest Arrivals - Horizontal Scroller */}
         <section className="py-12 sm:py-20 w-full bg-white">
           <div className="w-full px-4 sm:px-6">

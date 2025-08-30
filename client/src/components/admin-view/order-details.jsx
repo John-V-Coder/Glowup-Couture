@@ -130,6 +130,8 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
   useEffect(() => {
     if (orderDetails) {
       setEditableData({
+        // 📍 Change: Added userName to editable data
+        userName: orderDetails?.userId?.userName || "",
         address: orderDetails?.addressInfo?.address || "",
         city: orderDetails?.addressInfo?.city || "",
         pincode: orderDetails?.addressInfo?.pincode || "",
@@ -308,8 +310,12 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
           </CardHeader>
           <CardContent>
             {isEditing ? (
-              // 📍 Change: Added new editable fields
+              // 📍 Change: Added new editable fields including userName
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="userName">User Name</Label>
+                  <Input id="userName" name="userName" value={editableData?.userName || ""} onChange={handleInputChange} />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Address</Label>
                   <Input id="address" name="address" value={editableData?.address || ""} onChange={handleInputChange} />
@@ -348,6 +354,7 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
                 </div>
               </div>
             ) : (
+              // 📍 Change: Updated the display to show userName
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">

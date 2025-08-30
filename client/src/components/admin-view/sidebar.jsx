@@ -1,3 +1,5 @@
+// File: src/components/admin/AdminSideBar.jsx
+
 import { 
   BadgeCheck, 
   LayoutDashboard, 
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 
 const adminSidebarMenuItems = [
   {
@@ -46,26 +48,32 @@ const adminSidebarMenuItems = [
     path: '/admin/customers',
     icon: <Users size={20} />
   },
+  // New Menu Item for Email Management
   {
-    id: 'marketing',
-    label: 'M.Campaigns',
-    path: '/admin/marketing-campaign',
+    id: 'email',
+    label: 'Email Marketing',
     icon: <Mail size={20} />,
-    isSubItem: true
-  },
-  {
-    id: 'email-templates',
-    label: 'E.Templates',
-    path: '/admin/email-templates',
-    icon: <BookTemplate size={20} />,
-    isSubItem: true
-  },
-  {
-    id: 'newsletter',
-    label: 'Newsletters',
-    path: '/admin/newsletter',
-    icon: <MessageSquare size={20} />,
-    isSubItem: true
+    isCollapsible: true, // Indicates this is a collapsible parent item
+    subItems: [
+      {
+        id: 'campaigns',
+        label: 'Marketing Campaigns',
+        path: '/admin/email/campaigns',
+        icon: <MessageSquare size={20} />,
+      },
+      {
+        id: 'templates',
+        label: 'Email Templates',
+        path: '/admin/email/templates',
+        icon: <BookTemplate size={20} />,
+      },
+            {
+        id: 'subscribers',
+        label: 'Email Subscribers',
+        path: '/admin/email/subscribers',
+        icon: <Users size={20} />,
+      }
+    ]
   },
   {
     id: 'analytics',
@@ -83,25 +91,65 @@ const adminSidebarMenuItems = [
 
 function MenuItems({ setOpen }) {
   const navigate = useNavigate();
+  const [openSubMenu, setOpenSubMenu] = useState(null);
+
+  const handleSubMenuClick = (id) => {
+    setOpenSubMenu(openSubMenu === id ? null : id);
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (setOpen) {
+      setOpen(false);
+    }
+  };
 
   return (
     <nav className="mt-8 flex-col flex gap-3">
       {adminSidebarMenuItems.map((menuItem) => (
-        <div
-          key={menuItem.id}
-          onClick={() => {
-            navigate(menuItem.path);
-            setOpen ? setOpen(false) : null;
-          }}
-          className={`flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 ${
-            menuItem.isSubItem ? 'ml-4 text-sm' : 'text-base font-medium'
-          }`}
-        >
-          <div className="flex-shrink-0">
-            {menuItem.icon}
-          </div>
-          <span className="truncate">{menuItem.label}</span>
-        </div>
+        <Fragment key={menuItem.id}>
+          {menuItem.isCollapsible ? (
+            // Collapsible parent item
+            <div
+              onClick={() => handleSubMenuClick(menuItem.id)}
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-base font-medium"
+            >
+              <div className="flex-shrink-0">
+                {menuItem.icon}
+              </div>
+              <span className="truncate">{menuItem.label}</span>
+            </div>
+          ) : (
+            // Regular menu item
+            <div
+              onClick={() => handleNavigation(menuItem.path)}
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-base font-medium"
+            >
+              <div className="flex-shrink-0">
+                {menuItem.icon}
+              </div>
+              <span className="truncate">{menuItem.label}</span>
+            </div>
+          )}
+
+          {/* Render sub-items if the parent is collapsible and open */}
+          {menuItem.isCollapsible && openSubMenu === menuItem.id && (
+            <div className="ml-6 border-l pl-4 flex flex-col gap-2">
+              {menuItem.subItems.map((subItem) => (
+                <div
+                  key={subItem.id}
+                  onClick={() => handleNavigation(subItem.path)}
+                  className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  <div className="flex-shrink-0">
+                    {subItem.icon}
+                  </div>
+                  <span className="truncate">{subItem.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Fragment>
       ))}
     </nav>
   );

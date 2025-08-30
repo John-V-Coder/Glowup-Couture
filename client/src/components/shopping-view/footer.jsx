@@ -2,6 +2,7 @@ import React from "react";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ContactBar } from "../common/adds";
+import NewsletterForm from "./newsletter-subscription";
 
 const Footer = () => {
   const handleLinkClick = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -50,6 +51,7 @@ const Footer = () => {
           />
         </div>
           <ContactBar />
+          <NewsletterForm/>
       </div>
     </footer>
   );

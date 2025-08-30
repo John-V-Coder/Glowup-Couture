@@ -33,14 +33,15 @@ import TermsAndConditions from './pages/shopping-view/terms-and-conditions';
 import ReturnRefundExchangePolicy from './pages/shopping-view/refund-refund-exchange';
 import DeliveryPolicy from './pages/shopping-view/delivery-mechanism';
 import SalePage from './pages/shopping-view/sale';
-import EmailTemplates from './components/common/email-templates';
-import MarketingCampaigns from './pages/admin-view/marketing-campaign';
 import SupportPage from './pages/shopping-view/customer-support';
-import AdminNewsletterPage from './pages/admin-view/newsletter-page';
 import AdminCustomersPage from './pages/admin-view/customer-page';
 import ProductStatsAdmin from './pages/admin-view/analysis';
 import VerifyLoginCode from './pages/auth/verification';
 import { checkAuth } from './store/auth-slice'; 
+import ShoppingBilling from './pages/shopping-view/billing';
+import SendCampaignForm from './components/admin-view/send-campaign-form';
+import EmailTemplatesManager from './components/admin-view/email-template';
+import NewsletterSubscribers from './pages/admin-view/newsletter-subs';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -58,7 +59,7 @@ function App() {
     }
   }, [dispatch, isAuthenticated]); 
 
-  // if (isLoading) return <Preloader message="Authenticating..." />;
+  if (isLoading) return <Preloader message="Authenticating..." />;
 
   return (
     <RoutePreloader>
@@ -71,16 +72,15 @@ function App() {
             <Route path="login" element={<AuthLogin />} /> 
             <Route path="verify-code" element={<VerifyLoginCode />} />
           </Route>
-
           {/* Admin */}
           <Route path="/admin" element={<CheckAuth isAuthenticated={isAuthenticated} user={user}><AdminLayout /></CheckAuth>}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="gallery" element={<AdminGallery />} />
             <Route path="about" element={<AdminAbout />} />
             <Route path="customers" element={<AdminCustomersPage/>}/>
-            <Route path="email-templates" element={<EmailTemplates />} />
-            <Route path="marketing-campaign" element={<MarketingCampaigns />} />
-            <Route path="newsletter" element={<AdminNewsletterPage/>} />
+            <Route path="email/campaigns" element={<SendCampaignForm />} />
+            <Route path="email/templates" element={<EmailTemplatesManager />} />
+            <Route path="email/subscribers" element={<NewsletterSubscribers />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="features" element={<AdminFeatures />} />
@@ -96,6 +96,7 @@ function App() {
             <Route path="/shop/product/:id" element={<ProductDetailsPage />} />
             <Route path="/shop/checkout" element={<ShoppingCheckout />} />
             <Route path="/shop/account" element={<ShoppingAccount />} />
+            <Route path="/shop/billing" element={<ShoppingBilling/>} />
             <Route path="/shop/paypal-return" element={<PaypalReturnPage />} />
             <Route path="/shop/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/shop/paypal-cancel" element={<PaypalCancelPage />} />
@@ -115,5 +116,4 @@ function App() {
     </RoutePreloader>
   );
 }
-
 export default App;

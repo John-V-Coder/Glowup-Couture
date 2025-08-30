@@ -1,115 +1,229 @@
-// src/components/shopping-view/ShoppingCheckout.jsx
-
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import Address from "@/components/shopping-view/address";
-import UserCartItemsContent from "@/components/shopping-view/cart-item-content";
-import { useState, useRef, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { createNewOrder } from "@/store/shop/order-slice";
-import { ArrowDown, Smartphone, CreditCard, MapPin, User } from "lucide-react";
-import Login from "@/pages/auth/login"; // Import the new unified Login component
+import { useState, useMemo, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { 
+  Smartphone, CreditCard, Package, ArrowRight, User, 
+  MapPin, Plus, Edit, CheckCircle, AlertCircle 
+} from "lucide-react";
 import PageWrapper from "@/components/common/page-wrapper";
+
+// Define shipping locations and prices
+const SHIPPING_PRICES = {
+  nairobi: {
+    base: 300,
+    subLocations: {
+      "CBD": 0,
+      "Westlands": 50,
+      "Kilimani": 50,
+      "Ruiru": 150,
+    },
+  },
+  kisumu: {
+    base: 250,
+    subLocations: {
+      "CBD": 0,
+      "Milimani": 40,
+      "Kondele": 40,
+      "Nyalenda": 60,
+    },
+  },
+};
+
+const BASE_SHIPPING_FEE = 1500; // Default shipping fee for outside Nairobi/Kisumu
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const { approvalURL } = useSelector((state) => state.shopOrder);
-  const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
-  const [isPaymentStart, setIsPaymentStart] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("paypal");
-  const [mpesaPhone, setMpesaPhone] = useState("");
-  const [isProcessingMpesa, setIsProcessingMpesa] = useState(false);
-  // Removed: authMode state is no longer needed
+  const { addressList } = useSelector((state) => state.shopAddress);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const [billingInfo, setBillingInfo] = useState({
-    firstName: user?.userName || "",
+  // Extract actual cart items array - handle both structures
+  const actualCartItems = cartItems?.items || cartItems || [];
+
+  // Address management states
+  const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressFormMode, setAddressFormMode] = useState('add'); // 'add' or 'edit'
+  
+  // Contact information state
+  const [contactInfo, setContactInfo] = useState({
+    fullName: user?.userName || "",
     email: user?.email || "",
+    emailOffers: false,
   });
 
-  const dispatch = useDispatch();
-  const { toast } = useToast();
-  const checkoutSectionRef = useRef(null);
-  const navigate = useNavigate();
+  // Shipping and payment states
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("paystack");
+  const [mpesaPhone, setMpesaPhone] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedSubLocation, setSelectedSubLocation] = useState("");
 
-  // Fix: Redirect admin users to the dashboard after successful login.
-  // This prioritizes the admin user flow over the standard checkout redirect.
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "admin") {
-      navigate("/admin/dashboard", { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
+  // Guest address state
+  const [guestAddress, setGuestAddress] = useState({
+    userName: "",
+    address: "",
+    city: "",
+    phone: "",
+    pincode: "",
+    notes: "",
+  });
 
-
-  // Initialize billing info when user data is available
+  // Initialize contact info when user data is available
   useEffect(() => {
     if (user) {
-      setBillingInfo({
-        firstName: user?.userName || "",
-        email: user?.email || "",
-      });
+      setContactInfo(prev => ({
+        ...prev,
+        fullName: user.userName || "",
+        email: user.email || "",
+      }));
     }
   }, [user]);
 
-  // Handle redirection for PayPal approval URL
+  // Auto-select first address if available and none selected
   useEffect(() => {
-    if (approvalURL) {
-      window.location.href = approvalURL;
+    if (isAuthenticated && addressList?.length > 0 && !currentSelectedAddress) {
+      const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
+      setCurrentSelectedAddress(defaultAddress);
+      updateShippingLocation(defaultAddress);
     }
-  }, [approvalURL]);
+  }, [addressList, currentSelectedAddress, isAuthenticated]);
 
-  const totalCartAmount =
-    cartItems?.items && cartItems.items.length > 0
-      ? cartItems.items.reduce(
-          (sum, currentItem) =>
-            sum +
-            (currentItem?.salePrice > 0
-              ? currentItem?.salePrice
-              : currentItem?.price) *
-              currentItem?.quantity,
-          0
-        )
-      : 0;
+  // Update shipping location based on address
+  const updateShippingLocation = (address) => {
+    if (address?.city?.toLowerCase().includes('nairobi')) {
+      setSelectedCity("nairobi");
+      setSelectedSubLocation("CBD");
+    } else if (address?.city?.toLowerCase().includes('kisumu')) {
+      setSelectedCity("kisumu");
+      setSelectedSubLocation("CBD");
+    } else if (address?.city) {
+      setSelectedCity("other");
+      setSelectedSubLocation("other");
+    }
+  };
 
-  const finalTotal = totalCartAmount;
+  // Handle address selection
+  const handleAddressSelect = (address) => {
+    setCurrentSelectedAddress(address);
+    setShowAddressForm(false);
+    updateShippingLocation(address);
+  };
+
+  // Handle adding a new address
+  const handleAddNewAddress = () => {
+    setAddressFormMode('add');
+    setShowAddressForm(true);
+  };
+
+  // Handle editing an address
+  const handleEditAddress = (address) => {
+    setCurrentSelectedAddress(address);
+    setAddressFormMode('edit');
+    setShowAddressForm(true);
+  };
+
+  // Handle address form submission
+  const handleAddressSubmit = (submittedAddress) => {
+    setShowAddressForm(false);
+    if (submittedAddress) {
+      handleAddressSelect(submittedAddress);
+    } else if (addressList?.length > 0) {
+      const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
+      setCurrentSelectedAddress(defaultAddress);
+    }
+  };
+
+  // Handle address form cancellation
+  const handleAddressCancel = () => {
+    setShowAddressForm(false);
+    if (addressList?.length > 0 && !currentSelectedAddress) {
+      setCurrentSelectedAddress(addressList[0]);
+    }
+  };
+
+  // Validate guest address
+  const validateGuestAddress = () => {
+    const { userName, address, city, phone } = guestAddress;
+    
+    if (!userName.trim() || userName.trim().length < 2) {
+      return "Full name is required (min 2 characters)";
+    }
+    
+    if (!address.trim()) {
+      return "Address is required";
+    }
+    
+    if (!city.trim()) {
+      return "City is required";
+    }
+    
+    if (!phone.trim() || phone.trim().length < 10) {
+      return "Valid phone number is required (min 10 digits)";
+    }
+    
+    return null;
+  };
 
   function validateCheckoutData() {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to proceed with checkout",
-        variant: "destructive",
-      });
-      return false;
-    }
-    if (!cartItems?.items || cartItems.items.length === 0) {
-      toast({
-        title: "Your cart is empty",
-        description: "Please add items to proceed with checkout",
-        variant: "destructive",
-      });
-      return false;
-    }
-    if (!currentSelectedAddress) {
-      toast({
-        title: "Address Required",
-        description: "Please select a delivery address to proceed",
-        variant: "destructive",
-      });
-      return false;
-    }
-    const name = (billingInfo.firstName || "").trim();
-    const email = (billingInfo.email || "").trim();
+    // Validate contact information
+    const fullName = (contactInfo.fullName || "").trim();
+    const email = (contactInfo.email || "").trim();
+    
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!name || name.length < 2 || !emailOk) {
+
+    if (!fullName || fullName.length < 2) {
       toast({
-        title: "Billing Information Required",
-        description: !emailOk ? "Enter a valid email address" : "Enter your full name (min 2 characters)",
+        title: "Full Name Required",
+        description: "Enter your full name (min 2 characters)",
         variant: "destructive",
       });
       return false;
     }
+
+    if (!emailOk) {
+      toast({
+        title: "Valid Email Required",
+        description: "Enter a valid email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate address
+    if (isAuthenticated) {
+      if (!currentSelectedAddress) {
+        toast({
+          title: "Delivery Address Required",
+          description: "Please select or add a delivery address",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } else {
+      const guestAddressError = validateGuestAddress();
+      if (guestAddressError) {
+        toast({
+          title: "Address Information Required",
+          description: guestAddressError,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    if (!selectedCity || !selectedSubLocation) {
+      toast({
+        title: "Shipment Location Required",
+        description: "Please select your city and sub-location for delivery",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (selectedPaymentMethod === "mpesa" && (!mpesaPhone || mpesaPhone.length < 10)) {
       toast({
         title: "Invalid M-Pesa Number",
@@ -118,127 +232,50 @@ function ShoppingCheckout() {
       });
       return false;
     }
+
     return true;
   }
 
-  function handleInitiatePaypalPayment() {
+  const handleContinueToSummary = () => {
     if (!validateCheckoutData()) return;
-    const orderData = {
-      userId: user?.id,
-      cartId: cartItems?._id,
-      cartItems: cartItems.items.map((singleCartItem) => ({
-        productId: singleCartItem?.productId,
-        title: singleCartItem?.title,
-        name: singleCartItem?.title,
-        image: singleCartItem?.image,
-        price:
-          singleCartItem?.salePrice > 0
-            ? singleCartItem?.salePrice
-            : singleCartItem?.price,
-        quantity: singleCartItem?.quantity,
-      })),
-      addressInfo: {
-        addressId: currentSelectedAddress?._id,
-        address: currentSelectedAddress?.address,
-        city: currentSelectedAddress?.city,
-        pincode: currentSelectedAddress?.pincode,
-        phone: currentSelectedAddress?.phone,
-        notes: currentSelectedAddress?.notes,
-      },
-      billingInfo: { name: billingInfo.firstName?.trim(), firstName: billingInfo.firstName?.trim(), email: billingInfo.email?.trim() },
-      orderStatus: "pending",
-      paymentMethod: selectedPaymentMethod,
-      paymentStatus: "pending",
-      totalAmount: totalCartAmount,
-      orderDate: new Date(),
-      orderUpdateDate: new Date(),
-      paymentId: "",
-      payerId: "",
+
+    // Prepare address data
+    const addressData = isAuthenticated ? currentSelectedAddress : {
+      ...guestAddress,
+      userName: guestAddress.userName || contactInfo.fullName,
     };
 
-    dispatch(createNewOrder(orderData)).then((action) => {
-      const ok =
-        action?.meta?.requestStatus === "fulfilled" &&
-        (action?.payload?.approvalURL || action?.payload?.orderId);
-      if (ok) {
-        setIsPaymentStart(true);
-      } else {
-        setIsPaymentStart(false);
-        toast({
-          title: "Order Creation Failed",
-          description: action?.payload?.message || "Please try again or contact support",
-          variant: "destructive",
-        });
+    // Navigate to the summary page, passing all data
+    navigate('/shop/order-summary', {
+      state: {
+        contactInfo,
+        address: addressData,
+        selectedPaymentMethod,
+        mpesaPhone,
+        selectedCity,
+        selectedSubLocation,
+        shippingFee
       }
     });
-  }
-
-  function handleMpesaPayment() {
-    if (!validateCheckoutData()) return;
-    setIsProcessingMpesa(true);
-
-    // Simulate M-Pesa payment processing
-    setTimeout(() => {
-      const orderData = {
-        userId: user?.id,
-        cartId: cartItems?._id,
-        cartItems: cartItems.items.map((singleCartItem) => ({
-          productId: singleCartItem?.productId,
-          title: singleCartItem?.title,
-          name: singleCartItem?.title,
-          image: singleCartItem?.image,
-          price:
-            singleCartItem?.salePrice > 0
-              ? singleCartItem?.salePrice
-              : singleCartItem?.price,
-          quantity: singleCartItem?.quantity,
-        })),
-        addressInfo: {
-          addressId: currentSelectedAddress?._id,
-          address: currentSelectedAddress?.address,
-          city: currentSelectedAddress?.city,
-          pincode: currentSelectedAddress?.pincode,
-          phone: currentSelectedAddress?.phone,
-          notes: currentSelectedAddress?.notes,
-        },
-        billingInfo: { name: billingInfo.firstName?.trim(), firstName: billingInfo.firstName?.trim(), email: billingInfo.email?.trim() },
-        orderStatus: "confirmed",
-        paymentMethod: "mpesa",
-        paymentStatus: "paid",
-        totalAmount: totalCartAmount,
-        orderDate: new Date(),
-        orderUpdateDate: new Date(),
-        paymentId: `MPESA-${Date.now()}`,
-        payerId: mpesaPhone,
-      };
-
-      dispatch(createNewOrder(orderData)).then((action) => {
-        setIsProcessingMpesa(false);
-        const ok = action?.meta?.requestStatus === "fulfilled" && action?.payload?.orderId;
-        if (ok) {
-          toast({
-            title: "M-Pesa Payment Successful!",
-            description: `Payment of ${totalCartAmount.toFixed(2)} completed via ${mpesaPhone}`,
-          });
-          navigate('/shop/payment-success');
-        } else {
-          toast({
-            title: "Payment Failed",
-            description: action?.payload?.message || "Please try again or contact support",
-            variant: "destructive",
-          });
-        }
-      });
-    }, 3000);
-  }
-
-  const scrollToCheckout = () => {
-    checkoutSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleBillingInfoChange = (field, value) => {
-    setBillingInfo(prev => ({ ...prev, [field]: value }));
-  };
+  const shippingFee = useMemo(() => {
+    if (selectedCity === "nairobi" && selectedSubLocation) {
+      return SHIPPING_PRICES.nairobi.base + (SHIPPING_PRICES.nairobi.subLocations[selectedSubLocation] || 0);
+    }
+    if (selectedCity === "kisumu" && selectedSubLocation) {
+      return SHIPPING_PRICES.kisumu.base + (SHIPPING_PRICES.kisumu.subLocations[selectedSubLocation] || 0);
+    }
+    if (selectedCity === "other") {
+      return BASE_SHIPPING_FEE;
+    }
+    return 0; // Default to 0 if no city is selected
+  }, [selectedCity, selectedSubLocation]);
+
+  // Calculate totals
+  const subtotal = actualCartItems?.reduce((total, item) => 
+    total + (item.salePrice || item.price) * item.quantity, 0) || 0;
+  const total = subtotal + shippingFee;
 
   return (
     <PageWrapper message="Loading checkout...">
@@ -250,216 +287,597 @@ function ShoppingCheckout() {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-white">Secure Checkout</h1>
+            <h1 className="text-3xl font-bold text-white">Checkout</h1>
           </div>
         </div>
+        
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Billing & Shipping */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Billing or Auth Section */}
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-xl font-semibold">{isAuthenticated ? 'Billing Information' : 'Billing Account Here!'}</h2>
-                </div>
-
-                {!isAuthenticated ? (
-                  <div className="max-w-md mx-auto">
-                    {/* Render the unified Login component here */}
-                    <Login />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={billingInfo.firstName}
-                        onChange={(e) => handleBillingInfoChange("firstName", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        value={billingInfo.email}
-                        onChange={(e) => handleBillingInfoChange("email", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter email address"
-                      />
-                    </div>
+            
+            {/* Main Checkout Form - Left Side */}
+            <div className="lg:col-span-2 space-y-8">
+            
+            {/* Contact Information Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <User className="h-5 w-5 text-blue-600" />
+                <h2 className="text-xl font-semibold">Contact Information</h2>
+                {!isAuthenticated && (
+                  <div className="ml-auto">
+                    <Link to="/auth/login" className="text-blue-600 hover:underline text-sm">
+                      Log in to save your information
+                    </Link>
                   </div>
                 )}
               </div>
-
-              {/* Shipping Address */}
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <MapPin className="h-5 w-5 text-green-600" />
-                  <h2 className="text-xl font-semibold">Shipping Address</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={contactInfo.fullName}
+                    onChange={(e) => setContactInfo(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Full name"
+                  />
                 </div>
-                <Address selectedId={currentSelectedAddress} setCurrentSelectedAddress={setCurrentSelectedAddress} />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={contactInfo.email}
+                    onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Email"
+                  />
+                </div>
               </div>
 
-              {/* Payment Method */}
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CreditCard className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-xl font-semibold">Payment Method</h2>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="emailOffers"
+                  checked={contactInfo.emailOffers}
+                  onChange={(e) => setContactInfo(prev => ({ ...prev, emailOffers: e.target.checked }))}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="emailOffers" className="text-sm text-gray-600">
+                  Email me with news and offers
+                </label>
+              </div>
+            </div>
+
+            {/* Delivery Address Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  <h2 className="text-xl font-semibold">Delivery Address</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {/* PayPal Option */}
-                  <div
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPaymentMethod === "paypal"
-                        ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                    onClick={() => setSelectedPaymentMethod("paypal")}
+                
+                {/* Toggle between saved addresses and add new */}
+                {isAuthenticated && !showAddressForm && (
+                  <Button
+                    onClick={handleAddNewAddress}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
                   >
+                    <Plus className="h-4 w-4" />
+                    Add New
+                  </Button>
+                )}
+              </div>
+
+              {/* Show address form or address list */}
+              {showAddressForm ? (
+                <div className="space-y-4">
+                  <h3 className="font-medium text-lg">
+                    {addressFormMode === 'add' ? 'Add New Address' : 'Edit Address'}
+                  </h3>
+                  <Address
+                    onAddressSubmit={handleAddressSubmit}
+                    editingAddress={addressFormMode === 'edit' ? currentSelectedAddress : null}
+                    onCancel={handleAddressCancel}
+                    compact={true}
+                  />
+                </div>
+              ) : isAuthenticated ? (
+                <div>
+                  {/* Selected Address Display */}
+                  {currentSelectedAddress && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                            Selected Address
+                            {currentSelectedAddress.isDefault && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                Default
+                              </span>
+                            )}
+                          </h3>
+                          <div className="text-sm text-gray-700">
+                            <p className="font-semibold">{currentSelectedAddress.userName}</p>
+                            <p>{currentSelectedAddress.address}</p>
+                            <p>{currentSelectedAddress.city}, {currentSelectedAddress.pincode}</p>
+                            <p>Phone: {currentSelectedAddress.phone}</p>
+                            {currentSelectedAddress.notes && (
+                              <p className="text-gray-500">Notes: {currentSelectedAddress.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditAddress(currentSelectedAddress)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Address List */}
+                  <div className="space-y-3">
+                    {addressList?.length > 0 ? (
+                      addressList.map((address) => (
+                        <div
+                          key={address._id}
+                          className={`border rounded-lg p-4 transition-all ${
+                            currentSelectedAddress?._id === address._id
+                              ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                              : "border-gray-200 hover:border-gray-300 cursor-pointer"
+                          }`}
+                          onClick={() => currentSelectedAddress?._id !== address._id && handleAddressSelect(address)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3">
+                              <div
+                                className={`w-4 h-4 rounded-full border-2 mt-1 ${
+                                  currentSelectedAddress?._id === address._id
+                                    ? "border-blue-500 bg-blue-500"
+                                    : "border-gray-300"
+                                }`}
+                              >
+                                {currentSelectedAddress?._id === address._id && (
+                                  <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-gray-900">{address.userName}</p>
+                                  {address.isDefault && (
+                                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">{address.address}</p>
+                                <p className="text-sm text-gray-600">{address.city}, {address.pincode}</p>
+                                <p className="text-sm text-gray-600">Phone: {address.phone}</p>
+                                {address.notes && (
+                                  <p className="text-xs text-gray-500 mt-1">{address.notes}</p>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditAddress(address);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                        <p>No saved addresses found</p>
+                        <Button
+                          onClick={handleAddNewAddress}
+                          variant="outline"
+                          className="mt-3"
+                        >
+                          Add Your First Address
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Guest checkout form */
+                <div className="space-y-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={guestAddress.userName || contactInfo.fullName}
+                      onChange={(e) => setGuestAddress(prev => ({ ...prev, userName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Full Name"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      value={guestAddress.phone}
+                      onChange={(e) => setGuestAddress(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Phone number"
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Address *
+                    </label>
+                    <input
+                      type="text"
+                      value={guestAddress.address}
+                      onChange={(e) => setGuestAddress(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Address"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        value={guestAddress.city}
+                        onChange={(e) => setGuestAddress(prev => ({ ...prev, city: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="City"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Postal code (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={guestAddress.pincode}
+                        onChange={(e) => setGuestAddress(prev => ({ ...prev, pincode: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Postal code (optional)"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Delivery Notes (optional)
+                    </label>
+                    <textarea
+                      value={guestAddress.notes}
+                      onChange={(e) => setGuestAddress(prev => ({ ...prev, notes: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Any special delivery instructions"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Shipping Method Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Package className="h-5 w-5 text-orange-600" />
+                <h2 className="text-xl font-semibold">Shipping method</h2>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Home Delivery within Nairobi */}
+                <div
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedCity === "nairobi"
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setSelectedCity("nairobi");
+                    setSelectedSubLocation("CBD");
+                  }}
+                >
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div
                         className={`w-4 h-4 rounded-full border-2 ${
-                          selectedPaymentMethod === "paypal"
+                          selectedCity === "nairobi"
                             ? "border-blue-500 bg-blue-500"
                             : "border-gray-300"
                         }`}
                       >
-                        {selectedPaymentMethod === "paypal" && (
+                        {selectedCity === "nairobi" && (
                           <div className="w-full h-full rounded-full bg-white scale-50"></div>
                         )}
                       </div>
-                      <CreditCard className="h-5 w-5 text-blue-600" />
                       <div>
-                        <p className="font-medium">PayPal</p>
-                        <p className="text-sm text-gray-600">Pay securely with PayPal</p>
+                        <p className="font-medium">Home Delivery within Nairobi (1-3 Days)</p>
+                        <p className="text-sm text-gray-600">Fast delivery within Nairobi</p>
                       </div>
                     </div>
+                    <p className="font-semibold">Ksh {SHIPPING_PRICES.nairobi.base + (selectedSubLocation ? SHIPPING_PRICES.nairobi.subLocations[selectedSubLocation] || 0 : 0)}.00</p>
                   </div>
+                </div>
 
-                  {/* M-Pesa Option */}
-                  <div
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPaymentMethod === "mpesa"
-                        ? "border-green-500 bg-green-50 ring-2 ring-green-200"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                    onClick={() => setSelectedPaymentMethod("mpesa")}
-                  >
+                {/* Kisumu Delivery */}
+                <div
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedCity === "kisumu"
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setSelectedCity("kisumu");
+                    setSelectedSubLocation("CBD");
+                  }}
+                >
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div
                         className={`w-4 h-4 rounded-full border-2 ${
-                          selectedPaymentMethod === "mpesa"
-                            ? "border-green-500 bg-green-500"
+                          selectedCity === "kisumu"
+                            ? "border-blue-500 bg-blue-500"
                             : "border-gray-300"
                         }`}
                       >
-                        {selectedPaymentMethod === "mpesa" && (
+                        {selectedCity === "kisumu" && (
                           <div className="w-full h-full rounded-full bg-white scale-50"></div>
                         )}
                       </div>
-                      <Smartphone className="h-5 w-5 text-green-600" />
                       <div>
-                        <p className="font-medium">M-Pesa</p>
-                        <p className="text-sm text-gray-600">Pay with M-Pesa mobile money</p>
+                        <p className="font-medium">Home Delivery within Kisumu (1-3 Days)</p>
+                        <p className="text-sm text-gray-600">Fast delivery within Kisumu</p>
                       </div>
+                    </div>
+                    <p className="font-semibold">Ksh {SHIPPING_PRICES.kisumu.base + (selectedSubLocation ? SHIPPING_PRICES.kisumu.subLocations[selectedSubLocation] || 0 : 0)}.00</p>
+                  </div>
+                </div>
+
+                {/* Other Towns */}
+                <div
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedCity === "other"
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setSelectedCity("other");
+                    setSelectedSubLocation("other");
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 ${
+                          selectedCity === "other"
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {selectedCity === "other" && (
+                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">Other Towns (3-5 Days)</p>
+                        <p className="text-sm text-gray-600">Delivery to other locations within Kenya</p>
+                      </div>
+                    </div>
+                    <p className="font-semibold">Ksh {BASE_SHIPPING_FEE}.00</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sub-location selector for Nairobi/Kisumu */}
+              {(selectedCity === "nairobi" || selectedCity === "kisumu") && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Sub-location *
+                  </label>
+                  <select
+                    value={selectedSubLocation}
+                    onChange={(e) => setSelectedSubLocation(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select Sub-location</option>
+                    {Object.entries(SHIPPING_PRICES[selectedCity].subLocations).map(([sub, cost]) => (
+                      <option key={sub} value={sub}>
+                        {sub} {cost > 0 && `(+KES ${cost})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Payment Method */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard className="h-5 w-5 text-purple-600" />
+                <h2 className="text-xl font-semibold">Payment</h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">All transactions are secure and encrypted.</p>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {/* Paystack Option */}
+                <div
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedPaymentMethod === "paystack"
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedPaymentMethod("paystack")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 ${
+                          selectedPaymentMethod === "paystack"
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {selectedPaymentMethod === "paystack" && (
+                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">Paystack</p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <img src="https://via.placeholder.com/30x20?text=MC" alt="Mastercard" className="h-5" />
+                      <img src="https://via.placeholder.com/30x20?text=VISA" alt="Visa" className="h-5" />
+                      <img src="https://via.placeholder.com/30x20?text=MPESA" alt="M-Pesa" className="h-5" />
+                    </div>
+                  </div>
+                  
+                  {selectedPaymentMethod === "paystack" && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div className="text-center">
+                          <div className="w-16 h-12 bg-gray-200 rounded mx-auto mb-2 flex items-center justify-center">
+                            <span className="text-xs text-gray-500">💳</span>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            After clicking "Pay now", you will be redirected to Paystack to complete your purchase securely.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* M-Pesa on Delivery Option */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+                    <div>
+                      <p className="font-medium text-gray-500">Lipa na M-PESA on Delivery</p>
+                      <p className="text-sm text-gray-400">Pay with M-Pesa when your order arrives</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            </div>
+
+            {/* Order Summary Sidebar - Right Side */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-6">
+                <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+                
+                {/* Cart Items */}
+                <div className="space-y-4 mb-6">
+                  {actualCartItems?.length > 0 ? actualCartItems.map((item) => (
+                    <div key={`${item.productId}-${item.size || 'default'}`} className="flex items-center gap-4">
+                      <div className="relative">
+                        <img
+                          src={item.image || "https://via.placeholder.com/60x60"}
+                          alt={item.title}
+                          className="w-16 h-16 object-cover rounded-lg border"
+                        />
+                        {item.quantity > 1 && (
+                          <div className="absolute -top-2 -right-2 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {item.quantity}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {item.title}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {item.brand} • {item.category}
+                        </p>
+                        {item.size && (
+                          <p className="text-xs text-gray-500">Size: {item.size}</p>
+                        )}
+                      </div>
+                      <div className="text-sm font-medium">
+                        KSh {((item.salePrice || item.price) * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  )) : (
+                    <p className="text-gray-500 text-center py-4">No items in cart</p>
+                  )}
+                </div>
+
+                {/* Discount Code */}
+                <div className="mb-6 pb-6 border-b">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Discount code or gift card"
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="px-4 text-sm"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Order Totals */}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">
+                      KSh {subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="font-medium">KSh {shippingFee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between text-lg font-semibold">
+                      <span>Total</span>
+                      <span>KSh {total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* M-Pesa Phone Input */}
-                {selectedPaymentMethod === "mpesa" && (
-                  <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      M-Pesa Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="254712345678"
-                      value={mpesaPhone}
-                      onChange={(e) => setMpesaPhone(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-600 mt-1">
-                      Enter your M-Pesa registered phone number (format: 254XXXXXXXXX)
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-4">
-                <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                {/* Cart Items */}
-                <div className="max-h-60 overflow-y-auto mb-4 space-y-3">
-                  {cartItems?.items && cartItems.items.length > 0 ? (
-                    cartItems.items.map((item) => (
-                      <div key={item.productId} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                        <img src={item.image} alt={item.title} className="w-12 h-12 object-cover rounded" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                        </div>
-                        <p className="text-sm font-semibold">
-                          KES - {((item.salePrice > 0 ? item.salePrice : item.price) * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-gray-500 py-4">Your cart is empty</p>
-                  )}
-                </div>
-                {/* Order Totals */}
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal</span>
-                    <span>KES - {totalCartAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span>Calculated at next step</span>
-                  </div>
-                  <div className="border-t pt-2 flex justify-between text-lg font-semibold">
-                    <span>Total</span>
-                    <span>KES - {totalCartAmount.toFixed(2)}</span>
-                  </div>
-                </div>
-                {/* Checkout Button */}
+                {/* Continue Button */}
                 <div className="mt-6">
-                  {selectedPaymentMethod === "paypal" ? (
-                    <Button
-                      onClick={handleInitiatePaypalPayment}
-                      className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700 transition-colors"
-                      disabled={!isAuthenticated || isPaymentStart}
-                    >
-                      {!isAuthenticated ? "Sign in to continue" : (isPaymentStart ? "Processing PayPal Payment..." : "Pay with PayPal")}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleMpesaPayment}
-                      className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 transition-colors"
-                      disabled={!isAuthenticated || isProcessingMpesa}
-                    >
-                      {!isAuthenticated
-                        ? "Sign in to continue"
-                        : (isProcessingMpesa
-                          ? "Processing M-Pesa Payment..."
-                          : `Pay ${totalCartAmount.toFixed(2)} with M-Pesa`)}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleContinueToSummary}
+                    disabled={actualCartItems?.length === 0}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    Continue to Summary
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
-                {/* Security Badge */}
+
+                {/* Security Info */}
                 <div className="mt-4 text-center">
-                  <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
+                  <p className="text-xs text-gray-500">
                     🔒 Your payment information is secure and encrypted
                   </p>
                 </div>
@@ -467,21 +885,6 @@ function ShoppingCheckout() {
             </div>
           </div>
         </div>
-        {/* Floating navigation for mobile */}
-        {cartItems?.items?.length > 3 && (
-          <div className="fixed bottom-20 right-5 z-10 md:hidden">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full shadow-lg"
-              onClick={scrollToCheckout}
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-        <div ref={checkoutSectionRef}></div>
-
       </div>
     </PageWrapper>
   );
