@@ -4,6 +4,7 @@ const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
 const User = require("../../models/User");
 const emailService = require("../../services/emailService");
+const { applyCouponToOrder } = require("./coupon-controller");
 
 const createOrder = async (req, res) => {
   try {
@@ -15,6 +16,7 @@ const createOrder = async (req, res) => {
       paymentMethod,
       totalAmount,
       cartId,
+      couponCode, // <-- NEW: Include coupon code
     } = req.body;
 
     const create_payment_json = {
@@ -67,11 +69,25 @@ const createOrder = async (req, res) => {
             paymentStatus: 'Pending', // <-- UPDATED: Default payment status
             totalAmount,
             paystackReference: paymentInfo.id, // <-- UPDATED: Use a meaningful name and save the PayPal ID
+            couponCode: couponCode || null,
+            discountAmount: 0
           },
           orderDate: new Date(), // <-- UPDATED: Use a new Date object
           orderUpdateDate: new Date(), // <-- UPDATED: Use a new Date object
         });
 
+        // Apply coupon if provided
+        if (couponCode) {
+          try {
+            const couponResult = await applyCouponToOrder(couponCode, userId, newlyCreatedOrder._id, totalAmount);
+            newlyCreatedOrder.billing.couponCode = couponCode;
+            newlyCreatedOrder.billing.discountAmount = couponResult.discountAmount;
+            newlyCreatedOrder.billing.totalAmount = totalAmount - couponResult.discountAmount;
+          } catch (couponError) {
+            console.error("Coupon application failed:", couponError.message);
+            // Continue with order creation even if coupon fails
+          }
+        }
         await newlyCreatedOrder.save();
         // Send order confirmation email asynchronously
         if (userId) {

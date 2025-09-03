@@ -11,7 +11,8 @@ import {
   BarChart3,
   Settings,
   BookTemplate,
-  ImageIcon
+  ImageIcon,
+  Tag
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
@@ -80,6 +81,12 @@ const adminSidebarMenuItems = [
     label: 'Analytics',
     path: '/admin/analysis',
     icon: <BarChart3 size={20} />
+  },
+  {
+    id: 'coupons',
+    label: 'Coupons',
+    path: '/admin/coupons',
+    icon: <Tag size={20} />
   },
   {
     id: 'settings',

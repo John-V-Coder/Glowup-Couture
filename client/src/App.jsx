@@ -42,6 +42,7 @@ import ShoppingBilling from './pages/shopping-view/billing';
 import SendCampaignForm from './components/admin-view/send-campaign-form';
 import EmailTemplatesManager from './components/admin-view/email-template';
 import NewsletterSubscribers from './pages/admin-view/newsletter-subs';
+import AdminCoupons from './pages/admin-view/coupons';
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -85,6 +86,7 @@ function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="features" element={<AdminFeatures />} />
             <Route path="analysis" element={<ProductStatsAdmin />} />
+            <Route path="coupons" element={<AdminCoupons />} />
           </Route>
 
           {/* Shopping and Public Routes */}

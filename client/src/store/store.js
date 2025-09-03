@@ -3,6 +3,7 @@ import authReducer from "./auth-slice";
 import emailReducer from './email-slice';
 import adminProductsSlice from "./admin/products-slice";
 import adminOrderSlice from "./admin/order-slice";
+import adminCouponSlice from "./admin/coupon-slice";
 
 import shopProductsSlice from "./shop/products-slice";
 import shopCartSlice from "./shop/cart-slice";
@@ -10,6 +11,7 @@ import shopAddressSlice from "./shop/address-slice";
 import shopOrderSlice from "./shop/order-slice";
 import shopSearchSlice from "./shop/search-slice";
 import shopReviewSlice from "./shop/review-slice";
+import shopCouponSlice from "./shop/coupon-slice";
 import commonFeatureSlice from "./common-slice";
 import customerReducer from "./customer-slice";
 
@@ -21,6 +23,7 @@ const store = configureStore({
         email: emailReducer,
         adminProducts: adminProductsSlice,
         adminOrder: adminOrderSlice,
+        adminCoupons: adminCouponSlice,
 
         shopProducts: shopProductsSlice,
         shopCart: shopCartSlice,
@@ -28,6 +31,7 @@ const store = configureStore({
         shopOrder: shopOrderSlice,
         shopSearch: shopSearchSlice,
         shopReview: shopReviewSlice,
+        shopCoupons: shopCouponSlice,
         customers: customerReducer,
 
 

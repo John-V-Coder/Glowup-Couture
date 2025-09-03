@@ -8,6 +8,7 @@ const emailRouter = require("./routes/email/email-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
 const customerAnalysisRouter = require("./routes/admin/customer-analysis-routes");
+const adminCouponRouter = require("./routes/admin/coupon-routes");
 
 
 const shopProductsRouter = require("./routes/shop/products-routes");
@@ -16,6 +17,7 @@ const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
+const shopCouponRouter = require("./routes/shop/coupon-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
 const { verifyTransporter } = require("./config/email");
@@ -58,6 +60,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
 app.use("/api/admin/customer-analysis", customerAnalysisRouter);
+app.use("/api/admin/coupons", adminCouponRouter);
 
 app.use("/api/shop/products", shopProductsRouter);
 app.use("/api/shop/cart", shopCartRouter);
@@ -65,6 +68,7 @@ app.use("/api/shop/address", shopAddressRouter);
 app.use("/api/shop/order", shopOrderRouter);
 app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
+app.use("/api/shop/coupons", shopCouponRouter);
 
 
 app.use("/api/common/feature", commonFeatureRouter);
