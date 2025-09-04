@@ -38,18 +38,25 @@ function AdminHeader({ setOpen }) {
   }
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 bg-background border-b">
-      <Button onClick={() => setOpen(true)} className="lg:hidden sm:block">
-        <AlignJustify />
+    <header className="flex items-center justify-between px-6 py-4 bg-background sticky top-0 z-10 lg:ml-72">
+      <Button 
+        onClick={() => setOpen(true)} 
+        className="lg:hidden sm:block"
+        variant="ghost"
+        size="sm"
+      >
+        <AlignJustify className="h-5 w-5" />
         <span className="sr-only">Toggle Menu</span>
       </Button>
+      
       <div className="flex flex-1 justify-end">
         <Button
           onClick={handleLogout}
           disabled={isLoading}
-          className="inline-flex gap-2 items-center rounded-md px-4 py-2 text-sm font-medium shadow disabled:opacity-50"
+          className="inline-flex gap-2 items-center rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 transition-all duration-200"
+          variant="default"
         >
-          <LogOut />
+          <LogOut className="h-4 w-4" />
           {isLoading ? "Logging out..." : "Logout"}
         </Button>
       </div>

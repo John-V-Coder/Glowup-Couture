@@ -1,6 +1,7 @@
 const { createTransporter } = require('../config/email');
 const EmailTemplate = require('../models/EmailTemplate');
 const EmailSubscription = require('../models/EmailSubscription');
+const Coupon = require('../models/Coupon');
 
 class EmailService {
   constructor() {
@@ -216,6 +217,43 @@ async sendBulkMarketingEmails(campaignData) {
   }
 }
 
+async sendCouponEmail(userEmail, userName, couponCode) {
+  try {
+    const coupon = await Coupon.findOne({ code: couponCode });
+
+    if (!coupon) {
+      throw new Error(`Coupon with code '${couponCode}' not found.`);
+    }
+
+    const discountAmount = coupon.type === 'percentage' 
+      ? `${coupon.value}%` 
+      : `$${coupon.value}`;
+
+    const expirationDate = coupon.validUntil.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  
+    const variables = {
+      userName,
+      couponCode: coupon.code,
+      couponName: coupon.name,
+      couponDescription: coupon.description,
+      discountAmount,
+      minimumOrderAmount: coupon.minimumOrderAmount > 0 
+        ? `Valid on orders of $${coupon.minimumOrderAmount} or more`
+        : 'No minimum purchase required',
+      expirationDate,
+      shopLink: process.env.CLIENT_URL + '/shop'
+    };
+
+    return this.sendTemplateEmail('coupon', userEmail, variables);
+  } catch (error) {
+    console.error(`❌ Failed to send coupon email to ${userEmail}:`, error.message);
+    throw error;
+  }
+}
 }
 
 

@@ -583,7 +583,97 @@ const defaultTemplates = [
       { name: 'userName', description: 'Subscriber name', required: true },
       { name: 'unsubscribeUrl', description: 'Unsubscribe URL', required: true }
     ]
-  }
+  },
+  {
+  name: 'coupon',
+  subject: 'Here\'s a special {{discountAmount}} off for you! 🎁',
+  category: 'marketing', // Added missing category
+  htmlContent: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Special Coupon</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #DAA520, #F5DEB3); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: #8B4513; margin: 0; font-size: 28px;">A Special Offer Just For You!</h1>
+      </div>
+      
+      <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h2 style="color: #DAA520;">Hello {{userName}},</h2>
+        
+        <p>As a thank you for being a valued customer, here's a special coupon for your next purchase:</p>
+        
+        <div style="background: #FFF8DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+          <h3 style="color: #B8860B; margin-top: 0; font-size: 24px;">{{couponName}}</h3>
+          <p style="font-size: 16px;">Enjoy a discount of **{{discountAmount}}**</p>
+          <div style="background-color: #F7E7CE; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <strong style="font-size: 28px; color: #5C4033; letter-spacing: 2px;">{{couponCode}}</strong>
+          </div>
+          <p style="font-size: 14px; margin: 5px 0 0;">{{couponDescription}}</p>
+        </div>
+        
+        <p style="font-size: 14px; text-align: center; margin: 20px 0;">
+          {{minimumOrderAmount}}
+        </p>
+        
+        <p style="text-align: center;">
+          <span style="font-weight: bold;">Offer expires:</span> {{expirationDate}}
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="{{shopLink}}" style="background: linear-gradient(135deg, #DAA520, #B8860B); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+            Shop Now
+          </a>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          © {{currentYear}} {{companyName}}. All rights reserved.
+        </p>
+      </div>
+    </body>
+    </html>
+  `,
+  textContent: `
+    Here's a special {{discountAmount}} off for you!
+
+    Hello {{userName}},
+
+    As a thank you for being a valued customer, here's a special coupon just for you:
+
+    Coupon Name: {{couponName}}
+    Coupon Code: {{couponCode}}
+
+    {{couponDescription}}
+
+    Enjoy a discount of {{discountAmount}} on your next order.
+    {{minimumOrderAmount}}
+
+    Offer expires on {{expirationDate}}.
+
+    Visit our shop now and treat yourself:
+    {{shopLink}}
+
+    Best regards,
+    The {{companyName}} Team
+
+    © {{currentYear}} {{companyName}}. All rights reserved.
+  `,
+  variables: [
+    { name: 'userName', description: 'User\'s name', required: true },
+    { name: 'couponCode', description: 'Coupon code', required: true },
+    { name: 'couponName', description: 'Coupon name', required: true },
+    { name: 'couponDescription', description: 'Coupon description', required: false },
+    { name: 'discountAmount', description: 'Formatted discount value', required: true },
+    { name: 'minimumOrderAmount', description: 'Minimum order amount for the coupon', required: false },
+    { name: 'expirationDate', description: 'Coupon expiration date', required: true },
+    { name: 'shopLink', description: 'Link to the shop page', required: true }
+  ]
+},
+  
 ];
 
 module.exports = { defaultTemplates };

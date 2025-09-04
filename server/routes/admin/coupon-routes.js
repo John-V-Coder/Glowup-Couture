@@ -4,7 +4,8 @@ const {
   getAllCoupons,
   updateCoupon,
   deleteCoupon,
-  autoAssignCoupons,
+  getEligibleUsersForCoupons,
+  sendCouponsToUsers,
   getCouponStats
 } = require("../../controllers/admin/coupon-controller");
 const { authMiddleware } = require("../../controllers/auth/auth-controller");
@@ -20,8 +21,9 @@ router.get("/get", getAllCoupons);
 router.put("/update/:id", updateCoupon);
 router.delete("/delete/:id", deleteCoupon);
 
-// Auto-assignment and statistics
-router.post("/auto-assign", autoAssignCoupons);
+// User and statistics
+router.get("/eligible-users", getEligibleUsersForCoupons);
+router.post("/send", sendCouponsToUsers);
 router.get("/stats", getCouponStats);
 
 module.exports = router;

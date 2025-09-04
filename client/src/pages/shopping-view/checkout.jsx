@@ -52,9 +52,7 @@ function ShoppingCheckout() {
   
   // Contact information state
   const [contactInfo, setContactInfo] = useState({
-    fullName: user?.userName || "",
     email: user?.email || "",
-    emailOffers: false,
   });
 
   // Shipping and payment states
@@ -81,20 +79,33 @@ function ShoppingCheckout() {
     if (user) {
       setContactInfo(prev => ({
         ...prev,
-        fullName: user.userName || "",
         email: user.email || "",
       }));
     }
   }, [user]);
 
-  // Auto-select first address if available and none selected
+  // Auto-select or sync address when the list changes
   useEffect(() => {
-    if (isAuthenticated && addressList?.length > 0 && !currentSelectedAddress) {
-      const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
-      setCurrentSelectedAddress(defaultAddress);
-      updateShippingLocation(defaultAddress);
+    if (isAuthenticated && addressList?.length > 0) {
+      const selectedId = currentSelectedAddress?._id;
+      const selectedAddressInNewList = selectedId ? addressList.find(addr => addr._id === selectedId) : null;
+
+      // If the selected address is still in the list, ensure our state has the latest object reference
+      if (selectedAddressInNewList) {
+        if (JSON.stringify(selectedAddressInNewList) !== JSON.stringify(currentSelectedAddress)) {
+          setCurrentSelectedAddress(selectedAddressInNewList);
+        }
+      } else {
+        // If no address is selected, or the selected one was removed, set a default
+        const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
+        setCurrentSelectedAddress(defaultAddress);
+        updateShippingLocation(defaultAddress);
+      }
+    } else if (isAuthenticated && addressList?.length === 0) {
+        // If all addresses are deleted, clear the selection
+        setCurrentSelectedAddress(null);
     }
-  }, [addressList, currentSelectedAddress, isAuthenticated]);
+  }, [addressList, isAuthenticated, currentSelectedAddress]);
 
   // Update shipping location based on address
   const updateShippingLocation = (address) => {
@@ -174,19 +185,9 @@ function ShoppingCheckout() {
 
   function validateCheckoutData() {
     // Validate contact information
-    const fullName = (contactInfo.fullName || "").trim();
     const email = (contactInfo.email || "").trim();
     
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!fullName || fullName.length < 2) {
-      toast({
-        title: "Full Name Required",
-        description: "Enter your full name (min 2 characters)",
-        variant: "destructive",
-      });
-      return false;
-    }
 
     if (!emailOk) {
       toast({
@@ -246,7 +247,7 @@ function ShoppingCheckout() {
     // Prepare address data
     const addressData = isAuthenticated ? currentSelectedAddress : {
       ...guestAddress,
-      userName: guestAddress.userName || contactInfo.fullName,
+      userName: guestAddress.userName,
     };
 
     // Navigate to the summary page, passing all data
@@ -320,44 +321,17 @@ function ShoppingCheckout() {
                 )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={contactInfo.fullName}
-                    onChange={(e) => setContactInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Full name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    value={contactInfo.email}
-                    onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Email"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="emailOffers"
-                  checked={contactInfo.emailOffers}
-                  onChange={(e) => setContactInfo(prev => ({ ...prev, emailOffers: e.target.checked }))}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="emailOffers" className="text-sm text-gray-600">
-                  Email me with news and offers
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
                 </label>
+                <input
+                  type="email"
+                  value={contactInfo.email}
+                  onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Email"
+                />
               </div>
             </div>
 
@@ -512,7 +486,7 @@ function ShoppingCheckout() {
                     </label>
                     <input
                       type="text"
-                      value={guestAddress.userName || contactInfo.fullName}
+                      value={guestAddress.userName}
                       onChange={(e) => setGuestAddress(prev => ({ ...prev, userName: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Full Name"

@@ -68,7 +68,7 @@ const adminSidebarMenuItems = [
         path: '/admin/email/templates',
         icon: <BookTemplate size={20} />,
       },
-            {
+      {
         id: 'subscribers',
         label: 'Email Subscribers',
         path: '/admin/email/subscribers',
@@ -112,14 +112,14 @@ function MenuItems({ setOpen }) {
   };
 
   return (
-    <nav className="mt-8 flex-col flex gap-3">
+    <nav className="mt-6 flex-col flex gap-1 px-2">
       {adminSidebarMenuItems.map((menuItem) => (
         <Fragment key={menuItem.id}>
           {menuItem.isCollapsible ? (
             // Collapsible parent item
             <div
               onClick={() => handleSubMenuClick(menuItem.id)}
-              className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-base font-medium"
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-sm font-medium mb-1"
             >
               <div className="flex-shrink-0">
                 {menuItem.icon}
@@ -130,7 +130,7 @@ function MenuItems({ setOpen }) {
             // Regular menu item
             <div
               onClick={() => handleNavigation(menuItem.path)}
-              className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-base font-medium"
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-sm font-medium mb-1"
             >
               <div className="flex-shrink-0">
                 {menuItem.icon}
@@ -141,19 +141,21 @@ function MenuItems({ setOpen }) {
 
           {/* Render sub-items if the parent is collapsible and open */}
           {menuItem.isCollapsible && openSubMenu === menuItem.id && (
-            <div className="ml-6 border-l pl-4 flex flex-col gap-2">
-              {menuItem.subItems.map((subItem) => (
-                <div
-                  key={subItem.id}
-                  onClick={() => handleNavigation(subItem.path)}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-sm"
-                >
-                  <div className="flex-shrink-0">
-                    {subItem.icon}
+            <div className="ml-6 mb-2">
+              <div className="border-l-2 border-muted pl-4 flex flex-col gap-1">
+                {menuItem.subItems.map((subItem) => (
+                  <div
+                    key={subItem.id}
+                    onClick={() => handleNavigation(subItem.path)}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 text-sm"
+                  >
+                    <div className="flex-shrink-0">
+                      {subItem.icon}
+                    </div>
+                    <span className="truncate">{subItem.label}</span>
                   </div>
-                  <span className="truncate">{subItem.label}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </Fragment>
@@ -168,27 +170,35 @@ function AdminSideBar({ open, setOpen }) {
   return (
     <Fragment>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72">
+        <SheetContent side="left" className="w-72 p-0">
           <div className="flex flex-col h-full">
-            <SheetHeader className="border-b pb-4">
-              <SheetTitle className="flex gap-3 mt-6 mb-6">
-                <ChartNoAxesCombined size={32} className="text-primary" />
-                <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
+            <SheetHeader className="border-b px-6 py-6">
+              <SheetTitle className="flex gap-3 items-center">
+                <ChartNoAxesCombined size={28} className="text-primary" />
+                <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
               </SheetTitle>
             </SheetHeader>
-            <MenuItems setOpen={setOpen} />
+            <div className="flex-1 overflow-y-auto">
+              <MenuItems setOpen={setOpen} />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
-      <aside className="hidden w-72 flex-col border-r bg-background p-6 lg:flex shadow-sm">
-        <div
-          onClick={() => navigate("/admin/dashboard")}
-          className="flex cursor-pointer items-center gap-3 mb-8 hover:opacity-80 transition-opacity duration-200"
-        >
-          <ChartNoAxesCombined size={32} className="text-primary" />
-          <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
+      <aside className="hidden lg:block fixed left-0 top-0 w-72 h-screen bg-background z-20">
+        <div className="flex flex-col h-full">
+          <div className="px-6 py-6">
+            <div
+              onClick={() => navigate("/admin/dashboard")}
+              className="flex cursor-pointer items-center gap-3 hover:opacity-80 transition-opacity duration-200"
+            >
+              <ChartNoAxesCombined size={28} className="text-primary" />
+              <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <MenuItems />
+          </div>
         </div>
-        <MenuItems />
       </aside>
     </Fragment>
   );
