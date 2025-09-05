@@ -16,7 +16,7 @@ const notifyAdminOfNewOrder = async (orderData) => {
         <p><strong>Order ID:</strong> ${orderData.orderId}</p>
         <p><strong>Customer:</strong> ${orderData.customerName}</p>
         <p><strong>Email:</strong> ${orderData.customerEmail}</p>
-        <p><strong>Total Amount:</strong> KES ${orderData.totalAmount}</p>
+        <p><strong>Total Amount:</strong> KSH ${orderData.totalAmount}</p>
         <p><strong>Payment Method:</strong> ${orderData.paymentMethod}</p>
         <p><strong>Order Date:</strong> ${new Date(orderData.orderDate).toLocaleString()}</p>
       </div>
@@ -24,7 +24,7 @@ const notifyAdminOfNewOrder = async (orderData) => {
       <h3>Items Ordered:</h3>
       <ul>
         ${orderData.items.map(item => `
-          <li>${item.title} - Qty: ${item.quantity} - KES ${item.price}</li>
+          <li>${item.title} - Qty: ${item.quantity} - KSH ${item.price}</li>
         `).join('')}
       </ul>
       
@@ -40,7 +40,7 @@ const notifyAdminOfNewOrder = async (orderData) => {
         to: adminEmail.trim(),
         subject: `New Order #${orderData.orderId} - Glowup Couture`,
         html: emailContent,
-        text: `New order received: ${orderData.orderId} from ${orderData.customerName} (${orderData.customerEmail}) - Total: KES ${orderData.totalAmount}`
+        text: `New order received: ${orderData.orderId} from ${orderData.customerName} (${orderData.customerEmail}) - Total: KSH ${orderData.totalAmount}`
       });
     }
 

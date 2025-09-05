@@ -38,7 +38,7 @@ export const ScrollingPromoBar = () => {
           </span>
         </div>
       </div>
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in-out {
           0%, 100% { opacity: 0.8; }
           50% { opacity: 1; }
@@ -217,7 +217,7 @@ export const TopHorizontalScrollingSocialIcons = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes scroll-horizontal-full {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }

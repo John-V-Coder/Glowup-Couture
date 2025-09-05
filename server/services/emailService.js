@@ -227,7 +227,7 @@ async sendCouponEmail(userEmail, userName, couponCode) {
 
     const discountAmount = coupon.type === 'percentage' 
       ? `${coupon.value}%` 
-      : `$${coupon.value}`;
+      : `KSH ${coupon.value}`;
 
     const expirationDate = coupon.validUntil.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -242,7 +242,7 @@ async sendCouponEmail(userEmail, userName, couponCode) {
       couponDescription: coupon.description,
       discountAmount,
       minimumOrderAmount: coupon.minimumOrderAmount > 0 
-        ? `Valid on orders of $${coupon.minimumOrderAmount} or more`
+        ? `Valid on orders of KSH ${coupon.minimumOrderAmount} or more`
         : 'No minimum purchase required',
       expirationDate,
       shopLink: process.env.CLIENT_URL + '/shop'

@@ -65,7 +65,7 @@ const AIRecommendations = ({ currentProduct, reviews = [] }) => {
           _id: "fallback1",
           title: `Similar ${currentProduct.category} Item`,
           category: currentProduct.category,
-          price: "$99",
+          price: "KSH 99",
           imageUrl: "/placeholder-image.jpg",
           description: "High-quality alternative",
           reason: "Based on product category"

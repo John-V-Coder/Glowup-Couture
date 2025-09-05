@@ -1,10 +1,11 @@
-const paypal = require("../../helpers/paypal");
+const paystackService = require("../../helpers/paystack");
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
 const User = require("../../models/User");
 const emailService = require("../../services/emailService");
 const { applyCouponToOrder } = require("./coupon-controller");
+const crypto = require("crypto");
 
 const createOrder = async (req, res) => {
   try {
@@ -12,83 +13,79 @@ const createOrder = async (req, res) => {
       userId,
       cartItems,
       addressInfo,
-      shipmentMethod, // <-- NEW: Include shipmentMethod from the request body
+      shipmentMethod,
       paymentMethod,
       totalAmount,
       cartId,
-      couponCode, // <-- NEW: Include coupon code
+      couponCode,
+      customerEmail,
+      customerName,
     } = req.body;
 
-    const create_payment_json = {
-      intent: "sale",
-      payer: {
-        payment_method: "paypal",
+    // Generate unique reference for Paystack
+    const reference = `GC_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    
+    // Create order first
+    const newlyCreatedOrder = new Order({
+      userId,
+      cartId,
+      cartItems,
+      addressInfo,
+      shipmentMethod,
+      orderStatus: 'Pending',
+      billing: {
+        paymentMethod,
+        paymentStatus: 'Pending',
+        totalAmount,
+        paystackReference: reference,
+        couponCode: couponCode || null,
+        discountAmount: 0
       },
-      redirect_urls: {
-        return_url: `${process.env.CLIENT_URL}/shop/paypal-return`,
-        cancel_url: `${process.env.CLIENT_URL}/shop/paypal-cancel`,
-      },
-      transactions: [
-        {
-          item_list: {
-            items: cartItems.map((item) => ({
-              name: item.title,
-              sku: item.productId,
-              price: Number(item.price).toFixed(2),
-              currency: "USD",
-              quantity: item.quantity,
-            })),
-          },
-          amount: {
-            currency: "USD",
-            total: Number(totalAmount).toFixed(2),
-          },
-          description: "description",
-        },
-      ],
-    };
+      orderDate: new Date(),
+      orderUpdateDate: new Date(),
+    });
 
-    paypal.payment.create(create_payment_json, async (error, paymentInfo) => {
-      if (error) {
-        console.log(error);
+    // Apply coupon if provided
+    if (couponCode) {
+      try {
+        const couponResult = await applyCouponToOrder(couponCode, userId, newlyCreatedOrder._id, totalAmount);
+        newlyCreatedOrder.billing.couponCode = couponCode;
+        newlyCreatedOrder.billing.discountAmount = couponResult.discountAmount;
+        newlyCreatedOrder.billing.totalAmount = totalAmount - couponResult.discountAmount;
+      } catch (couponError) {
+        console.error("Coupon application failed:", couponError.message);
+      }
+    }
 
-        return res.status(500).json({
-          success: false,
-          message: "Error while creating paypal payment",
-        });
-      } else {
-        const newlyCreatedOrder = new Order({
-          userId,
-          cartId,
-          cartItems,
-          addressInfo,
-          shipmentMethod, // <-- NEW: Save the shipmentMethod
-          orderStatus: 'Pending', // <-- UPDATED: Default order status
-          billing: { // <-- NEW: Nested billing object
-            paymentMethod,
-            paymentStatus: 'Pending', // <-- UPDATED: Default payment status
-            totalAmount,
-            paystackReference: paymentInfo.id, // <-- UPDATED: Use a meaningful name and save the PayPal ID
-            couponCode: couponCode || null,
-            discountAmount: 0
-          },
-          orderDate: new Date(), // <-- UPDATED: Use a new Date object
-          orderUpdateDate: new Date(), // <-- UPDATED: Use a new Date object
-        });
+    await newlyCreatedOrder.save();
 
-        // Apply coupon if provided
-        if (couponCode) {
-          try {
-            const couponResult = await applyCouponToOrder(couponCode, userId, newlyCreatedOrder._id, totalAmount);
-            newlyCreatedOrder.billing.couponCode = couponCode;
-            newlyCreatedOrder.billing.discountAmount = couponResult.discountAmount;
-            newlyCreatedOrder.billing.totalAmount = totalAmount - couponResult.discountAmount;
-          } catch (couponError) {
-            console.error("Coupon application failed:", couponError.message);
-            // Continue with order creation even if coupon fails
-          }
+    // Initialize Paystack transaction
+    try {
+      const paystackData = {
+        reference: reference,
+        amount: Math.round(newlyCreatedOrder.billing.totalAmount * 100), // Convert to kobo
+        email: customerEmail || (userId ? (await User.findById(userId))?.email : ''),
+        currency: 'KES',
+        callback_url: `${process.env.CLIENT_URL}/shop/payment-success`,
+        metadata: {
+          orderId: newlyCreatedOrder._id.toString(),
+          userId: userId || 'guest',
+          customerName: customerName || 'Guest Customer',
+          custom_fields: [
+            {
+              display_name: "Order ID",
+              variable_name: "order_id",
+              value: newlyCreatedOrder._id.toString()
+            }
+          ]
         }
-        await newlyCreatedOrder.save();
+      };
+
+      console.log("Paystack Data being sent:", paystackData);
+      const paystackResponse = await paystackService.initializeTransaction(paystackData);
+      console.log("Paystack Response:", paystackResponse);
+
+      if (paystackResponse.status) {
         // Send order confirmation email asynchronously
         if (userId) {
           User.findById(userId)
@@ -97,7 +94,7 @@ const createOrder = async (req, res) => {
                 const orderData = {
                   userName: user.userName,
                   orderId: newlyCreatedOrder._id,
-                  total: totalAmount,
+                  total: newlyCreatedOrder.billing.totalAmount,
                   shippingAddress: `${addressInfo?.address}, ${addressInfo?.city}, ${addressInfo?.pincode}`,
                   estimatedDelivery: 'Within 3-5 business days'
                 };
@@ -113,29 +110,43 @@ const createOrder = async (req, res) => {
             });
         }
 
-        const approvalURL = paymentInfo.links.find(
-          (link) => link.rel === "approval_url"
-        ).href;
-
         res.status(201).json({
           success: true,
-          approvalURL,
+          approvalURL: paystackResponse.data.authorization_url,
           orderId: newlyCreatedOrder._id,
+          reference: reference,
+          accessCode: paystackResponse.data.access_code,
         });
+      } else {
+        throw new Error(paystackResponse.message || 'Failed to initialize payment');
       }
-    });
+    } catch (paystackError) {
+      console.error('Paystack initialization error:', paystackError);
+      
+      // Update order status to failed
+      newlyCreatedOrder.orderStatus = 'Failed';
+      newlyCreatedOrder.billing.paymentStatus = 'Failed';
+      await newlyCreatedOrder.save();
+      
+      return res.status(500).json({
+        success: false,
+        message: "Error while creating payment session",
+        error: paystackError.message
+      });
+    }
   } catch (e) {
-    console.log(e);
+    console.error('Create order error:', e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred while creating the order",
+      error: e.message
     });
   }
 };
 
 const capturePayment = async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, reference } = req.body;
 
     let order = await Order.findById(orderId);
 
@@ -146,68 +157,86 @@ const capturePayment = async (req, res) => {
       });
     }
 
-    // You should use a webhook to verify the payment, not the client-provided paymentId and payerId.
-    // For this example, we'll simulate a successful payment verification.
-    const isPaymentVerified = true; // In a real app, this would be a call to a payment gateway API.
-
-    if (isPaymentVerified) {
-      order.orderStatus = "Processing"; // Set a more specific status
-      order.billing.paymentStatus = "Success"; // <-- UPDATED: Access the nested field
-      order.billing.paystackReference = req.body.paymentId; // <-- UPDATED: Access the nested field
-
-      // Note: The payerId is not always a direct concept in some payment gateways
-      // but can be stored if the gateway provides it. For this example, it's optional.
-
-      // Update totalStock for each product
-      for (let item of order.cartItems) {
-        let product = await Product.findById(item.productId);
-
-        if (!product) {
-          return res.status(404).json({
-            success: false,
-            message: `Product with ID ${item.productId} not found`,
-          });
-        }
-
-        // Check if there is enough stock
-        if (product.totalStock < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Not enough stock for product: ${product.title}`,
-          });
-        }
-
-        product.totalStock -= item.quantity;
-        await product.save();
+    // Verify payment with Paystack
+    try {
+      const verificationResponse = await paystackService.verifyTransaction(reference);
+      
+      if (!verificationResponse.status || !verificationResponse.data) {
+        throw new Error('Payment verification failed');
       }
+      
+      const paymentData = verificationResponse.data;
+      const isPaymentVerified = paymentData.status === 'success' && 
+                               paymentData.amount === Math.round(order.billing.totalAmount * 100);
 
-      // Delete the cart
-      const getCartId = order.cartId;
-      await Cart.findByIdAndDelete(getCartId);
+      if (isPaymentVerified) {
+        order.orderStatus = "Processing";
+        order.billing.paymentStatus = "Success";
+        order.billing.paystackReference = reference;
+        order.billing.authorizationCode = paymentData.authorization?.authorization_code;
 
-      // Save the updated order
-      await order.save();
+        // Update totalStock for each product
+        for (let item of order.cartItems) {
+          let product = await Product.findById(item.productId);
 
-      res.status(200).json({
-        success: true,
-        message: "Order and payment confirmed successfully",
-        data: order,
-      });
-    } else {
-      // Handle the case where the payment verification failed
+          if (!product) {
+            return res.status(404).json({
+              success: false,
+              message: `Product with ID ${item.productId} not found`,
+            });
+          }
+
+          if (product.totalStock < item.quantity) {
+            return res.status(400).json({
+              success: false,
+              message: `Not enough stock for product: ${product.title}`,
+            });
+          }
+
+          product.totalStock -= item.quantity;
+          await product.save();
+        }
+
+        // Delete the cart
+        const getCartId = order.cartId;
+        await Cart.findByIdAndDelete(getCartId);
+
+        await order.save();
+
+        res.status(200).json({
+          success: true,
+          message: "Order and payment confirmed successfully",
+          data: order,
+        });
+      } else {
+        order.orderStatus = "Failed";
+        order.billing.paymentStatus = "Failed";
+        await order.save();
+        
+        res.status(400).json({
+          success: false,
+          message: "Payment verification failed",
+        });
+      }
+    } catch (verificationError) {
+      console.error('Payment verification error:', verificationError);
+      
       order.orderStatus = "Failed";
       order.billing.paymentStatus = "Failed";
       await order.save();
-      res.status(400).json({
+
+      res.status(200).json({
         success: false,
-        message: "Payment verification failed.",
+        message: "Payment verification failed",
+        error: verificationError.message
       });
     }
   } catch (e) {
-    console.log(e);
+    console.error('Capture payment error:', e);
     res.status(500).json({
       success: false,
-      message: "An error occurred!",
+      message: "An error occurred while processing payment",
+      error: e.message
     });
   }
 };
@@ -264,9 +293,59 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
+// New webhook endpoint for Paystack
+const handlePaystackWebhook = async (req, res) => {
+  try {
+    const signature = req.headers['x-paystack-signature'];
+    
+    if (!paystackService.verifyWebhookSignature(req.body, signature)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature"
+      });
+    }
+
+    const event = req.body;
+    
+    if (event.event === 'charge.success') {
+      const { reference, status, amount } = event.data;
+      
+      // Find order by reference
+      const order = await Order.findOne({ 'billing.paystackReference': reference });
+      
+      if (order && status === 'success') {
+        order.orderStatus = "Processing";
+        order.billing.paymentStatus = "Success";
+        order.billing.authorizationCode = event.data.authorization?.authorization_code;
+        
+        // Update product stock
+        for (let item of order.cartItems) {
+          let product = await Product.findById(item.productId);
+          if (product && product.totalStock >= item.quantity) {
+            product.totalStock -= item.quantity;
+            await product.save();
+          }
+        }
+        
+        // Delete cart
+        await Cart.findByIdAndDelete(order.cartId);
+        await order.save();
+        
+        console.log(`Payment confirmed for order ${order._id}`);
+      }
+    }
+    
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ success: false, message: "Webhook processing failed" });
+  }
+};
+
 module.exports = {
   createOrder,
   capturePayment,
   getAllOrdersByUser,
   getOrderDetails,
+  handlePaystackWebhook,
 };

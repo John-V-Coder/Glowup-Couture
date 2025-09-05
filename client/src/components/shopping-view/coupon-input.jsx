@@ -71,7 +71,7 @@ function CouponInput({ orderAmount, cartItems, userId, onCouponApplied }) {
       
       toast({
         title: "Coupon Applied!",
-        description: `You saved KES ${discountAmount.toFixed(2)}`,
+        description: `You saved KSH ${discountAmount.toFixed(2)}`,
         className: "border-green-200 bg-green-50"
       });
       setCouponCode("");
@@ -103,7 +103,7 @@ function CouponInput({ orderAmount, cartItems, userId, onCouponApplied }) {
       
       toast({
         title: "Coupon Applied!",
-        description: `You saved KES ${discountAmount.toFixed(2)}`,
+        description: `You saved KSH ${discountAmount.toFixed(2)}`,
         className: "border-green-200 bg-green-50"
       });
     } catch (error) {
@@ -123,7 +123,7 @@ function CouponInput({ orderAmount, cartItems, userId, onCouponApplied }) {
       return (
         <div className="flex items-center gap-1 text-green-600">
           <DollarSign className="w-4 h-4" />
-          <span className="font-bold">KES {coupon.value} OFF</span>
+          <span className="font-bold">KSH {coupon.value} OFF</span>
         </div>
       );
     }
@@ -153,7 +153,7 @@ function CouponInput({ orderAmount, cartItems, userId, onCouponApplied }) {
                 <div>
                   <p className="font-semibold text-green-800">{appliedCoupon.name}</p>
                   <p className="text-sm text-green-600">
-                    Code: {appliedCoupon.code} • Saved: KES {discountAmount.toFixed(2)}
+                    Code: {appliedCoupon.code} • Saved: KSH {discountAmount.toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -225,7 +225,7 @@ function CouponInput({ orderAmount, cartItems, userId, onCouponApplied }) {
                               <p className="text-sm text-muted-foreground">
                                 Code: {coupon.code}
                                 {coupon.minimumOrderAmount > 0 && (
-                                  <span> • Min order: KES {coupon.minimumOrderAmount}</span>
+                                  <span> • Min order: KSH {coupon.minimumOrderAmount}</span>
                                 )}
                               </p>
                               {coupon.description && (

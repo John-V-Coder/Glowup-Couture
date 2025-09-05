@@ -85,9 +85,9 @@ const ProductStatsAdmin = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-KE', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'KSH',
       minimumFractionDigits: 2
     }).format(amount || 0);
   };
@@ -321,7 +321,7 @@ const ProductStatsAdmin = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="hidden md:flex">
-                      {overview?.totalStockValue ? formatCurrency(overview.totalStockValue) : '$0'}
+                      {overview?.totalStockValue ? formatCurrency(overview.totalStockValue) : 'KSH 0'}
                     </Badge>
                     {expandedSections.financial ? (
                       <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -645,7 +645,7 @@ const ProductStatsAdmin = () => {
                 <div className="space-y-1 text-sm text-muted-foreground">
                   <p>• Low stock threshold: ≤ {threshold || 'N/A'} units</p>
                   <p>• Data refreshed automatically on page load</p>
-                  <p>• All financial values displayed in USD</p>
+                  <p>• All financial values displayed in KSH</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

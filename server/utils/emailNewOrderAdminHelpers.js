@@ -31,7 +31,7 @@ const notifyAdminOfNewOrder = async (order) => {
         <li><strong>Order ID:</strong> ${orderId}</li>
         <li><strong>Customer Name:</strong> ${customerName}</li>
         <li><strong>Customer Email:</strong> ${customerEmail}</li>
-        <li><strong>Total Amount:</strong> $${totalAmount}</li>
+        <li><strong>Total Amount:</strong> KSH ${totalAmount}</li>
         <li><strong>Order Date:</strong> ${orderDate}</li>
       </ul>
       <p>Please log in to the admin panel to view full order details.</p>
@@ -40,7 +40,7 @@ const notifyAdminOfNewOrder = async (order) => {
       <p><em>This is an automated notification from Glowup Couture.</em></p>
     `;
 
-    const emailText = `New Order Alert!\n\nA new order has been placed on your website.\nOrder ID: ${orderId}\nCustomer Name: ${customerName}\nCustomer Email: ${customerEmail}\nTotal Amount: $${totalAmount}\nOrder Date: ${orderDate}\n\nView Order Details: ${process.env.ADMIN_URL}/orders/${orderId}\n\nThis is an automated notification from Glowup Couture.`;
+    const emailText = `New Order Alert!\n\nA new order has been placed on your website.\nOrder ID: ${orderId}\nCustomer Name: ${customerName}\nCustomer Email: ${customerEmail}\nTotal Amount: KSH ${totalAmount}\nOrder Date: ${orderDate}\n\nView Order Details: ${process.env.ADMIN_URL}/orders/${orderId}\n\nThis is an automated notification from Glowup Couture.`;
 
     // Send the email using the email service
     await emailService.sendCustomEmail({

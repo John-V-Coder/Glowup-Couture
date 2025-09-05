@@ -200,19 +200,18 @@ const updateCartItemQty = async (req, res) => {
 
 const deleteCartItem = async (req, res) => {
   try {
-    // 1. LABLE: Add `size` to the request parameters
     const { userId, productId, size } = req.params; 
-    if (!userId || !productId || !size) { // 2. LABLE: Add `size` to validation check
+    console.log("Delete Cart Item Request:", { userId, productId, size });
+    if (!userId || !productId || !size) {
       return res.status(400).json({
         success: false,
         message: "Invalid data provided!",
       });
     }
 
-    // LABLE: Include size in the first populate call
     const cart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
-      select: "image images title price salePrice size", // 3. LABLE: Add `size` to select
+      select: "image images title price salePrice size", 
     });
 
     if (!cart) {
@@ -222,17 +221,23 @@ const deleteCartItem = async (req, res) => {
       });
     }
 
-    // 4. LABLE: Update filter logic to check both productId and size
+    console.log("Cart items before filter:", cart.items.map(item => ({ productId: item.productId._id.toString(), size: item.size })));
+
     cart.items = cart.items.filter(
-      (item) => item.productId._id.toString() !== productId || item.size !== size
+      (item) => {
+        const isMatch = item.productId._id.toString() === productId && item.size === size;
+        console.log(`Comparing item (productId: ${item.productId._id.toString()}, size: ${item.size}) with request (productId: ${productId}, size: ${size}). Match: ${isMatch}`);
+        return !isMatch;
+      }
     );
+
+    console.log("Cart items after filter:", cart.items.map(item => ({ productId: item.productId._id.toString(), size: item.size })));
 
     await cart.save();
 
-    // LABLE: The second populate call is also updated to include size
     await cart.populate({
       path: "items.productId",
-      select: "image images title price salePrice size", // 5. LABLE: Add `size` to select
+      select: "image images title price salePrice size", 
     });
 
     const populateCartItems = cart.items.map((item) => ({
@@ -243,7 +248,7 @@ const deleteCartItem = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
-      size: item.size, // 6. LABLE: Add `size` to the final response
+      size: item.size, 
     }));
 
     res.status(200).json({
@@ -260,6 +265,13 @@ const deleteCartItem = async (req, res) => {
       message: "Error",
     });
   }
+};
+
+module.exports = {
+  addToCart,
+  updateCartItemQty,
+  deleteCartItem,
+  fetchCartItems,
 };
 
 module.exports = {

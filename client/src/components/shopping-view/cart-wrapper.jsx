@@ -7,6 +7,7 @@ import { ArrowUp, ArrowDown, ShoppingCart, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function UserCartWrapper({ cartItems = [], setOpenCartSheet }) {
+  console.log("Cart Items in CartWrapper:", cartItems);
   const navigate = useNavigate();
   const cartItemsRef = useRef(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
@@ -71,7 +72,7 @@ function UserCartWrapper({ cartItems = [], setOpenCartSheet }) {
         {cartItems.length > 0 ? (
           cartItems.map((item, index) => (
             <UserCartItemsContent 
-              key={item.productId || item.id || item._id || index} 
+              key={`${item.productId}-${item.size || 'no-size'}`} 
               cartItem={item} 
             />
           ))

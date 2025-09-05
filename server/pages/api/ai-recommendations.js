@@ -43,7 +43,7 @@ async function getProductRecommendations(openai, product, res) {
     Based on this product:
     Title: ${product.title}
     Category: ${product.category}
-    Price: $${product.price || product.salePrice || 'N/A'}
+    Price: KSH {product.price || product.salePrice || 'N/A'}
     Description: ${product.description || 'No description'}
     
     Generate 3 similar product recommendations with realistic details.

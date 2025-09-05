@@ -13,7 +13,7 @@ import ShoppingAccount from './pages/shopping-view/account';
 import ShoppingHome from './pages/shopping-view/home';
 import ShoppingListing from './pages/shopping-view/listing';
 import SearchProducts from './pages/shopping-view/search';
-import PaypalReturnPage from './pages/shopping-view/paypal-return';
+import PaymentReturnPage from './pages/shopping-view/paystack-return';
 import PaymentSuccessPage from './pages/shopping-view/payment-success';
 import UnauthPage from './pages/unauth-page';
 import NotFound from './pages/not-found';
@@ -23,7 +23,7 @@ import CheckAuth from './components/common/check-auth';
 import Preloader from './components/common/preloader';
 import RoutePreloader from './components/common/route-preloader.jsx';
 import { loadGuestCart } from './store/shop/cart-slice';
-import PaypalCancelPage from './pages/shopping-view/PaypalCancelPage';
+import PaymentCancelPage from './pages/shopping-view/PaystackCancelPage';
 import AdminGallery from './pages/admin-view/gallery';
 import AdminAbout from './pages/admin-view/about';
 import ShoppingGallery from './pages/shopping-view/gallery';
@@ -39,6 +39,7 @@ import ProductStatsAdmin from './pages/admin-view/analysis';
 import VerifyLoginCode from './pages/auth/verification';
 import { checkAuth } from './store/auth-slice'; 
 import ShoppingBilling from './pages/shopping-view/billing';
+import OrderSummaryPage from './pages/shopping-view/order-summary';
 import SendCampaignForm from './components/admin-view/send-campaign-form';
 import EmailTemplatesManager from './components/admin-view/email-template';
 import NewsletterSubscribers from './pages/admin-view/newsletter-subs';
@@ -99,9 +100,10 @@ function App() {
             <Route path="/shop/checkout" element={<ShoppingCheckout />} />
             <Route path="/shop/account" element={<ShoppingAccount />} />
             <Route path="/shop/billing" element={<ShoppingBilling/>} />
-            <Route path="/shop/paypal-return" element={<PaypalReturnPage />} />
+            <Route path="/shop/order-summary" element={<OrderSummaryPage />} />
+            <Route path="/shop/payment-return" element={<PaymentReturnPage />} />
             <Route path="/shop/payment-success" element={<PaymentSuccessPage />} />
-            <Route path="/shop/paypal-cancel" element={<PaypalCancelPage />} />
+            <Route path="/shop/payment-cancel" element={<PaymentCancelPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/delivery" element={<DeliveryPolicy />} />

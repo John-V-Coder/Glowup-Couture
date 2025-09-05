@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth/auth-routes");
 const emailRouter = require("./routes/email/email-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
@@ -56,6 +57,9 @@ app.use(cors({
 
 app.use(cookieParser());
 app.use(express.json());
+
+// Special middleware for Paystack webhooks (raw body needed for signature verification)
+app.use('/api/shop/order/paystack-webhook', bodyParser.raw({ type: 'application/json' }));
 app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);

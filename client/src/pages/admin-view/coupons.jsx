@@ -304,7 +304,7 @@ function AdminCoupons() {
 
   // Value label
   const valueLabel = useMemo(
-    () => (formData.type === "percentage" ? "Percentage (%)" : "Amount (KES)"),
+    () => (formData.type === "percentage" ? "Percentage (%)" : "Amount (KSH)"),
     [formData.type]
   );
 
@@ -369,7 +369,7 @@ function AdminCoupons() {
                             <div className="text-sm">
                               {editingCoupon.type === "percentage"
                                 ? `${editingCoupon.value}%`
-                                : `KES ${editingCoupon.value}`}
+                                : `KSH ${editingCoupon.value}`}
                             </div>
                           </div>
                           <div>{getStatusBadge(editingCoupon)}</div>
@@ -586,7 +586,7 @@ function AdminCoupons() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="minimumOrderAmount">Minimum Order (KES)</Label>
+                      <Label htmlFor="minimumOrderAmount">Minimum Order (KSH)</Label>
                       <Input
                         id="minimumOrderAmount"
                         type="number"
@@ -805,7 +805,7 @@ function AdminCoupons() {
                         <TableCell>
                           {coupon.type === "percentage"
                             ? `${coupon.value}%`
-                            : `KES ${coupon.value}`}
+                            : `KSH ${coupon.value}`}
                         </TableCell>
                         <TableCell>{getCustomerTypeBadge(coupon.customerType)}</TableCell>
                         <TableCell>

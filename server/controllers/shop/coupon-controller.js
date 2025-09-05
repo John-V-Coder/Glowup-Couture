@@ -48,7 +48,7 @@ const validateCoupon = async (req, res) => {
     if (orderAmount < coupon.minimumOrderAmount) {
       return res.status(400).json({
         success: false,
-        message: `Minimum order amount of KES ${coupon.minimumOrderAmount} required`
+        message: `Minimum order amount of KSH ${coupon.minimumOrderAmount} required`
       });
     }
 

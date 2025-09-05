@@ -241,7 +241,7 @@ const notifyAdminOfStatusChange = async (order, previousStatus, newStatus) => {
         <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
         <p><strong>Previous Status:</strong> <span style="color: #666;">${previousStatus}</span></p>
         <p><strong>New Status:</strong> <span style="color: #1976d2; font-weight: bold;">${newStatus}</span></p>
-        <p><strong>Total Amount:</strong> KES ${order.totalAmount}</p>
+        <p><strong>Total Amount:</strong> KSH ${order.totalAmount}</p>
         <p><strong>Date Changed:</strong> ${new Date().toLocaleString()}</p>
       </div>
       

@@ -26,12 +26,11 @@ export const createNewOrder = createAsyncThunk(
 
 export const capturePayment = createAsyncThunk(
   "/order/capturePayment",
-  async ({ paymentId, payerId, orderId }) => {
+  async ({ reference, orderId }) => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/shop/order/capture`,
       {
-        paymentId,
-        payerId,
+        reference,
         orderId,
       }
     );
@@ -79,17 +78,25 @@ const shoppingOrderSlice = createSlice({
         state.isLoading = false;
         state.approvalURL = action.payload.approvalURL;
         state.orderId = action.payload.orderId;
+        state.reference = action.payload.reference;
+        state.accessCode = action.payload.accessCode;
         // 📍 Change 2: Extract and store the shipment method from the response.
         state.shipmentMethod = action.payload.shipmentMethod;
         sessionStorage.setItem(
           "currentOrderId",
           JSON.stringify(action.payload.orderId)
         );
+        sessionStorage.setItem(
+          "currentOrderReference",
+          JSON.stringify(action.payload.reference)
+        );
       })
       .addCase(createNewOrder.rejected, (state) => {
         state.isLoading = false;
         state.approvalURL = null;
         state.orderId = null;
+        state.reference = null;
+        state.accessCode = null;
         state.shipmentMethod = null;
       })
       .addCase(getAllOrdersByUserId.pending, (state) => {

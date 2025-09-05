@@ -249,7 +249,7 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
             </div>
             <div className="flex flex-col">
               <Label className="text-xs text-gray-500">Total Amount</Label>
-              <p className="font-bold text-lg text-emerald-600">${orderDetails?.billing?.totalAmount?.toFixed(2) || '0.00'}</p>
+              <p className="font-bold text-lg text-emerald-600">KSh {orderDetails?.billing?.totalAmount?.toFixed(2) || '0.00'}</p>
             </div>
             {/* 📍 Change: Display shipment method */}
             <div className="flex flex-col">
@@ -387,7 +387,7 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
                   </div>
                   <div className="flex items-center gap-3">
                     <DollarSignIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-bold text-emerald-600">Total: ${orderDetails?.billing?.totalAmount?.toFixed(2) || '0.00'}</span>
+                    <span className="text-sm font-bold text-emerald-600">Total: KSh {orderDetails?.billing?.totalAmount?.toFixed(2) || '0.00'}</span>
                   </div>
                   {orderDetails?.billing?.paypalReference && (
                     <div className="flex items-start gap-3 text-sm">
@@ -428,9 +428,9 @@ function AdminOrderDetailsView({ orderDetails, setOpen }) {
                       <p className="font-medium truncate text-lg">{item?.title}</p>
                       <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
                         <span>Qty: <span className="font-semibold">{item?.quantity}</span></span>
-                        <span>Price: <span className="font-semibold">${item?.price}</span></span>
+                        <span>Price: <span className="font-semibold">KSh {item?.price}</span></span>
                         <span className="font-bold text-gray-900">
-                          Total: <span className="text-primary">${(item?.price * item?.quantity).toFixed(2)}</span>
+                          Total: <span className="text-primary">KSh {(item?.price * item?.quantity).toFixed(2)}</span>
                         </span>
                       </div>
                     </div>

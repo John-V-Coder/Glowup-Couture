@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import PageWrapper from "@/components/common/page-wrapper";
 import CouponInput from "@/components/shopping-view/coupon-input";
+import PaystackPayment from "@/components/shopping-view/paystack-payment"; // Import PaystackPayment
 
 // Define shipping locations and prices
 const SHIPPING_PRICES = {
@@ -55,14 +56,13 @@ function ShoppingCheckout() {
     email: user?.email || "",
   });
 
-  // Shipping and payment states
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("paystack");
-  const [mpesaPhone, setMpesaPhone] = useState("");
+  // Shipping states
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedSubLocation, setSelectedSubLocation] = useState("");
   
   // Coupon state
   const [appliedCouponData, setAppliedCouponData] = useState(null);
+  const [isValidated, setIsValidated] = useState(false);
 
   // Guest address state
   const [guestAddress, setGuestAddress] = useState({
@@ -73,6 +73,8 @@ function ShoppingCheckout() {
     pincode: "",
     notes: "",
   });
+
+  console.log("Guest Address:", guestAddress);
 
   // Initialize contact info when user data is available
   useEffect(() => {
@@ -86,24 +88,33 @@ function ShoppingCheckout() {
 
   // Auto-select or sync address when the list changes
   useEffect(() => {
+    console.log("useEffect triggered. isAuthenticated:", isAuthenticated, "addressList:", addressList, "currentSelectedAddress:", currentSelectedAddress);
     if (isAuthenticated && addressList?.length > 0) {
       const selectedId = currentSelectedAddress?._id;
       const selectedAddressInNewList = selectedId ? addressList.find(addr => addr._id === selectedId) : null;
 
-      // If the selected address is still in the list, ensure our state has the latest object reference
       if (selectedAddressInNewList) {
         if (JSON.stringify(selectedAddressInNewList) !== JSON.stringify(currentSelectedAddress)) {
+          console.log("Updating currentSelectedAddress to found address:", selectedAddressInNewList);
           setCurrentSelectedAddress(selectedAddressInNewList);
         }
       } else {
-        // If no address is selected, or the selected one was removed, set a default
         const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
-        setCurrentSelectedAddress(defaultAddress);
-        updateShippingLocation(defaultAddress);
+        if (defaultAddress) {
+          console.log("Setting default address:", defaultAddress);
+          setCurrentSelectedAddress(defaultAddress);
+          updateShippingLocation(defaultAddress);
+        } else {
+          console.log("No default or first address found in addressList.");
+          setCurrentSelectedAddress(null);
+        }
       }
     } else if (isAuthenticated && addressList?.length === 0) {
-        // If all addresses are deleted, clear the selection
+        console.log("Authenticated but no addresses in list. Setting currentSelectedAddress to null.");
         setCurrentSelectedAddress(null);
+    } else if (!isAuthenticated) {
+      console.log("User is not authenticated. Clearing currentSelectedAddress.");
+      setCurrentSelectedAddress(null);
     }
   }, [addressList, isAuthenticated, currentSelectedAddress]);
 
@@ -145,10 +156,14 @@ function ShoppingCheckout() {
   const handleAddressSubmit = (submittedAddress) => {
     setShowAddressForm(false);
     if (submittedAddress) {
-      handleAddressSelect(submittedAddress);
-    } else if (addressList?.length > 0) {
+      setCurrentSelectedAddress(submittedAddress); // Explicitly set the submitted address as current
+      updateShippingLocation(submittedAddress); // Update shipping based on the new address
+    } else if (addressList?.length > 0 && !currentSelectedAddress) {
+      // If no specific address was submitted (e.g., form cancelled after edit)
+      // and no address was previously selected, set a default if available.
       const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
       setCurrentSelectedAddress(defaultAddress);
+      updateShippingLocation(defaultAddress);
     }
   };
 
@@ -184,9 +199,7 @@ function ShoppingCheckout() {
   };
 
   function validateCheckoutData() {
-    // Validate contact information
     const email = (contactInfo.email || "").trim();
-    
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     if (!emailOk) {
@@ -198,7 +211,6 @@ function ShoppingCheckout() {
       return false;
     }
 
-    // Validate address
     if (isAuthenticated) {
       if (!currentSelectedAddress) {
         toast({
@@ -229,39 +241,13 @@ function ShoppingCheckout() {
       return false;
     }
 
-    if (selectedPaymentMethod === "mpesa" && (!mpesaPhone || mpesaPhone.length < 10)) {
-      toast({
-        title: "Invalid M-Pesa Number",
-        description: "Please enter a valid M-Pesa phone number",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     return true;
   }
 
-  const handleContinueToSummary = () => {
-    if (!validateCheckoutData()) return;
-
-    // Prepare address data
-    const addressData = isAuthenticated ? currentSelectedAddress : {
-      ...guestAddress,
-      userName: guestAddress.userName,
-    };
-
-    // Navigate to the summary page, passing all data
-    navigate('/shop/order-summary', {
-      state: {
-        contactInfo,
-        address: addressData,
-        selectedPaymentMethod,
-        mpesaPhone,
-        selectedCity,
-        selectedSubLocation,
-        shippingFee
-      }
-    });
+  const handleProceedToPayment = () => {
+    if (validateCheckoutData()) {
+      setIsValidated(true);
+    }
   };
 
   const shippingFee = useMemo(() => {
@@ -274,10 +260,9 @@ function ShoppingCheckout() {
     if (selectedCity === "other") {
       return BASE_SHIPPING_FEE;
     }
-    return 0; // Default to 0 if no city is selected
+    return 0;
   }, [selectedCity, selectedSubLocation]);
 
-  // Calculate totals
   const subtotal = actualCartItems?.reduce((total, item) => 
     total + (item.salePrice || item.price) * item.quantity, 0) || 0;
   const couponDiscount = appliedCouponData?.discountAmount || 0;
@@ -285,6 +270,26 @@ function ShoppingCheckout() {
 
   const handleCouponApplied = (couponData) => {
     setAppliedCouponData(couponData);
+  };
+
+  const getOrderData = () => {
+    const addressData = isAuthenticated ? currentSelectedAddress : {
+      ...guestAddress,
+      userName: guestAddress.userName,
+    };
+
+    return {
+      userId: user?.id,
+      cartItems: actualCartItems,
+      addressInfo: addressData,
+      shipmentMethod: "Standard",
+      paymentMethod: "paystack",
+      totalAmount: total,
+      cartId: cartItems?._id,
+      customerEmail: contactInfo?.email,
+      customerName: addressData?.userName || user?.userName || 'Guest Customer',
+      couponCode: appliedCouponData?.coupon?.code || null,
+    };
   };
 
   return (
@@ -304,10 +309,8 @@ function ShoppingCheckout() {
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Main Checkout Form - Left Side */}
             <div className="lg:col-span-2 space-y-8">
             
-            {/* Contact Information Section */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <User className="h-5 w-5 text-blue-600" />
@@ -335,7 +338,6 @@ function ShoppingCheckout() {
               </div>
             </div>
 
-            {/* Delivery Address Section */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -343,7 +345,6 @@ function ShoppingCheckout() {
                   <h2 className="text-xl font-semibold">Delivery Address</h2>
                 </div>
                 
-                {/* Toggle between saved addresses and add new */}
                 {isAuthenticated && !showAddressForm && (
                   <Button
                     onClick={handleAddNewAddress}
@@ -357,7 +358,6 @@ function ShoppingCheckout() {
                 )}
               </div>
 
-              {/* Show address form or address list */}
               {showAddressForm ? (
                 <div className="space-y-4">
                   <h3 className="font-medium text-lg">
@@ -372,7 +372,6 @@ function ShoppingCheckout() {
                 </div>
               ) : isAuthenticated ? (
                 <div>
-                  {/* Selected Address Display */}
                   {currentSelectedAddress && (
                     <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex justify-between items-start">
@@ -406,7 +405,6 @@ function ShoppingCheckout() {
                     </div>
                   )}
 
-                  {/* Address List */}
                   <div className="space-y-3">
                     {addressList?.length > 0 ? (
                       addressList.map((address) => (
@@ -478,7 +476,6 @@ function ShoppingCheckout() {
                   </div>
                 </div>
               ) : (
-                /* Guest checkout form */
                 <div className="space-y-4">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -487,7 +484,10 @@ function ShoppingCheckout() {
                     <input
                       type="text"
                       value={guestAddress.userName}
-                      onChange={(e) => setGuestAddress(prev => ({ ...prev, userName: e.target.value }))}
+                      onChange={(e) => {
+                        console.log("userName onChange fired:", e.target.value);
+                        setGuestAddress(prev => ({ ...prev, userName: e.target.value }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Full Name"
                     />
@@ -561,7 +561,6 @@ function ShoppingCheckout() {
               )}
             </div>
 
-            {/* Shipping Method Section */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Package className="h-5 w-5 text-orange-600" />
@@ -569,7 +568,6 @@ function ShoppingCheckout() {
               </div>
               
               <div className="space-y-4">
-                {/* Home Delivery within Nairobi */}
                 <div
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
                     selectedCity === "nairobi"
@@ -603,7 +601,6 @@ function ShoppingCheckout() {
                   </div>
                 </div>
 
-                {/* Kisumu Delivery */}
                 <div
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
                     selectedCity === "kisumu"
@@ -637,7 +634,6 @@ function ShoppingCheckout() {
                   </div>
                 </div>
 
-                {/* Other Towns */}
                 <div
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
                     selectedCity === "other"
@@ -672,7 +668,6 @@ function ShoppingCheckout() {
                 </div>
               </div>
 
-              {/* Sub-location selector for Nairobi/Kisumu */}
               {(selectedCity === "nairobi" || selectedCity === "kisumu") && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -686,95 +681,23 @@ function ShoppingCheckout() {
                     <option value="">Select Sub-location</option>
                     {Object.entries(SHIPPING_PRICES[selectedCity].subLocations).map(([sub, cost]) => (
                       <option key={sub} value={sub}>
-                        {sub} {cost > 0 && `(+KES ${cost})`}
+                        {sub} {cost > 0 && `(+KSH ${cost})`}
                       </option>
                     ))}
                   </select>
                 </div>
               )}
             </div>
-
-            {/* Payment Method */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-purple-600" />
-                <h2 className="text-xl font-semibold">Payment</h2>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">All transactions are secure and encrypted.</p>
-              
-              <div className="grid grid-cols-1 gap-4">
-                {/* Paystack Option */}
-                <div
-                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedPaymentMethod === "paystack"
-                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => setSelectedPaymentMethod("paystack")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-4 h-4 rounded-full border-2 ${
-                          selectedPaymentMethod === "paystack"
-                            ? "border-blue-500 bg-blue-500"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        {selectedPaymentMethod === "paystack" && (
-                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">Paystack</p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <img src="https://via.placeholder.com/30x20?text=MC" alt="Mastercard" className="h-5" />
-                      <img src="https://via.placeholder.com/30x20?text=VISA" alt="Visa" className="h-5" />
-                      <img src="https://via.placeholder.com/30x20?text=MPESA" alt="M-Pesa" className="h-5" />
-                    </div>
-                  </div>
-                  
-                  {selectedPaymentMethod === "paystack" && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
-                        <div className="text-center">
-                          <div className="w-16 h-12 bg-gray-200 rounded mx-auto mb-2 flex items-center justify-center">
-                            <span className="text-xs text-gray-500">💳</span>
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            After clicking "Pay now", you will be redirected to Paystack to complete your purchase securely.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* M-Pesa on Delivery Option */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 rounded-full border-2 border-gray-300"></div>
-                    <div>
-                      <p className="font-medium text-gray-500">Lipa na M-PESA on Delivery</p>
-                      <p className="text-sm text-gray-400">Pay with M-Pesa when your order arrives</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            </div>
-
-            {/* Order Summary Sidebar - Right Side */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-6">
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                 
-                {/* Cart Items */}
                 <div className="space-y-4 mb-6">
-                  {actualCartItems?.length > 0 ? actualCartItems.map((item) => (
+                  {actualCartItems?.length > 0 ? actualCartItems.map((item) => {
+                    console.log("Item size in checkout:", item.size);
+                    return (
                     <div key={`${item.productId}-${item.size || 'default'}`} className="flex items-center gap-4">
                       <div className="relative">
                         <img
@@ -803,12 +726,11 @@ function ShoppingCheckout() {
                         KSh {((item.salePrice || item.price) * item.quantity).toFixed(2)}
                       </div>
                     </div>
-                  )) : (
+                  )}) : (
                     <p className="text-gray-500 text-center py-4">No items in cart</p>
                   )}
                 </div>
 
-                {/* Discount Code */}
                 <div className="mb-6 pb-6 border-b">
                   <CouponInput
                     orderAmount={subtotal}
@@ -818,7 +740,6 @@ function ShoppingCheckout() {
                   />
                 </div>
 
-                {/* Order Totals */}
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
@@ -844,19 +765,35 @@ function ShoppingCheckout() {
                   </div>
                 </div>
 
-                {/* Continue Button */}
                 <div className="mt-6">
                   <Button
-                    onClick={handleContinueToSummary}
+                    className="w-full mt-6"
+                    onClick={handleProceedToPayment}
                     disabled={actualCartItems?.length === 0}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2"
                   >
-                    Continue to Summary
-                    <ArrowRight className="h-4 w-4" />
+                    Proceed to Payment
                   </Button>
+
+                  {isValidated && (
+                    <div className="mt-6">
+                      <PaystackPayment
+                        orderData={getOrderData()}
+                        onSuccess={() => {
+                          toast({ title: "Payment successful!" });
+                          navigate('/shop/payment-success');
+                        }}
+                        onError={(error) => {
+                          toast({
+                            title: "Payment Error",
+                            description: error.message || "An error occurred during payment.",
+                            variant: "destructive",
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
-                {/* Security Info */}
                 <div className="mt-4 text-center">
                   <p className="text-xs text-gray-500">
                     🔒 Your payment information is secure and encrypted
